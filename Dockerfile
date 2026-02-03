@@ -1,20 +1,18 @@
 FROM alpine:latest
 
-# On installe les outils nécessaires
-RUN apk add --no-cache \
-    unzip \
-    ca-certificates \
-    openssh
+# Installation des certificats de sécurité
+RUN apk add --no-cache ca-certificates unzip wget
 
-# Version de PocketBase
-ARG PB_VERSION=0.22.0
+# On définit la version de PocketBase
+ENV PB_VERSION=0.22.21
 
-# Téléchargement et installation
-ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
-RUN unzip /tmp/pb.zip -d /pb/
+# Téléchargement et installation de PocketBase
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip && \
+    unzip pocketbase_${PB_VERSION}_linux_amd64.zip -d /pb && \
+    rm pocketbase_${PB_VERSION}_linux_amd64.zip
 
-# On expose le port par défaut
+# Port par défaut pour Render
 EXPOSE 8080
 
-# On lance PocketBase
+# Commande pour lancer PocketBase
 CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8080"]
