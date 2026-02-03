@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: mon-media-strapi
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    healthCheckPath: /_health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: PORT
+        value: 10000
+      - key: DATABASE_CLIENT
+        value: postgres
+      - key: DATABASE_HOST
+        fromDatabase:
+          name: mon-media-db
+          property: host
+      - key: DATABASE_PORT
+        fromDatabase:
+          name: mon-media-db
+          property: port
+      - key: DATABASE_NAME
+        fromDatabase:
+          name: mon-media-db
+          property: database
+      - key: DATABASE_USERNAME
+        fromDatabase:
+          name: mon-media-db
+          property: user
+      - key: DATABASE_PASSWORD
+        fromDatabase:
+          name: mon-media-db
+          property: password
+      - key: APP_KEYS
+        generateValue: true
+      - key: API_TOKEN_SALT
+        generateValue: true
+      - key: ADMIN_JWT_SECRET
+        generateValue: true
+      - key: JWT_SECRET
+        generateValue: true
+
+databases:
+  - name: mon-media-db
+    plan: free
