@@ -1,7 +1,7 @@
 services:
   - type: web
     name: mon-media-strapi
-    env: node
+    runtime: docker # <--- CHANGE CECI (au lieu de env: node)
     plan: free
     region: frankfurt
     buildCommand: npm install && npm run build
@@ -48,3 +48,4 @@ services:
 databases:
   - name: mon-media-db
     plan: free
+
