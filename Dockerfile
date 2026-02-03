@@ -1,22 +1,20 @@
-FROM node:20-alpine
+FROM alpine:latest
 
-# On définit la limite de mémoire pour Node dans le container
-ENV NODE_OPTIONS="--max-old-space-size=450"
+# On installe les outils nécessaires
+RUN apk add --no-cache \
+    unzip \
+    ca-certificates \
+    openssh
 
-WORKDIR /app
+# Version de PocketBase
+ARG PB_VERSION=0.22.0
 
-# On copie les fichiers de config
-COPY package.json package-lock.json* ./
+# Téléchargement et installation
+ADD https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip /tmp/pb.zip
+RUN unzip /tmp/pb.zip -d /pb/
 
-# Installation des dépendances (SANS le --production pour pouvoir build l'admin)
-RUN npm install
+# On expose le port par défaut
+EXPOSE 8080
 
-# Copie du reste du code
-COPY . .
-
-# Build de l'administration (On désactive l'optimisation pour la RAM)
-RUN npx strapi build --no-optimization
-
-EXPOSE 1337
-
-CMD ["npm", "run", "start"]
+# On lance PocketBase
+CMD ["/pb/pocketbase", "serve", "--http=0.0.0.0:8080"]
