@@ -1,13 +1,9 @@
 services:
   - type: web
-    name: makmus-pocketbase
+    name: makmus-backend
     runtime: docker
     plan: free
     region: frankfurt
     envVars:
       - key: PORT
         value: 8080
-    disk:
-      name: pb_data
-      mountPath: /pb/pb_data
-      sizeGB: 1
