@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAKMUS — Mémoire & Vérité</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="full-menu" id="fullMenu">
+        <div class="menu-header">
+            <div class="menu-logo">MAKMUS</div>
+            <span class="close-menu" id="closeMenu">&times; FERMER</span>
+        </div>
+        <div class="menu-content">
+            <div class="menu-search">
+                <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
+                <button onclick="executeMenuSearch()">OK</button>
+            </div>
+            <div class="menu-grid">
+                <div class="menu-section">
+                    <h3>ACTUALITÉS</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchNews('top')">À la une</a></li>
+                        <li><a href="#" onclick="fetchNews('top', 'RDC Congo')">RDC</a></li>
+                        <li><a href="#" onclick="fetchNews('politics')">Politique</a></li>
+                        <li><a href="#" onclick="fetchNews('world')">International</a></li>
+                    </ul>
+                </div>
+                <div class="menu-section">
+                    <h3>ÉCONOMIE & TECH</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchNews('business')">Business</a></li>
+                        <li><a href="#" onclick="fetchNews('technology')">Technologies</a></li>
+                        <li><a href="#" onclick="fetchNews('science')">Sciences</a></li>
+                    </ul>
+                </div>
+                <div class="menu-section">
+                    <h3>LOISIRS</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchNews('sports')">Sports</a></li>
+                        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div id="live-date">---</div>
+            <div class="auth-section"><button id="openModal">MON COMPTE</button></div>
+        </div>
+    </div>
+
+    <header class="main-header">
+        <div class="header-left">
+            <div class="menu-toggle" id="btnOpenMenu">
+                <span></span><span></span><span></span>
+                <span class="menu-label">SECTIONS</span>
+            </div>
+        </div>
+        <div class="logo-container">
+            <a href="index.html">
+                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            </a>
+        </div>
+        <div class="header-right-spacer">
+            <button class="btn-subscribe">S'ABONNER</button>
+        </div>
+    </header>
+
+    <nav class="nav-compact" id="navMenu">
+        <ul>
+            <li><a href="#" class="active" onclick="fetchNews('top')">À LA UNE</a></li>
+            <li><a href="#" onclick="fetchNews('top', 'RDC Congo')">RDC</a></li>
+            <li><a href="#" onclick="fetchNews('politics')">POLITIQUE</a></li>
+            <li><a href="#" onclick="fetchNews('business')">ÉCONOMIE</a></li>
+            <li><a href="#" onclick="fetchNews('sports')">SPORT</a></li>
+            <li><a href="#" onclick="fetchNews('technology')">TECH</a></li>
+            <li><a href="#" onclick="fetchNews('science')">SCIENCE</a></li>
+            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+        </ul>
+    </nav>
+
+    <main class="newspaper-body">
+        <div id="status-line" class="status-line">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
+        <section id="hero-zone"></section>
+        <hr class="double-hr">
+        <div class="news-grid" id="news-grid"></div>
+    </main>
+
+    <div class="modal" id="modalAccount">
+        <div class="modal-box">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <div class="modal-header">MAKMUS</div>
+            <p>Accès réservé aux abonnés.</p>
+            <input type="email" placeholder="Email">
+            <input type="password" placeholder="Mot de passe">
+            <button class="btn-submit">SE CONNECTER</button>
+        </div>
+    </div>
+    <footer class="nyt-footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
+        </div>
+
+        <div class="footer-links-grid">
+            <div class="footer-col">
+                <h4>SECTIONS</h4>
+                <ul>
+            <li><a href="#" class="active" onclick="fetchNews('top')">À LA UNE</a></li>
+            <li><a href="#" onclick="fetchNews('top', 'RDC Congo')">RDC</a></li>
+            <li><a href="#" onclick="fetchNews('politics')">POLITIQUE</a></li>
+            <li><a href="#" onclick="fetchNews('business')">ÉCONOMIE</a></li>
+            <li><a href="#" onclick="fetchNews('sports')">SPORT</a></li>
+            <li><a href="#" onclick="fetchNews('technology')">TECH</a></li>
+            <li><a href="#" onclick="fetchNews('science')">SCIENCE</a></li>
+            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>AIDE</h4>
+                <ul>
+                    <li><a href="#">Abonnements</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Publicité</a></li>
+                    <li><a href="#">Emploi</a></li>
+                    <li><a href="#">Makmus magazine</a></li>
+                    <li><a href="#">Makila Emmanuel Heritage </a></li>
+                    <li><a href="#">Météo </a></li>
+                    <li><a href="#">Makem screen Studio</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>SUIVEZ-NOUS</h4>
+                <div class="social-links">
+                    <a href="#">FB</a>
+                    <a href="#">X</a>
+                    <a href="#">IG</a>
+                    <a href="#">YT</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
+            <div class="bottom-legal">
+                <a href="#">Mentions Légales</a>
+                <a href="#">Confidentialité</a>
+                <a href="#">CGU</a>
+            </div>
+        </div>
+    </div>
+</footer>
+    <script>
+        const STRAPI_URL = "http://localhost:1337";
+
+        // --- GESTION DU MENU OVERLAY ---
+        const btnOpenMenu = document.getElementById('btnOpenMenu');
+        const btnCloseMenu = document.getElementById('closeMenu');
+        const fullMenu = document.getElementById('fullMenu');
+
+        btnOpenMenu.onclick = () => {
+            fullMenu.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        };
+
+        btnCloseMenu.onclick = () => {
+            fullMenu.classList.remove('open');
+            document.body.style.overflow = 'auto';
+        };
+
+        window.executeMenuSearch = function() {
+            const query = document.getElementById('menuSearchInput').value;
+            if(query) {
+                fetchNews('top', query);
+                fullMenu.classList.remove('open');
+                document.body.style.overflow = 'auto';
+            }
+        }
+
+        // --- RESTE DU SCRIPT ---
+        function updateDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            document.getElementById('live-date').textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+        }
+        updateDate();
+
+        const modal = document.getElementById('modalAccount');
+        document.getElementById('openModal').onclick = () => modal.style.display = 'flex';
+        document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
+
+        async function fetchNews(category, query = '') {
+            const hero = document.getElementById('hero-zone');
+            const grid = document.getElementById('news-grid');
+            const status = document.getElementById('status-line');
+            
+            try {
+                let url = `/api/news?category=${category}`;
+                if(query) url += `&q=${encodeURIComponent(query)}`;
+                const res = await fetch(url);
+                const data = await res.json();
+                const articles = data.results || [];
+
+                if (articles.length === 0) {
+                    status.textContent = "AUCUNE DÉPÊCHE TROUVÉE.";
+                    return;
+                }
+
+                const h = articles[0];
+                hero.innerHTML = `
+                    <div class="hero-container" onclick="window.open('${h.link}', '_blank')">
+                        <div class="hero-text">
+                            <h1>${h.title}</h1>
+                            <p>${h.description ? h.description.substring(0, 250) + '...' : ''}</p>
+                            <button class="btn-read-more">LIRE LA SUITE →</button>
+                        </div>
+                        ${h.image_url ? `<div class="hero-img"><img src="${h.image_url}"></div>` : ''}
+                    </div>`;
+
+                grid.innerHTML = articles.slice(1, 13).map(art => `
+                    <div class="article-card" onclick="window.open('${art.link}', '_blank')">
+                        ${art.image_url ? `<img src="${art.image_url}">` : ''}
+                        <h3>${art.title}</h3>
+                        <p class="card-desc">${art.description ? art.description.substring(0, 90) + '...' : ''}</p>
+                        <span class="small-link">En savoir plus</span>
+                    </div>`).join('');
+
+                status.textContent = query ? `RÉSULTATS POUR : ${query.toUpperCase()}` : `RUBRIQUE : ${category.toUpperCase()}`;
+            } catch (e) { console.error(e); }
+        }
+        window.onload = () => fetchNews('top');
+    </script>
+</body>
+</html>
