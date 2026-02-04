@@ -7,15 +7,18 @@ RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.21/poc
     unzip pocketbase_0.22.21_linux_amd64.zip && \
     rm pocketbase_0.22.21_linux_amd64.zip
 
-# 2. Installer le Serveur Node
+# 2. Installer le projet complet
 WORKDIR /app
-COPY server/package*.json ./
-RUN npm install
-COPY server/ .
-COPY index.html style.css ./
+COPY . .
 
-# On expose le port 8080 (le port standard de ton service Render)
+# Installer les dépendances du serveur Node
+WORKDIR /app/server
+RUN npm install
+
+# Exposer le port public
 EXPOSE 8080
 
-# On lance PocketBase sur le port 9000 (caché) et Node sur 8080 (public)
+# LANCEMENT HYBRIDE :
+# - PocketBase tourne sur le port 9000 (interne)
+# - Node tourne sur le port 8080 (public)
 CMD /pb/pocketbase serve --http=0.0.0.0:9000 & node server.js
