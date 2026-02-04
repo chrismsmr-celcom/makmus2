@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rédaction - MAKMUS</title>
-    <link rel="stylesheet" href="style.css"> <style>
+    <link rel="stylesheet" href="style.css"> 
+    <style>
         .article-container { max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.8; }
         .article-header { border-bottom: 2px solid #000; margin-bottom: 20px; padding-bottom: 20px; text-align: center; }
         .article-header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 10px; }
         .article-meta { text-transform: uppercase; font-weight: bold; font-size: 0.9rem; color: #666; }
-        .article-full-img img { width: 100%; height: auto; margin-bottom: 30px; }
+        .article-full-img img { width: 100%; height: auto; margin-bottom: 30px; border-radius: 4px; }
         .article-content { font-size: 1.2rem; font-family: 'Georgia', serif; white-space: pre-wrap; }
         .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #000; font-weight: bold; }
     </style>
@@ -22,32 +23,63 @@
         </article>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
     <script>
-        const PB_URL = window.location.origin + "/pb";
+        // --- CONFIGURATION SUPABASE ---
+        const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
+        const SUPABASE_KEY = 'TA_CLE_ANON_PUBLIC_ICI'; // <--- COLLE TA CLÉ ICI
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Récupération de l'ID dans l'URL (?id=...)
         const params = new URLSearchParams(window.location.search);
         const articleId = params.get('id');
 
         async function loadArticle() {
-            if (!articleId) return;
-            try {
-                const res = await fetch(`${PB_URL}/api/collections/articles/records/${articleId}`);
-                const art = await res.json();
+            if (!articleId) {
+                document.getElementById('full-article').innerHTML = "Aucun article sélectionné.";
+                return;
+            }
 
-                const imgUrl = art.image ? `${PB_URL}/api/files/${art.collectionId}/${art.id}/${art.image}` : '';
-                
+            try {
+                // Requête Supabase : cherche l'article dont l'ID correspond
+                const { data: art, error } = await supabaseClient
+                    .from('articles')
+                    .select('*')
+                    .eq('id', articleId)
+                    .single();
+
+                if (error || !art) {
+                    console.error("Erreur:", error);
+                    throw new Error("Article introuvable");
+                }
+
+                // Affichage avec tes classes CSS d'origine
+                // Note : On utilise 'image_url' (Supabase) et non le système de fichiers PB
                 document.getElementById('full-article').innerHTML = `
                     <header class="article-header">
-                        <div class="article-meta">Publié par la Rédaction MAKMUS — ${new Date(art.created).toLocaleDateString('fr-FR')}</div>
+                        <div class="article-meta">
+                            Publié par la Rédaction MAKMUS — ${new Date(art.created_at).toLocaleDateString('fr-FR')}
+                        </div>
                         <h1>${art.titre}</h1>
                     </header>
-                    ${imgUrl ? `<div class="article-full-img"><img src="${imgUrl}"></div>` : ''}
+                    
+                    ${art.image_url ? `
+                        <div class="article-full-img">
+                            <img src="${art.image_url}" alt="${art.titre}">
+                        </div>` : ''}
+                    
                     <div class="article-content">${art.description}</div>
                 `;
+                
                 document.title = `${art.titre} - MAKMUS`;
+
             } catch (e) {
-                document.getElementById('full-article').innerHTML = "Erreur lors du chargement de l'article.";
+                console.error(e);
+                document.getElementById('full-article').innerHTML = "Erreur lors du chargement de l'article. Vérifiez la connexion ou le RLS.";
             }
         }
+
         loadArticle();
     </script>
 </body>
