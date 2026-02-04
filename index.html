@@ -213,6 +213,9 @@
 
     // --- LOGIQUE DE RÉCUPÉRATION ---
     async function fetchAllContent(category = 'top', query = '') {
+        // AJOUT : Remonte la page en haut pour voir les nouveaux résultats
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+
         // On ferme le menu si l'utilisateur a cliqué sur une catégorie
         closeMenuUI();
 
@@ -327,6 +330,7 @@
 </body>
 
 </html>
+
 
 
 
