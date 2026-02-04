@@ -176,13 +176,12 @@
     const BASE_URL = window.location.origin; 
     const PB_URL = `${BASE_URL}/pb`; 
     const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
-    const CACHE_DURATION = 60 * 60 * 1000; // ⚠️ Ajouté : indispensable pour le cache
+    const CACHE_DURATION = 60 * 60 * 1000; 
 
     // --- INITIALISATION POCKETBASE ---
-    // Assure-toi que le SDK PocketBase est bien chargé dans ton HTML avant ce script
     const pb = new PocketBase(PB_URL);
 
-    // --- RESTAURATION SESSION AU CHARGEMENT ---
+    // --- RESTAURATION SESSION ---
     window.addEventListener("load", () => {
         if (pb.authStore.isValid) {
             console.log("Session PocketBase active ✅", pb.authStore.model);
@@ -198,12 +197,12 @@
     const btnCloseMenu = document.getElementById('closeMenu');
     const fullMenu = document.getElementById('fullMenu');
     
-    btnOpenMenu.onclick = () => { 
+    if(btnOpenMenu) btnOpenMenu.onclick = () => { 
         fullMenu.classList.add('open'); 
         document.body.style.overflow = 'hidden'; 
     };
     
-    btnCloseMenu.onclick = () => { 
+    if(btnCloseMenu) btnCloseMenu.onclick = () => { 
         fullMenu.classList.remove('open'); 
         document.body.style.overflow = 'auto'; 
     };
@@ -231,43 +230,45 @@
     }
     updateDate();
 
-    // --- LOGIQUE DE RÉCUPÉRATION ---
+    // --- LOGIQUE DE RÉCUPÉRATION (HYBRIDE & CACHE SÉPARÉ) ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
 
         const status = document.getElementById('status-line');
-        const cacheKey = `news_${category}_${query}`;
-        const cachedData = localStorage.getItem(cacheKey);
-        const cacheTimestamp = localStorage.getItem(cacheKey + '_time');
+        
+        // Configuration du cache spécifique pour NewsAPI uniquement
+        const newsCacheKey = `news_api_${category}_${query}`;
+        const newsCacheTimeKey = `${newsCacheKey}_time`;
+        const cachedNews = localStorage.getItem(newsCacheKey);
+        const newsTimestamp = localStorage.getItem(newsCacheTimeKey);
         const now = new Date().getTime();
-
-        if (cachedData && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
-            renderAll(JSON.parse(cachedData), query);
-            return;
-        }
 
         try {
             if(status) status.textContent = "CHARGEMENT...";
 
+            // 1. RÉCUPÉRATION POCKETBASE (Toujours instantané)
             let pbFilter = query ? `&filter=(titre~'${query}' || description~'${query}')` : "";
             const pbRes = await fetch(`${PB_URL}/api/collections/articles/records?sort=-created${pbFilter}`);
             const pbData = await pbRes.json();
+            const myArticles = pbData.items || [];
 
-            let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
-            if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
-            const newsRes = await fetch(newsUrl);
-            const newsData = await newsRes.json();
+            // 2. RÉCUPÉRATION NEWSAPI (Avec Cache)
+            let worldNews = [];
+            if (cachedNews && newsTimestamp && (now - newsTimestamp < CACHE_DURATION)) {
+                worldNews = JSON.parse(cachedNews);
+            } else {
+                let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
+                if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
+                const newsRes = await fetch(newsUrl);
+                const newsData = await newsRes.json();
+                worldNews = newsData.results || [];
 
-            const combinedData = {
-                myArticles: pbData.items || [],
-                worldNews: newsData.results || []
-            };
+                localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
+                localStorage.setItem(newsCacheTimeKey, now.toString());
+            }
 
-            localStorage.setItem(cacheKey, JSON.stringify(combinedData));
-            localStorage.setItem(cacheKey + '_time', now.toString());
-
-            renderAll(combinedData, query);
+            renderAll({ myArticles, worldNews }, query);
 
         } catch (e) { 
             console.error("Erreur:", e);
@@ -275,37 +276,50 @@
         }
     }
 
-    // --- FONCTION D'AFFICHAGE ---
+    // --- FONCTION D'AFFICHAGE AVEC ANTI-DOUBLONS ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
         const status = document.getElementById('status-line');
         const { myArticles, worldNews } = data;
 
-        if (myArticles.length === 0 && worldNews.length === 0) {
+        // Combinaison : Tes articles en premier
+        const allPossible = [...myArticles, ...worldNews];
+
+        // Filtre anti-doublons par titre
+        const seenTitles = new Set();
+        const uniqueArticles = allPossible.filter(art => {
+            const t = (art.titre || art.title || "").trim().toLowerCase();
+            if(!t || seenTitles.has(t)) return false;
+            seenTitles.add(t);
+            return true;
+        });
+
+        if (uniqueArticles.length === 0) {
             if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
             if(hero) hero.innerHTML = "";
             if(grid) grid.innerHTML = "";
             return;
         }
 
-        // 1. GESTION DU HERO
-        if (myArticles.length > 0) {
-            const h = myArticles[0];
-            const img = h.image ? `${PB_URL}/api/files/${h.collectionId}/${h.id}/${h.image}` : '';
-            const localLink = `redaction.html?id=${h.id}`;
-            renderHeroMarkup(h.titre, h.description, img, localLink, true); 
-        } else if (worldNews.length > 0) {
-            const h = worldNews[0];
-            renderHeroMarkup(h.title, h.description, h.image_url, h.link, false);
-        }
+        // 1. GESTION DU HERO (Le 1er article unique)
+        const h = uniqueArticles[0];
+        let hImg = h.image_url || "";
+        let hLink = h.link || "#";
+        let hIsLocal = false;
 
-        // 2. GESTION DE LA GRILLE
-        const remainingMy = myArticles.slice(1);
-        const combined = [...remainingMy, ...worldNews];
+        if (h.collectionId) {
+            hImg = h.image ? `${PB_URL}/api/files/${h.collectionId}/${h.id}/${h.image}` : '';
+            hLink = `redaction.html?id=${h.id}`;
+            hIsLocal = true;
+        }
+        renderHeroMarkup(h.titre || h.title, h.description || "", hImg, hLink, hIsLocal);
+
+        // 2. GESTION DE LA GRILLE (Articles suivants, max 12)
+        const gridArticles = uniqueArticles.slice(1, 13);
 
         if(grid) {
-            grid.innerHTML = combined.slice(0, 12).map(art => {
+            grid.innerHTML = gridArticles.map(art => {
                 const title = art.titre || art.title;
                 const desc = art.description || "";
                 let link = art.link || "#";
@@ -316,7 +330,6 @@
                     img = art.image ? `${PB_URL}/api/files/${art.collectionId}/${art.id}/${art.image}` : '';
                     link = `redaction.html?id=${art.id}`;
                     
-                    // Correction de l'URL de partage
                     const fullUrl = encodeURIComponent(`${BASE_URL}/${link}`);
                     const sTxt = encodeURIComponent(title);
                     shareHtml = `
@@ -342,7 +355,7 @@
         if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ACTUALITÉS MISES À JOUR`;
     }
 
-    // --- GÉNÉRATION DU HERO AVEC PARTAGE ---
+    // --- GÉNÉRATION DU HERO ---
     function renderHeroMarkup(title, desc, img, link, isLocal) {
         const heroZone = document.getElementById('hero-zone');
         if(!heroZone) return;
@@ -377,6 +390,7 @@
 </body>
 
 </html>
+
 
 
 
