@@ -163,10 +163,14 @@
 </footer>
     <script>
     // --- CONFIGURATION DYNAMIQUE ---
-    // Utilise l'URL actuelle pour PocketBase et le Proxy News
     const BASE_URL = window.location.origin; 
-    const PB_URL = BASE_URL; 
+    
+    // PocketBase passe maintenant par le proxy Node pour éviter les conflits de port
+    const PB_URL = `${BASE_URL}/pb`; 
+    
+    // Ton API News via server.js
     const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
+    
     const CACHE_DURATION = 60 * 60 * 1000; // 1 heure
 
     // --- GESTION DU MENU (Inchangé) ---
@@ -184,7 +188,7 @@
         document.body.style.overflow = 'auto'; 
     };
 
-    // --- RECHERCHE DEPUIS LE MENU ---
+    // --- RECHERCHE DEPUIS LE MENU (Inchangé) ---
     window.executeMenuSearch = function() {
         const query = document.getElementById('menuSearchInput').value;
         if(query) {
@@ -194,7 +198,7 @@
         }
     }
 
-    // --- GESTION DE LA DATE ---
+    // --- GESTION DE LA DATE (Inchangé) ---
     function updateDate() {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const liveDate = document.getElementById('live-date');
@@ -202,7 +206,7 @@
     }
     updateDate();
 
-    // --- MODAL COMPTE ---
+    // --- MODAL COMPTE (Inchangé) ---
     const modal = document.getElementById('modalAccount');
     const openBtn = document.getElementById('openModal');
     const closeBtn = document.getElementById('closeModal');
@@ -225,14 +229,14 @@
         }
 
         try {
-            console.log("Appel des APIs (Données fraîches)");
+            console.log("Appel des APIs hybrides...");
             
-            // A. POCKETBASE (Tes articles)
+            // A. POCKETBASE (via le tunnel /pb défini dans server.js)
             let pbFilter = query ? `&filter=(titre~'${query}' || description~'${query}')` : "";
             const pbRes = await fetch(`${PB_URL}/api/collections/articles/records?sort=-created${pbFilter}`);
             const pbData = await pbRes.json();
 
-            // B. NEWAPI (Via ton server.js)
+            // B. NEWS DATA API (Via ton proxy server.js)
             let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
             if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
             const newsRes = await fetch(newsUrl);
@@ -250,7 +254,7 @@
             renderAll(combinedData, query);
 
         } catch (e) { 
-            console.error("Erreur:", e);
+            console.error("Erreur de synchronisation:", e);
             if(status) status.textContent = "ERREUR DE CONNEXION AU SERVEUR.";
         }
     }
@@ -270,6 +274,7 @@
         // 1. Gestion du HERO (Priorité PocketBase)
         if (myArticles.length > 0) {
             const h = myArticles[0];
+            // Utilisation du tunnel PB_URL pour les images
             const img = h.image ? `${PB_URL}/api/files/${h.collectionId}/${h.id}/${h.image}` : '';
             renderHeroMarkup(h.titre, h.description, img, '#'); 
         } else if (worldNews.length > 0) {
@@ -287,7 +292,7 @@
             const link = art.link || "#";
             let img = art.image_url || "";
             
-            if (art.collectionId) { // Si c'est un article PocketBase
+            if (art.collectionId) { // Si c'est un article PocketBase (via tunnel)
                 img = art.image ? `${PB_URL}/api/files/${art.collectionId}/${art.id}/${art.image}` : '';
             }
             
@@ -322,6 +327,7 @@
 </body>
 
 </html>
+
 
 
 
