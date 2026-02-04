@@ -3,60 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rédaction - MAKMUS</title>
-    <link rel="stylesheet" href="style.css"> 
-    <style>
-        .article-container { max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.8; }
-        .article-header { border-bottom: 2px solid #000; margin-bottom: 20px; padding-bottom: 20px; text-align: center; }
-        .article-header h1 { font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 10px; }
-        .article-meta { text-transform: uppercase; font-weight: bold; font-size: 0.9rem; color: #666; }
-        .article-full-img img { width: 100%; height: auto; margin-bottom: 30px; border-radius: 4px; }
-        .article-content { font-size: 1.2rem; font-family: 'Georgia', serif; white-space: pre-wrap; }
-        .back-btn { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #000; font-weight: bold; }
-    </style>
+    <title>MAKMUS — Mémoire & Vérité</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
+    <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7567982675325882"
+     crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-7567982675325882">
 </head>
 <body>
-    <div class="article-container">
-        <a href="index.html" class="back-btn">← RETOUR À L'ACCUEIL</a>
-        <article id="full-article">
-            <div id="loader">Chargement de l'article...</div>
-        </article>
+
+<div class="full-menu" id="fullMenu">
+        <div class="menu-header">
+            <div class="menu-logo">MAKMUS</div>
+            <span class="close-menu" id="closeMenu">&times; FERMER</span>
+        </div>
+        <div class="menu-content">
+            <div class="menu-search">
+                <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
+                <button onclick="executeMenuSearch()">OK</button>
+            </div>
+            <div class="menu-grid">
+                <div class="menu-section">
+                    <h3>ACTUALITÉS</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
+                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+                        <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
+                        <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
+                        <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
+                    </ul>
+                </div>
+                <div class="menu-section">
+                    <h3>ÉCONOMIE & TECH</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
+                        <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
+                        <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
+                        <li><a href="#" onclick="fetchAllContent('top', 'crypto'); return false;">Crypto-monnaie</a></li>
+                    </ul>
+                </div>
+                <div class="menu-section">
+                    <h3>LOISIRS & SOCIÉTÉ</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
+                        <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
+                        <li><a href="#" onclick="fetchAllContent('health'); return false;">Santé</a></li>
+                        <li><a href="#" onclick="fetchAllContent('lifestyle'); return false;">Style de vie / Food</a></li>
+                        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">Voyages</a></li>
+                        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
 
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div id="live-date">---</div>
+            <div class="auth-section"><button id="openModal">MON COMPTE</button></div>
+        </div>
+    </div>
+
+    <header class="main-header">
+        <div class="header-left">
+            <div class="menu-toggle" id="btnOpenMenu">
+                <span></span><span></span><span></span>
+                <span class="menu-label">SECTIONS</span>
+            </div>
+        </div>
+        <div class="logo-container">
+            <a href="index.html">
+                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            </a>
+        </div>
+        <div class="header-right-spacer">
+            <button class="btn-subscribe">S'ABONNER</button>
+        </div>
+    </header>
+
+    <nav class="nav-compact" id="navMenu">
+        <ul>
+            <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+            <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+            <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
+            <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+        </ul>
+    </nav>
+
+    <main class="newspaper-body">
+        <div id="status-line" class="status-line">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
+        <section id="hero-zone"></section>
+        <hr class="double-hr">
+        <div class="news-grid" id="news-grid"></div>
+    </main>
+
+    <div class="modal" id="modalAccount">
+        <div class="modal-box">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <div class="modal-header">MAKMUS</div>
+            <p>Accès réservé aux abonnés.</p>
+            <input type="email" placeholder="Email">
+            <input type="password" placeholder="Mot de passe">
+            <button class="btn-submit">SE CONNECTER</button>
+        </div>
+    </div>
+    <footer class="nyt-footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
+        </div>
+
+       <div class="footer-links-grid">
+    <div class="footer-col">
+        <h4>SECTIONS</h4>
+        <ul>
+        <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
+        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>AIDE</h4>
+        <ul>
+            <li><a href="#">Abonnements</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Publicité</a></li>
+            <li><a href="#">Emploi</a></li>
+            <li><a href="#">Makmus magazine</a></li>
+            <li><a href="#">Makila Emmanuel Heritage </a></li>
+            <li><a href="#">Météo </a></li>
+            <li><a href="#">Makem screen Studio</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>SUIVEZ-NOUS</h4>
+        <div class="social-links">
+            <a href="#">FB</a>
+            <a href="#">X</a>
+            <a href="#">IG</a>
+            <a href="#">YT</a>
+        </div>
+    </div>
+</div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
+            <div class="bottom-legal">
+                <a href="#">Mentions Légales</a>
+                <a href="#">Confidentialité</a>
+                <a href="#">CGU</a>
+            </div>
+        </div>
+    </div>
+</footer>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // --- CONFIGURATION SUPABASE ---
+        // --- CONFIGURATION ---
         const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; // <--- COLLE TA CLÉ ICI
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Récupération de l'ID dans l'URL (?id=...)
         const params = new URLSearchParams(window.location.search);
         const articleId = params.get('id');
 
+        // --- GESTION DE LA DATE ---
+        function updateDate() {
+            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+            const liveDate = document.getElementById('live-date');
+            if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+        }
+        updateDate();
+
+        // --- CHARGEMENT DE L'ARTICLE ---
         async function loadArticle() {
+            const display = document.getElementById('full-article');
+
             if (!articleId) {
-                document.getElementById('full-article').innerHTML = "Aucun article sélectionné.";
+                display.innerHTML = "<p>Erreur : Aucun article sélectionné.</p>";
                 return;
             }
 
             try {
-                // Requête Supabase : cherche l'article dont l'ID correspond
                 const { data: art, error } = await supabaseClient
                     .from('articles')
                     .select('*')
                     .eq('id', articleId)
                     .single();
 
-                if (error || !art) {
-                    console.error("Erreur:", error);
-                    throw new Error("Article introuvable");
-                }
+                if (error || !art) throw new Error("Article introuvable");
 
-                // Affichage avec tes classes CSS d'origine
-                // Note : On utilise 'image_url' (Supabase) et non le système de fichiers PB
-                document.getElementById('full-article').innerHTML = `
+                display.innerHTML = `
                     <header class="article-header">
                         <div class="article-meta">
                             Publié par la Rédaction MAKMUS — ${new Date(art.created_at).toLocaleDateString('fr-FR')}
@@ -76,7 +226,12 @@
 
             } catch (e) {
                 console.error(e);
-                document.getElementById('full-article').innerHTML = "Erreur lors du chargement de l'article. Vérifiez la connexion ou le RLS.";
+                display.innerHTML = `
+                    <div style="text-align:center; padding: 40px;">
+                        <h2>Article introuvable</h2>
+                        <p>Il se peut que cet article n'existe plus.</p>
+                        <a href="index.html">Retourner à l'accueil</a>
+                    </div>`;
             }
         }
 
