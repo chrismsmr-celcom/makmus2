@@ -7,234 +7,101 @@
     <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7567982675325882" crossorigin="anonymous"></script>
+    <meta name="google-adsense-account" content="ca-pub-7567982675325882">
     <style>
-        /* Styles spécifiques pour la lecture de l'article */
-        .article-container { max-width: 850px; margin: 30px auto; padding: 20px; background: #fff; }
-        .article-header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid #ddd; padding-bottom: 20px; }
-        .article-header h1 { font-family: 'Libre Baskerville', serif; font-size: 3rem; line-height: 1.1; margin: 20px 0; }
-        .article-meta { text-transform: uppercase; font-weight: bold; font-size: 0.8rem; color: #555; letter-spacing: 1px; }
-        .article-full-img img { width: 100%; height: auto; margin-bottom: 30px; }
-        .article-content { font-family: 'Libre Baskerville', serif; font-size: 1.25rem; line-height: 1.8; color: #1a1a1a; }
-        .article-content p { margin-bottom: 1.5rem; }
-        .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #000; font-weight: bold; border-bottom: 2px solid #000; }
-        #loader { text-align: center; padding: 100px; font-family: serif; font-style: italic; font-size: 1.5rem; }
-        .article-content table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-}
-.article-content td, .article-content th {
-    border: 1px solid #ccc;
-    padding: 10px;
-}
-        /* Section Recommandations */
-.recommendations {
-    max-width: 850px;
-    margin: 60px auto;
-    padding: 20px;
-    border-top: 3px double #000;
-}
-.recommendations h3 {
-    font-family: 'Playfair Display', serif;
-    text-transform: uppercase;
-    text-align: center;
-    letter-spacing: 2px;
-    margin-bottom: 30px;
-}
-.rec-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 20px;
-}
-.rec-card {
-    text-decoration: none;
-    color: #000;
-    transition: 0.3s;
-}
-.rec-card:hover { opacity: 0.7; }
-.rec-card img {
-    width: 100%;
-    height: 150px;
-    object-fit: cover;
-    margin-bottom: 10px;
-    border: 1px solid #eee;
-}
-.rec-card h4 {
-    font-family: 'Libre Baskerville', serif;
-    font-size: 1rem;
-    line-height: 1.3;
-    margin: 0;
-}
+        /* Style pour les recommandations en bas d'article */
+        .recommendations { max-width: 850px; margin: 60px auto; padding: 20px; border-top: 3px double #000; }
+        .recommendations h3 { font-family: 'Libre Baskerville', serif; text-transform: uppercase; text-align: center; margin-bottom: 30px; }
+        .rec-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .rec-card { text-decoration: none; color: #000; transition: 0.3s; font-size: 0.9rem; }
+        .rec-card img { width: 100%; height: 130px; object-fit: cover; margin-bottom: 10px; border: 1px solid #eee; }
+        .rec-card h4 { margin: 0; line-height: 1.2; }
+        .rec-card:hover { opacity: 0.7; }
     </style>
 </head>
 <body>
 
-   <div class="full-menu" id="fullMenu">
-        <div class="menu-header">
-            <div class="menu-logo">MAKMUS</div>
-            <span class="close-menu" id="closeMenu">&times; FERMER</span>
+<div class="full-menu" id="fullMenu">
+    <div class="menu-header">
+        <div class="menu-logo">MAKMUS</div>
+        <span class="close-menu" id="closeMenu">&times; FERMER</span>
+    </div>
+    <div class="menu-content">
+        <div class="menu-search">
+            <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
+            <button onclick="alert('Recherche bientôt disponible')">OK</button>
         </div>
-        <div class="menu-content">
-            <div class="menu-search">
-                <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
-                <button onclick="executeMenuSearch()">OK</button>
+        <div class="menu-grid">
+            <div class="menu-section">
+                <h3>ACTUALITÉS</h3>
+                <ul>
+                    <li><a href="index.html">À la une</a></li>
+                    <li><a href="index.html">RDC</a></li>
+                    <li><a href="index.html">Politique</a></li>
+                </ul>
             </div>
-            <div class="menu-grid">
-                <div class="menu-section">
-                    <h3>ACTUALITÉS</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-                        <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
-                        <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
-                        <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
-                    </ul>
-                </div>
-                <div class="menu-section">
-                    <h3>ÉCONOMIE & TECH</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
-                        <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
-                        <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'crypto'); return false;">Crypto-monnaie</a></li>
-                    </ul>
-                </div>
-                <div class="menu-section">
-                    <h3>LOISIRS & SOCIÉTÉ</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
-                        <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
-                        <li><a href="#" onclick="fetchAllContent('health'); return false;">Santé</a></li>
-                        <li><a href="#" onclick="fetchAllContent('lifestyle'); return false;">Style de vie / Food</a></li>
-                        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">Voyages</a></li>
-                        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
-                    </ul>
-                </div>
+            <div class="menu-section">
+                <h3>SERVICES</h3>
+                <ul>
+                    <li><a href="jeux.html">Jeux & Puzzles</a></li>
+                    <li><a href="#">Abonnements</a></li>
+                </ul>
             </div>
-        </div>
-    </div>
-
-    <div class="top-bar">
-        <div class="top-bar-content">
-            <div id="live-date">---</div>
-            <div class="auth-section"><button id="openModal">MON COMPTE</button></div>
-        </div>
-    </div>
-
-    <header class="main-header">
-        <div class="header-left">
-            <div class="menu-toggle" id="btnOpenMenu">
-                <span></span><span></span><span></span>
-                <span class="menu-label">SECTIONS</span>
-            </div>
-        </div>
-        <div class="logo-container">
-            <a href="index.html">
-                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-            </a>
-        </div>
-        <div class="header-right-spacer">
-            <button class="btn-subscribe">S'ABONNER</button>
-        </div>
-    </header>
-
-    <nav class="nav-compact" id="navMenu">
-        <ul>
-            <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-            <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-            <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
-            <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-        </ul>
-    </nav>
-
-    <main class="newspaper-body">
-        <div id="status-line" class="status-line">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
-        <section id="hero-zone"></section>
-        <hr class="double-hr">
-        <div class="news-grid" id="news-grid"></div>
-    </main>
-
-    <div class="modal" id="modalAccount">
-        <div class="modal-box">
-            <span class="close-btn" id="closeModal">&times;</span>
-            <div class="modal-header">MAKMUS</div>
-            <p>Accès réservé aux abonnés.</p>
-            <input type="email" placeholder="Email">
-            <input type="password" placeholder="Mot de passe">
-            <button class="btn-submit">SE CONNECTER</button>
-        </div>
-    </div>
-    <section class="recommendations">
-    <h3>À lire aussi</h3>
-    <div class="rec-grid" id="recommendations-grid">
-        </div>
-     </section>
-    <footer class="nyt-footer">
-    <div class="footer-container">
-        <div class="footer-brand">
-            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-            <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
-        </div>
-
-       <div class="footer-links-grid">
-    <div class="footer-col">
-        <h4>SECTIONS</h4>
-        <ul>
-        <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
-        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-        </ul>
-    </div>
-    <div class="footer-col">
-        <h4>AIDE</h4>
-        <ul>
-            <li><a href="#">Abonnements</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Publicité</a></li>
-            <li><a href="#">Emploi</a></li>
-            <li><a href="#">Makmus magazine</a></li>
-            <li><a href="#">Makila Emmanuel Heritage </a></li>
-            <li><a href="#">Météo </a></li>
-            <li><a href="#">Makem screen Studio</a></li>
-        </ul>
-    </div>
-    <div class="footer-col">
-        <h4>SUIVEZ-NOUS</h4>
-        <div class="social-links">
-            <a href="#">FB</a>
-            <a href="#">X</a>
-            <a href="#">IG</a>
-            <a href="#">YT</a>
         </div>
     </div>
 </div>
 
+<div class="top-bar">
+    <div class="top-bar-content">
+        <div id="live-date">---</div>
+        <div class="auth-section"><button id="openModal">MON COMPTE</button></div>
+    </div>
+</div>
+
+<header class="main-header">
+    <div class="header-left">
+        <div class="menu-toggle" id="btnOpenMenu">
+            <span></span><span></span><span></span>
+            <span class="menu-label">SECTIONS</span>
+        </div>
+    </div>
+    <div class="logo-container">
+        <a href="index.html">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+        </a>
+    </div>
+    <div class="header-right-spacer">
+        <button class="btn-subscribe">S'ABONNER</button>
+    </div>
+</header>
+
+<main class="newspaper-body">
+    <div id="full-article">
+        <p style="text-align:center; padding:50px;">Chargement de l'analyse...</p>
+    </div>
+
+    <section class="recommendations">
+        <h3>À lire aussi</h3>
+        <div class="rec-grid" id="recommendations-grid"></div>
+    </section>
+</main>
+
+<footer class="nyt-footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            <p>La vérité pour mémoire. L'excellence du journalisme en RDC.</p>
+        </div>
         <div class="footer-bottom">
             <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
-            <div class="bottom-legal">
-                <a href="#">Mentions Légales</a>
-                <a href="#">Confidentialité</a>
-                <a href="#">CGU</a>
-            </div>
         </div>
     </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
- <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-    <script>
+<script>
     // --- 1. CONFIGURATION ---
     const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; 
@@ -243,22 +110,13 @@
     const params = new URLSearchParams(window.location.search);
     const articleId = params.get('id');
 
-    // --- 2. GESTION DU MENU (Ouverture/Fermeture) ---
+    // --- 2. GESTION DU MENU ---
     const btnOpenMenu = document.getElementById('btnOpenMenu');
     const btnCloseMenu = document.getElementById('closeMenu');
     const fullMenu = document.getElementById('fullMenu');
 
-    if (btnOpenMenu) {
-        btnOpenMenu.onclick = () => fullMenu.classList.add('open');
-    }
-    if (btnCloseMenu) {
-        btnCloseMenu.onclick = () => fullMenu.classList.remove('open');
-    }
-
-    // Fermer le menu si on clique sur un lien
-    document.querySelectorAll('.menu-content a').forEach(link => {
-        link.onclick = () => fullMenu.classList.remove('open');
-    });
+    if (btnOpenMenu) btnOpenMenu.onclick = () => fullMenu.classList.add('open');
+    if (btnCloseMenu) btnCloseMenu.onclick = () => fullMenu.classList.remove('open');
 
     // --- 3. GESTION DE LA DATE ---
     function updateDate() {
@@ -268,30 +126,27 @@
     }
     updateDate();
 
-    // --- 4. CHARGEMENT DES RECOMMANDATIONS (À lire aussi) ---
+    // --- 4. CHARGEMENT DES SUGGESTIONS ---
     async function loadRecommendations(excludeId) {
         const recGrid = document.getElementById('recommendations-grid');
         if (!recGrid) return;
-
         try {
             const { data: recs, error } = await supabaseClient
                 .from('articles')
                 .select('id, titre, image_url')
-                .neq('id', excludeId) // Ne pas suggérer l'article actuel
+                .neq('id', excludeId)
                 .limit(3)
                 .order('created_at', { ascending: false });
 
-            if (error || !recs) return;
-
-            recGrid.innerHTML = recs.map(post => `
-                <a href="redaction.html?id=${post.id}" class="rec-card">
-                    ${post.image_url ? `<img src="${post.image_url}" alt="${post.titre}">` : '<div style="height:150px; background:#eee;"></div>'}
-                    <h4>${post.titre}</h4>
-                </a>
-            `).join('');
-        } catch (e) {
-            console.error("Erreur reco:", e);
-        }
+            if (!error && recs) {
+                recGrid.innerHTML = recs.map(post => `
+                    <a href="redaction.html?id=${post.id}" class="rec-card">
+                        ${post.image_url ? `<img src="${post.image_url}" alt="${post.titre}">` : '<div style="height:130px; background:#eee;"></div>'}
+                        <h4>${post.titre}</h4>
+                    </a>
+                `).join('');
+            }
+        } catch (e) { console.error(e); }
     }
 
     // --- 5. CHARGEMENT DE L'ARTICLE ---
@@ -299,7 +154,7 @@
         const display = document.getElementById('full-article');
 
         if (!articleId) {
-            display.innerHTML = "<p style='text-align:center; padding:50px;'>Erreur : Aucun article sélectionné.</p>";
+            display.innerHTML = "<div style='text-align:center; padding:50px;'><h2>Erreur</h2><p>Aucun article sélectionné.</p><a href='index.html'>Retour à l'accueil</a></div>";
             return;
         }
 
@@ -329,18 +184,11 @@
             `;
             
             document.title = `${art.titre} - MAKMUS`;
-
-            // Charger les recommandations après avoir affiché l'article
             loadRecommendations(articleId);
 
         } catch (e) {
             console.error(e);
-            display.innerHTML = `
-                <div style="text-align:center; padding: 40px;">
-                    <h2>Article introuvable</h2>
-                    <p>Ce contenu a peut-être été archivé ou supprimé.</p>
-                    <a href="index.html" style="font-weight:bold; color:black; text-decoration:underline;">Retourner à l'accueil</a>
-                </div>`;
+            display.innerHTML = "<div style='text-align:center; padding:50px;'><h2>Article introuvable</h2><a href='index.html'>Retour</a></div>";
         }
     }
 
