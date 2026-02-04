@@ -142,43 +142,30 @@
 
     <nav class="nav-compact" id="navMenu">
         <ul>
-            <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-            <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-            <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
-            <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+            <li><a href="index.html" class="active">À LA UNE</a></li>
+            <li><a href="index.html">RDC</a></li>
+            <li><a href="index.html">POLITIQUE</a></li>
+            <li><a href="index.html">ÉCONOMIE</a></li>
+            <li><a href="index.html">SPORT</a></li>
+            <li><a href="index.html">SANTÉ</a></li>
+            <li><a href="index.html">TECH</a></li>
+            <li><a href="index.html">CLIMAT</a></li>
             <li><a href="jeux.html" class="nav-red">JEUX</a></li>
         </ul>
     </nav>
 
-    <main class="newspaper-body">
+    <main class="newspaper-body" id="full-article">
         <div id="status-line" class="status-line">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
-        <section id="hero-zone"></section>
-        <hr class="double-hr">
-        <div class="news-grid" id="news-grid"></div>
+        <p style="text-align:center; padding: 50px;">Chargement de l'article...</p>
     </main>
 
-    <div class="modal" id="modalAccount">
-        <div class="modal-box">
-            <span class="close-btn" id="closeModal">&times;</span>
-            <div class="modal-header">MAKMUS</div>
-            <p>Accès réservé aux abonnés.</p>
-            <input type="email" placeholder="Email">
-            <input type="password" placeholder="Mot de passe">
-            <button class="btn-submit">SE CONNECTER</button>
-        </div>
-    </div>
     <footer class="nyt-footer">
     <div class="footer-container">
         <div class="footer-brand">
             <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
             <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
         </div>
-
-       <div class="footer-links-grid">
+        <div class="footer-links-grid">
     <div class="footer-col">
         <h4>SECTIONS</h4>
         <ul>
