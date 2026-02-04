@@ -162,22 +162,52 @@
     </div>
 </footer>
     <script>
-    // --- CONFIGURATION DES URLS ---
-    // On utilise la même base car les deux services tournent sur le même domaine Render
-    const BASE_URL = "https://makmus2-backend-api.onrender.com";
+    // --- CONFIGURATION DYNAMIQUE ---
+    // Utilise l'URL actuelle pour PocketBase et le Proxy News
+    const BASE_URL = window.location.origin; 
     const PB_URL = BASE_URL; 
-    
-    // Ton proxy NewsAPI (Node.js) tourne sur le même serveur
     const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
-    
     const CACHE_DURATION = 60 * 60 * 1000; // 1 heure
 
-    // --- GESTION DU MENU ---
+    // --- GESTION DU MENU (Inchangé) ---
     const btnOpenMenu = document.getElementById('btnOpenMenu');
     const btnCloseMenu = document.getElementById('closeMenu');
     const fullMenu = document.getElementById('fullMenu');
-    btnOpenMenu.onclick = () => { fullMenu.classList.add('open'); document.body.style.overflow = 'hidden'; };
-    btnCloseMenu.onclick = () => { fullMenu.classList.remove('open'); document.body.style.overflow = 'auto'; };
+    
+    btnOpenMenu.onclick = () => { 
+        fullMenu.classList.add('open'); 
+        document.body.style.overflow = 'hidden'; 
+    };
+    
+    btnCloseMenu.onclick = () => { 
+        fullMenu.classList.remove('open'); 
+        document.body.style.overflow = 'auto'; 
+    };
+
+    // --- RECHERCHE DEPUIS LE MENU ---
+    window.executeMenuSearch = function() {
+        const query = document.getElementById('menuSearchInput').value;
+        if(query) {
+            fetchAllContent('top', query);
+            fullMenu.classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    // --- GESTION DE LA DATE ---
+    function updateDate() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const liveDate = document.getElementById('live-date');
+        if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+    }
+    updateDate();
+
+    // --- MODAL COMPTE ---
+    const modal = document.getElementById('modalAccount');
+    const openBtn = document.getElementById('openModal');
+    const closeBtn = document.getElementById('closeModal');
+    if(openBtn) openBtn.onclick = () => modal.style.display = 'flex';
+    if(closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
 
     // --- LOGIQUE DE RÉCUPÉRATION AVEC CACHE ---
     async function fetchAllContent(category = 'top', query = '') {
@@ -187,7 +217,7 @@
         const cacheTimestamp = localStorage.getItem(cacheKey + '_time');
         const now = new Date().getTime();
 
-        // 1. VERIFIER LE CACHE
+        // 1. Vérification du cache
         if (cachedData && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
             console.log("Chargement depuis le cache local");
             renderAll(JSON.parse(cachedData), query);
@@ -195,14 +225,14 @@
         }
 
         try {
-            console.log("Appel des APIs (Mise à jour des données)");
+            console.log("Appel des APIs (Données fraîches)");
             
-            // A. POCKETBASE (Tes articles persos)
+            // A. POCKETBASE (Tes articles)
             let pbFilter = query ? `&filter=(titre~'${query}' || description~'${query}')` : "";
             const pbRes = await fetch(`${PB_URL}/api/collections/articles/records?sort=-created${pbFilter}`);
             const pbData = await pbRes.json();
 
-            // B. NEWAPI (Les news mondiales via ton server.js)
+            // B. NEWAPI (Via ton server.js)
             let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
             if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
             const newsRes = await fetch(newsUrl);
@@ -213,15 +243,15 @@
                 worldNews: newsData.results || []
             };
 
-            // SAUVEGARDER
+            // Sauvegarde en cache
             localStorage.setItem(cacheKey, JSON.stringify(combinedData));
             localStorage.setItem(cacheKey + '_time', now.toString());
 
             renderAll(combinedData, query);
 
         } catch (e) { 
-            console.error("Erreur de récupération:", e);
-            status.textContent = "ERREUR DE CONNEXION AU SERVEUR.";
+            console.error("Erreur:", e);
+            if(status) status.textContent = "ERREUR DE CONNEXION AU SERVEUR.";
         }
     }
 
@@ -233,11 +263,11 @@
         const { myArticles, worldNews } = data;
 
         if (myArticles.length === 0 && worldNews.length === 0) {
-            status.textContent = "AUCUNE ACTUALITÉ POUR LE MOMENT.";
+            if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
             return;
         }
 
-        // AFFICHAGE DU HERO (Priorité à tes articles PocketBase)
+        // 1. Gestion du HERO (Priorité PocketBase)
         if (myArticles.length > 0) {
             const h = myArticles[0];
             const img = h.image ? `${PB_URL}/api/files/${h.collectionId}/${h.id}/${h.image}` : '';
@@ -247,7 +277,7 @@
             renderHeroMarkup(h.title, h.description, h.image_url, h.link);
         }
 
-        // AFFICHAGE DE LA GRILLE (Mélange)
+        // 2. Gestion de la GRILLE
         const remainingMy = myArticles.slice(1);
         const combined = [...remainingMy, ...worldNews];
 
@@ -257,30 +287,30 @@
             const link = art.link || "#";
             let img = art.image_url || "";
             
-            // Formatage image si PocketBase
-            if (art.collectionId) {
+            if (art.collectionId) { // Si c'est un article PocketBase
                 img = art.image ? `${PB_URL}/api/files/${art.collectionId}/${art.id}/${art.image}` : '';
             }
             
             return `
                 <div class="article-card" onclick="window.open('${link}', '_blank')">
-                    ${img ? `<div class="card-img-wrapper"><img src="${img}"></div>` : ''}
-                    <div class="card-content">
-                        <h3>${title}</h3>
-                        <p class="card-desc">${desc.substring(0, 90)}...</p>
-                    </div>
+                    ${img ? `<img src="${img}">` : ''}
+                    <h3>${title}</h3>
+                    <p class="card-desc">${desc.substring(0, 90)}...</p>
                 </div>`;
         }).join('');
 
-        status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ACTUALITÉS MISES À JOUR`;
+        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ACTUALITÉS MISES À JOUR`;
     }
 
+    // --- GÉNÉRATION DU HERO (Inchangé) ---
     function renderHeroMarkup(title, desc, img, link) {
-        document.getElementById('hero-zone').innerHTML = `
+        const heroZone = document.getElementById('hero-zone');
+        if(!heroZone) return;
+        heroZone.innerHTML = `
             <div class="hero-container" onclick="window.open('${link}', '_blank')">
                 <div class="hero-text">
                     <h1>${title}</h1>
-                    <p>${desc ? desc.substring(0, 220) + '...' : ''}</p>
+                    <p>${desc ? desc.substring(0, 250) + '...' : ''}</p>
                     <button class="btn-read-more">LIRE LA SUITE →</button>
                 </div>
                 ${img ? `<div class="hero-img"><img src="${img}"></div>` : ''}
@@ -292,6 +322,7 @@
 </body>
 
 </html>
+
 
 
 
