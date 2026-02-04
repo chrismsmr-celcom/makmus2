@@ -162,85 +162,129 @@
     </div>
 </footer>
     <script>
-        const STRAPI_URL = "http://localhost:1337";
+    const PB_URL = "https://makmus-backend.onrender.com";
+    const NEWAPI_PROXY = "https://ton-lien-newapi.onrender.com/api/news"; // Mets ton vrai lien ici
+    const CACHE_DURATION = 60 * 60 * 1000; // 1 heure en millisecondes
 
-        // --- GESTION DU MENU OVERLAY ---
-        const btnOpenMenu = document.getElementById('btnOpenMenu');
-        const btnCloseMenu = document.getElementById('closeMenu');
-        const fullMenu = document.getElementById('fullMenu');
+    // --- GESTION DU MENU ---
+    const btnOpenMenu = document.getElementById('btnOpenMenu');
+    const btnCloseMenu = document.getElementById('closeMenu');
+    const fullMenu = document.getElementById('fullMenu');
+    btnOpenMenu.onclick = () => { fullMenu.classList.add('open'); document.body.style.overflow = 'hidden'; };
+    btnCloseMenu.onclick = () => { fullMenu.classList.remove('open'); document.body.style.overflow = 'auto'; };
 
-        btnOpenMenu.onclick = () => {
-            fullMenu.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        };
+    // --- LOGIQUE DE RÉCUPÉRATION AVEC CACHE ---
+    async function fetchAllContent(category = 'top', query = '') {
+        const hero = document.getElementById('hero-zone');
+        const grid = document.getElementById('news-grid');
+        const status = document.getElementById('status-line');
+        
+        // Identifiant unique pour le cache (ex: news_top)
+        const cacheKey = `news_${category}_${query}`;
+        const cachedData = localStorage.getItem(cacheKey);
+        const cacheTimestamp = localStorage.getItem(cacheKey + '_time');
 
-        btnCloseMenu.onclick = () => {
-            fullMenu.classList.remove('open');
-            document.body.style.overflow = 'auto';
-        };
+        const now = new Date().getTime();
 
-        window.executeMenuSearch = function() {
-            const query = document.getElementById('menuSearchInput').value;
-            if(query) {
-                fetchNews('top', query);
-                fullMenu.classList.remove('open');
-                document.body.style.overflow = 'auto';
+        // 1. VERIFIER LE CACHE (Si moins d'une heure et qu'on a des données)
+        if (cachedData && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
+            console.log("Chargement depuis le cache (Economie d'API)");
+            renderAll(JSON.parse(cachedData), query);
+            return;
+        }
+
+        try {
+            console.log("Appel des APIs (Données fraîches)");
+            // A. POCKETBASE (Tes articles)
+            let pbFilter = query ? `&filter=(titre~'${query}' || description~'${query}')` : "";
+            const pbRes = await fetch(`${PB_URL}/api/collections/articles/records?sort=-created${pbFilter}`);
+            const pbData = await pbRes.json();
+
+            // B. NEWAPI (News mondiales)
+            let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
+            if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
+            const newsRes = await fetch(newsUrl);
+            const newsData = await newsRes.json();
+
+            const combinedData = {
+                myArticles: pbData.items || [],
+                worldNews: newsData.results || []
+            };
+
+            // SAUVEGARDER DANS LE CACHE
+            localStorage.setItem(cacheKey, JSON.stringify(combinedData));
+            localStorage.setItem(cacheKey + '_time', now.toString());
+
+            renderAll(combinedData, query);
+
+        } catch (e) { 
+            console.error("Erreur:", e);
+            status.textContent = "ERREUR DE CONNEXION.";
+        }
+    }
+
+    // --- FONCTION D'AFFICHAGE (Sépare la logique du rendu) ---
+    function renderAll(data, query) {
+        const hero = document.getElementById('hero-zone');
+        const grid = document.getElementById('news-grid');
+        const status = document.getElementById('status-line');
+        
+        const { myArticles, worldNews } = data;
+
+        if (myArticles.length === 0 && worldNews.length === 0) {
+            status.textContent = "AUCUNE INFO DISPONIBLE.";
+            return;
+        }
+
+        // Affichage du HERO
+        if (myArticles.length > 0) {
+            const h = myArticles[0];
+            const img = h.image ? `${PB_URL}/api/files/${h.collectionId}/${h.id}/${h.image}` : '';
+            renderHeroMarkup(h.titre, h.description, img, '#'); 
+        } else {
+            const h = worldNews[0];
+            renderHeroMarkup(h.title, h.description, h.image_url, h.link);
+        }
+
+        // Affichage de la GRILLE
+        const remainingMy = myArticles.slice(1);
+        const combined = [...remainingMy, ...worldNews];
+
+        grid.innerHTML = combined.slice(0, 12).map(art => {
+            const title = art.titre || art.title;
+            const desc = art.description || "";
+            const link = art.link || "#";
+            let img = art.image_url || "";
+            if (art.collectionId) {
+                img = art.image ? `${PB_URL}/api/files/${art.collectionId}/${art.id}/${art.image}` : '';
             }
-        }
+            return `
+                <div class="article-card" onclick="window.open('${link}', '_blank')">
+                    ${img ? `<img src="${img}">` : ''}
+                    <h3>${title}</h3>
+                    <p class="card-desc">${desc.substring(0, 90)}...</p>
+                </div>`;
+        }).join('');
 
-        // --- RESTE DU SCRIPT ---
-        function updateDate() {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('live-date').textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
-        }
-        updateDate();
+        status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ACTUALITÉS MISES À JOUR`;
+    }
 
-        const modal = document.getElementById('modalAccount');
-        document.getElementById('openModal').onclick = () => modal.style.display = 'flex';
-        document.getElementById('closeModal').onclick = () => modal.style.display = 'none';
+    function renderHeroMarkup(title, desc, img, link) {
+        document.getElementById('hero-zone').innerHTML = `
+            <div class="hero-container" onclick="window.open('${link}', '_blank')">
+                <div class="hero-text">
+                    <h1>${title}</h1>
+                    <p>${desc ? desc.substring(0, 250) + '...' : ''}</p>
+                    <button class="btn-read-more">LIRE LA SUITE →</button>
+                </div>
+                ${img ? `<div class="hero-img"><img src="${img}"></div>` : ''}
+            </div>`;
+    }
 
-        async function fetchNews(category, query = '') {
-            const hero = document.getElementById('hero-zone');
-            const grid = document.getElementById('news-grid');
-            const status = document.getElementById('status-line');
-            
-            try {
-                let url = `/api/news?category=${category}`;
-                if(query) url += `&q=${encodeURIComponent(query)}`;
-                const res = await fetch(url);
-                const data = await res.json();
-                const articles = data.results || [];
-
-                if (articles.length === 0) {
-                    status.textContent = "AUCUNE DÉPÊCHE TROUVÉE.";
-                    return;
-                }
-
-                const h = articles[0];
-                hero.innerHTML = `
-                    <div class="hero-container" onclick="window.open('${h.link}', '_blank')">
-                        <div class="hero-text">
-                            <h1>${h.title}</h1>
-                            <p>${h.description ? h.description.substring(0, 250) + '...' : ''}</p>
-                            <button class="btn-read-more">LIRE LA SUITE →</button>
-                        </div>
-                        ${h.image_url ? `<div class="hero-img"><img src="${h.image_url}"></div>` : ''}
-                    </div>`;
-
-                grid.innerHTML = articles.slice(1, 13).map(art => `
-                    <div class="article-card" onclick="window.open('${art.link}', '_blank')">
-                        ${art.image_url ? `<img src="${art.image_url}">` : ''}
-                        <h3>${art.title}</h3>
-                        <p class="card-desc">${art.description ? art.description.substring(0, 90) + '...' : ''}</p>
-                        <span class="small-link">En savoir plus</span>
-                    </div>`).join('');
-
-                status.textContent = query ? `RÉSULTATS POUR : ${query.toUpperCase()}` : `RUBRIQUE : ${category.toUpperCase()}`;
-            } catch (e) { console.error(e); }
-        }
-        window.onload = () => fetchNews('top');
-    </script>
+    window.onload = () => fetchAllContent('top');
+</script>
 </body>
 
 </html>
+
 
