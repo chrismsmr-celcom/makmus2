@@ -27,24 +27,27 @@
                 <div class="menu-section">
                     <h3>ACTUALITÉS</h3>
                     <ul>
-                        <li><a href="#" onclick="fetchNews('top')">À la une</a></li>
-                        <li><a href="#" onclick="fetchNews('top', 'RDC Congo')">RDC</a></li>
-                        <li><a href="#" onclick="fetchNews('politics')">Politique</a></li>
-                        <li><a href="#" onclick="fetchNews('world')">International</a></li>
+                        <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
+                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+                        <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
+                        <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
                     </ul>
                 </div>
                 <div class="menu-section">
                     <h3>ÉCONOMIE & TECH</h3>
                     <ul>
-                        <li><a href="#" onclick="fetchNews('business')">Business</a></li>
-                        <li><a href="#" onclick="fetchNews('technology')">Technologies</a></li>
-                        <li><a href="#" onclick="fetchNews('science')">Sciences</a></li>
+                        <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
+                        <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
+                        <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
                     </ul>
                 </div>
                 <div class="menu-section">
                     <h3>LOISIRS</h3>
                     <ul>
-                        <li><a href="#" onclick="fetchNews('sports')">Sports</a></li>
+                        <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
+                        <li><a href="#" onclick="fetchAllContent('culture'); return false;">Culture</a></li>
+                        <li><a href="#" onclick="fetchAllContent('music'); return false;">Musique</a></li>
+                        <li><a href="#" onclick="fetchAllContent('cooking'); return false;">Cuisine</a></li>
                         <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
                     </ul>
                 </div>
@@ -78,13 +81,13 @@
 
     <nav class="nav-compact" id="navMenu">
         <ul>
-            <li><a href="#" class="active" onclick="fetchNews('top')">À LA UNE</a></li>
-            <li><a href="#" onclick="fetchNews('top', 'RDC Congo')">RDC</a></li>
-            <li><a href="#" onclick="fetchNews('politics')">POLITIQUE</a></li>
-            <li><a href="#" onclick="fetchNews('business')">ÉCONOMIE</a></li>
-            <li><a href="#" onclick="fetchNews('sports')">SPORT</a></li>
-            <li><a href="#" onclick="fetchNews('technology')">TECH</a></li>
-            <li><a href="#" onclick="fetchNews('science')">SCIENCE</a></li>
+            <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+            <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
+            <li><a href="#" onclick="fetchAllContent('science'); return false;">SCIENCE</a></li>
             <li><a href="jeux.html" class="nav-red">JEUX</a></li>
         </ul>
     </nav>
@@ -113,43 +116,43 @@
             <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
         </div>
 
-        <div class="footer-links-grid">
-            <div class="footer-col">
-                <h4>SECTIONS</h4>
-                <ul>
-            <li><a href="#" class="active" onclick="fetchNews('top')">À LA UNE</a></li>
-            <li><a href="#" onclick="fetchNews('top', 'RDC Congo')">RDC</a></li>
-            <li><a href="#" onclick="fetchNews('politics')">POLITIQUE</a></li>
-            <li><a href="#" onclick="fetchNews('business')">ÉCONOMIE</a></li>
-            <li><a href="#" onclick="fetchNews('sports')">SPORT</a></li>
-            <li><a href="#" onclick="fetchNews('technology')">TECH</a></li>
-            <li><a href="#" onclick="fetchNews('science')">SCIENCE</a></li>
+       <div class="footer-links-grid">
+    <div class="footer-col">
+        <h4>SECTIONS</h4>
+        <ul>
+            <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+            <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
+            <li><a href="#" onclick="fetchAllContent('science'); return false;">SCIENCE</a></li>
             <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>AIDE</h4>
-                <ul>
-                    <li><a href="#">Abonnements</a></li>
-                    <li><a href="#">Contact</a></li>
-                    <li><a href="#">Publicité</a></li>
-                    <li><a href="#">Emploi</a></li>
-                    <li><a href="#">Makmus magazine</a></li>
-                    <li><a href="#">Makila Emmanuel Heritage </a></li>
-                    <li><a href="#">Météo </a></li>
-                    <li><a href="#">Makem screen Studio</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>SUIVEZ-NOUS</h4>
-                <div class="social-links">
-                    <a href="#">FB</a>
-                    <a href="#">X</a>
-                    <a href="#">IG</a>
-                    <a href="#">YT</a>
-                </div>
-            </div>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>AIDE</h4>
+        <ul>
+            <li><a href="#">Abonnements</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Publicité</a></li>
+            <li><a href="#">Emploi</a></li>
+            <li><a href="#">Makmus magazine</a></li>
+            <li><a href="#">Makila Emmanuel Heritage </a></li>
+            <li><a href="#">Météo </a></li>
+            <li><a href="#">Makem screen Studio</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>SUIVEZ-NOUS</h4>
+        <div class="social-links">
+            <a href="#">FB</a>
+            <a href="#">X</a>
+            <a href="#">IG</a>
+            <a href="#">YT</a>
         </div>
+    </div>
+</div>
 
         <div class="footer-bottom">
             <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
@@ -161,19 +164,14 @@
         </div>
     </div>
 </footer>
-    <script>
+   <script>
     // --- CONFIGURATION DYNAMIQUE ---
     const BASE_URL = window.location.origin; 
-    
-    // PocketBase passe maintenant par le proxy Node pour éviter les conflits de port
     const PB_URL = `${BASE_URL}/pb`; 
-    
-    // Ton API News via server.js
     const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
-    
-    const CACHE_DURATION = 60 * 60 * 1000; // 1 heure
+    const CACHE_DURATION = 60 * 60 * 1000; 
 
-    // --- GESTION DU MENU (Inchangé) ---
+    // --- GESTION DU MENU ---
     const btnOpenMenu = document.getElementById('btnOpenMenu');
     const btnCloseMenu = document.getElementById('closeMenu');
     const fullMenu = document.getElementById('fullMenu');
@@ -188,17 +186,24 @@
         document.body.style.overflow = 'auto'; 
     };
 
-    // --- RECHERCHE DEPUIS LE MENU (Inchangé) ---
+    // --- RECHERCHE DEPUIS LE MENU ---
     window.executeMenuSearch = function() {
         const query = document.getElementById('menuSearchInput').value;
         if(query) {
             fetchAllContent('top', query);
+            closeMenuUI(); // Ferme le menu après recherche
+        }
+    }
+
+    // Petite fonction utilitaire pour fermer le menu proprement
+    function closeMenuUI() {
+        if(fullMenu.classList.contains('open')) {
             fullMenu.classList.remove('open');
             document.body.style.overflow = 'auto';
         }
     }
 
-    // --- GESTION DE LA DATE (Inchangé) ---
+    // --- GESTION DE LA DATE ---
     function updateDate() {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const liveDate = document.getElementById('live-date');
@@ -206,37 +211,31 @@
     }
     updateDate();
 
-    // --- MODAL COMPTE (Inchangé) ---
-    const modal = document.getElementById('modalAccount');
-    const openBtn = document.getElementById('openModal');
-    const closeBtn = document.getElementById('closeModal');
-    if(openBtn) openBtn.onclick = () => modal.style.display = 'flex';
-    if(closeBtn) closeBtn.onclick = () => modal.style.display = 'none';
-
-    // --- LOGIQUE DE RÉCUPÉRATION AVEC CACHE ---
+    // --- LOGIQUE DE RÉCUPÉRATION ---
     async function fetchAllContent(category = 'top', query = '') {
+        // On ferme le menu si l'utilisateur a cliqué sur une catégorie
+        closeMenuUI();
+
         const status = document.getElementById('status-line');
         const cacheKey = `news_${category}_${query}`;
         const cachedData = localStorage.getItem(cacheKey);
         const cacheTimestamp = localStorage.getItem(cacheKey + '_time');
         const now = new Date().getTime();
 
-        // 1. Vérification du cache
         if (cachedData && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
-            console.log("Chargement depuis le cache local");
             renderAll(JSON.parse(cachedData), query);
             return;
         }
 
         try {
-            console.log("Appel des APIs hybrides...");
-            
-            // A. POCKETBASE (via le tunnel /pb défini dans server.js)
+            if(status) status.textContent = "CHARGEMENT...";
+
+            // A. POCKETBASE
             let pbFilter = query ? `&filter=(titre~'${query}' || description~'${query}')` : "";
             const pbRes = await fetch(`${PB_URL}/api/collections/articles/records?sort=-created${pbFilter}`);
             const pbData = await pbRes.json();
 
-            // B. NEWS DATA API (Via ton proxy server.js)
+            // B. NEWS DATA API
             let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
             if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
             const newsRes = await fetch(newsUrl);
@@ -247,15 +246,14 @@
                 worldNews: newsData.results || []
             };
 
-            // Sauvegarde en cache
             localStorage.setItem(cacheKey, JSON.stringify(combinedData));
             localStorage.setItem(cacheKey + '_time', now.toString());
 
             renderAll(combinedData, query);
 
         } catch (e) { 
-            console.error("Erreur de synchronisation:", e);
-            if(status) status.textContent = "ERREUR DE CONNEXION AU SERVEUR.";
+            console.error("Erreur:", e);
+            if(status) status.textContent = "ERREUR DE CONNEXION.";
         }
     }
 
@@ -268,13 +266,14 @@
 
         if (myArticles.length === 0 && worldNews.length === 0) {
             if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
+            hero.innerHTML = "";
+            grid.innerHTML = "";
             return;
         }
 
-        // 1. Gestion du HERO (Priorité PocketBase)
+        // 1. HERO
         if (myArticles.length > 0) {
             const h = myArticles[0];
-            // Utilisation du tunnel PB_URL pour les images
             const img = h.image ? `${PB_URL}/api/files/${h.collectionId}/${h.id}/${h.image}` : '';
             renderHeroMarkup(h.titre, h.description, img, '#'); 
         } else if (worldNews.length > 0) {
@@ -282,7 +281,7 @@
             renderHeroMarkup(h.title, h.description, h.image_url, h.link);
         }
 
-        // 2. Gestion de la GRILLE
+        // 2. GRILLE
         const remainingMy = myArticles.slice(1);
         const combined = [...remainingMy, ...worldNews];
 
@@ -292,22 +291,23 @@
             const link = art.link || "#";
             let img = art.image_url || "";
             
-            if (art.collectionId) { // Si c'est un article PocketBase (via tunnel)
+            if (art.collectionId) {
                 img = art.image ? `${PB_URL}/api/files/${art.collectionId}/${art.id}/${art.image}` : '';
             }
             
             return `
                 <div class="article-card" onclick="window.open('${link}', '_blank')">
-                    ${img ? `<img src="${img}">` : ''}
-                    <h3>${title}</h3>
-                    <p class="card-desc">${desc.substring(0, 90)}...</p>
+                    ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
+                    <div class="card-text">
+                        <h3>${title}</h3>
+                        <p class="card-desc">${desc.substring(0, 90)}...</p>
+                    </div>
                 </div>`;
         }).join('');
 
         if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ACTUALITÉS MISES À JOUR`;
     }
 
-    // --- GÉNÉRATION DU HERO (Inchangé) ---
     function renderHeroMarkup(title, desc, img, link) {
         const heroZone = document.getElementById('hero-zone');
         if(!heroZone) return;
@@ -327,6 +327,7 @@
 </body>
 
 </html>
+
 
 
 
