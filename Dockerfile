@@ -1,26 +1,19 @@
 FROM node:20-alpine
-
-# Installation des outils nécessaires
 RUN apk add --no-cache unzip wget ca-certificates
 
-# 1. Préparation de PocketBase
+# 1. On installe PocketBase
 WORKDIR /pb
-ENV PB_VERSION=0.22.21
-RUN wget https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSION}/pocketbase_${PB_VERSION}_linux_amd64.zip && \
-    unzip pocketbase_${PB_VERSION}_linux_amd64.zip && \
-    rm pocketbase_${PB_VERSION}_linux_amd64.zip
+RUN wget https://github.com/pocketbase/pocketbase/releases/download/v0.22.21/pocketbase_0.22.21_linux_amd64.zip && \
+    unzip pocketbase_0.22.21_linux_amd64.zip && \
+    rm pocketbase_0.22.21_linux_amd64.zip
 
-# 2. Préparation de ton API News
+# 2. On installe ton API News
 WORKDIR /app
 COPY server/package*.json ./
 RUN npm install
 COPY server/ .
-# AJOUTE CETTE LIGNE :
-COPY index.html style.css ./ 
+COPY index.html style.css ./
 
-# 3. Script pour lancer les deux serveurs en même temps
+# 3. On lance tout : PocketBase est le Chef sur 8080
 EXPOSE 8080
-EXPOSE 3000
-
-# On lance PocketBase sur le port 8080 et ton script Node sur le port 3000
 CMD /pb/pocketbase serve --http=0.0.0.0:8080 & node server.js
