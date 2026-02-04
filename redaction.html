@@ -11,12 +11,12 @@
      crossorigin="anonymous"></script>
     <meta name="google-adsense-account" content="ca-pub-7567982675325882">
     <style>
-        /* NOUVEAU STYLE DES OUTILS DE PARTAGE (Moins NYT, plus Moderne) */
+        /* NOUVEAU STYLE DES OUTILS DE PARTAGE */
         .share-tools-container {
             max-width: 800px;
             margin: 0 auto 25px auto;
             padding: 12px 20px;
-            border-top: 2px solid #121212; /* Ligne plus affirmée */
+            border-top: 2px solid #121212;
             border-bottom: 1px solid #e2e2e2;
             display: flex;
             justify-content: space-between;
@@ -46,16 +46,9 @@
             color: #121212;
             letter-spacing: 0.5px;
         }
-        .action-item:hover {
-            opacity: 0.6;
-        }
-        .action-item svg {
-            width: 18px;
-            height: 18px;
-        }
-        .action-item.saved svg path {
-            fill: #c00; /* Rouge quand sauvegardé */
-        }
+        .action-item:hover { opacity: 0.6; }
+        .action-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .action-item.saved svg path { fill: #c00; }
         .comment-count {
             background: #f0f0f0;
             padding: 2px 6px;
@@ -67,105 +60,127 @@
             height: auto;
             display: block;
         }
+
+        /* --- AJUSTEMENTS RESPONSIVE (MOBILE & TABLETTE) --- */
+        @media (max-width: 768px) {
+            .article-header h1 {
+                font-size: 1.8rem !important; /* Titre plus petit sur mobile */
+                line-height: 1.2 !important;
+            }
+            .share-tools-list { gap: 10px; }
+            .action-item span {
+                display: none; /* Cache le texte sur mobile pour gagner de la place */
+            }
+            .share-tools-container {
+                padding: 10px 15px;
+            }
+            .article-content {
+                font-size: 1.1rem !important; /* Lecture plus confortable sur petit écran */
+                padding: 0 15px 40px !important;
+            }
+            .nav-compact ul {
+                display: flex;
+                overflow-x: auto; /* Permet de scroller le menu horizontalement */
+                white-space: nowrap;
+                padding-bottom: 5px;
+            }
+        }
     </style>
 </head>
 <body>
 
 <div class="full-menu" id="fullMenu">
-        <div class="menu-header">
-            <div class="menu-logo">MAKMUS</div>
-            <span class="close-menu" id="closeMenu">&times; FERMER</span>
+    <div class="menu-header">
+        <div class="menu-logo">MAKMUS</div>
+        <span class="close-menu" id="closeMenu">&times; FERMER</span>
+    </div>
+    <div class="menu-content">
+        <div class="menu-search">
+            <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
+            <button onclick="executeMenuSearch()">OK</button>
         </div>
-        <div class="menu-content">
-            <div class="menu-search">
-                <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
-                <button onclick="executeMenuSearch()">OK</button>
+        <div class="menu-grid">
+            <div class="menu-section">
+                <h3>ACTUALITÉS</h3>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
+                    <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+                    <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
+                    <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
+                    <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
+                </ul>
             </div>
-            <div class="menu-grid">
-                <div class="menu-section">
-                    <h3>ACTUALITÉS</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-                        <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
-                        <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
-                        <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
-                    </ul>
-                </div>
-                <div class="menu-section">
-                    <h3>ÉCONOMIE & TECH</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
-                        <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
-                        <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'crypto'); return false;">Crypto-monnaie</a></li>
-                    </ul>
-                </div>
-                <div class="menu-section">
-                    <h3>LOISIRS & SOCIÉTÉ</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
-                        <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
-                        <li><a href="#" onclick="fetchAllContent('health'); return false;">Santé</a></li>
-                        <li><a href="#" onclick="fetchAllContent('lifestyle'); return false;">Style de vie / Food</a></li>
-                        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">Voyages</a></li>
-                        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
-                    </ul>
-                </div>
+            <div class="menu-section">
+                <h3>ÉCONOMIE & TECH</h3>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
+                    <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
+                    <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
+                </ul>
+            </div>
+            <div class="menu-section">
+                <h3>LOISIRS & SOCIÉTÉ</h3>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
+                    <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
+                    <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
+                </ul>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="top-bar">
-        <div class="top-bar-content">
-            <div id="live-date">---</div>
-            <div class="auth-section"><button id="openModal">MON COMPTE</button></div>
+<div class="top-bar">
+    <div class="top-bar-content">
+        <div id="live-date">---</div>
+        <div class="auth-section"><button id="openModal">MON COMPTE</button></div>
+    </div>
+</div>
+
+<header class="main-header">
+    <div class="header-left">
+        <div class="menu-toggle" id="btnOpenMenu">
+            <span></span><span></span><span></span>
+            <span class="menu-label">SECTIONS</span>
         </div>
     </div>
+    <div class="logo-container">
+        <a href="index.html">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+        </a>
+    </div>
+    <div class="header-right-spacer">
+        <button class="btn-subscribe">S'ABONNER</button>
+    </div>
+</header>
 
-    <header class="main-header">
-        <div class="header-left">
-            <div class="menu-toggle" id="btnOpenMenu">
-                <span></span><span></span><span></span>
-                <span class="menu-label">SECTIONS</span>
-            </div>
-        </div>
-        <div class="logo-container">
-            <a href="index.html">
-                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-            </a>
-        </div>
-        <div class="header-right-spacer">
-            <button class="btn-subscribe">S'ABONNER</button>
-        </div>
-    </header>
+<nav class="nav-compact" id="navMenu">
+    <ul>
+        <li><a href="index.html" class="active">À LA UNE</a></li>
+        <li><a href="index.html">RDC</a></li>
+        <li><a href="index.html">POLITIQUE</a></li>
+        <li><a href="index.html">ÉCONOMIE</a></li>
+        <li><a href="index.html">SPORT</a></li>
+        <li><a href="index.html">SANTÉ</a></li>
+        <li><a href="index.html">TECH</a></li>
+        <li><a href="index.html">CLIMAT</a></li>
+        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+    </ul>
+</nav>
 
-    <nav class="nav-compact" id="navMenu">
-        <ul>
-            <li><a href="index.html" class="active">À LA UNE</a></li>
-            <li><a href="index.html">RDC</a></li>
-            <li><a href="index.html">POLITIQUE</a></li>
-            <li><a href="index.html">ÉCONOMIE</a></li>
-            <li><a href="index.html">SPORT</a></li>
-            <li><a href="index.html">SANTÉ</a></li>
-            <li><a href="index.html">TECH</a></li>
-            <li><a href="index.html">CLIMAT</a></li>
-            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-        </ul>
-    </nav>
+<main class="newspaper-body" id="full-article">
+    <div id="status-line" class="status-line">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
+    <p style="text-align:center; padding: 50px;">Chargement de l'article...</p>
+</main>
 
-    <main class="newspaper-body" id="full-article">
-        <div id="status-line" class="status-line">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
-        <p style="text-align:center; padding: 50px;">Chargement de l'article...</p>
-    </main>
-
-    <footer class="nyt-footer">
+<footer class="nyt-footer">
     <div class="footer-container">
         <div class="footer-brand">
             <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
             <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
         </div>
-        <div class="footer-links-grid">
+
+       <div class="footer-links-grid">
     <div class="footer-col">
         <h4>SECTIONS</h4>
         <ul>
@@ -215,109 +230,105 @@
     </div>
 </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; 
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    <script>
-        const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    const params = new URLSearchParams(window.location.search);
+    const articleId = params.get('id');
 
-        const params = new URLSearchParams(window.location.search);
-        const articleId = params.get('id');
+    document.getElementById('btnOpenMenu').onclick = () => document.getElementById('fullMenu').classList.add('open');
+    document.getElementById('closeMenu').onclick = () => document.getElementById('fullMenu').classList.remove('open');
 
-        // Menu Toggle
-        document.getElementById('btnOpenMenu').onclick = () => document.getElementById('fullMenu').classList.add('open');
-        document.getElementById('closeMenu').onclick = () => document.getElementById('fullMenu').classList.remove('open');
+    function updateDate() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('live-date').textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+    }
+    updateDate();
 
-        // Date
-        function updateDate() {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            document.getElementById('live-date').textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+    async function toggleSaveArticle() {
+        const btn = document.getElementById('btn-save');
+        const { error } = await supabaseClient.from('article_saves').insert([{ article_id: articleId }]);
+        if(!error) {
+            btn.classList.add('saved');
+            const span = btn.querySelector('span');
+            if(span) span.innerText = "Enregistré";
         }
-        updateDate();
+    }
 
-        // Fonctions d'interaction
-        async function toggleSaveArticle() {
-            const btn = document.getElementById('btn-save');
-            const { error } = await supabaseClient.from('article_saves').insert([{ article_id: articleId }]);
-            if(!error) {
-                btn.classList.add('saved');
-                btn.querySelector('span').innerText = "Enregistré";
-            }
-        }
+    async function getComments() {
+        const { count, error } = await supabaseClient
+            .from('article_comments')
+            .select('*', { count: 'exact', head: true })
+            .eq('article_id', articleId);
+        if(!error && document.getElementById('nb-comm')) document.getElementById('nb-comm').innerText = count || 0;
+    }
 
-        async function getComments() {
-            const { count, error } = await supabaseClient
-                .from('article_comments')
-                .select('*', { count: 'exact', head: true })
-                .eq('article_id', articleId);
-            if(!error) document.getElementById('nb-comm').innerText = count || 0;
-        }
+    async function loadArticle() {
+        const display = document.getElementById('full-article');
+        if (!articleId) return;
 
-        // Chargement de l'article
-        async function loadArticle() {
-            const display = document.getElementById('full-article');
-            if (!articleId) return;
+        try {
+            const { data: art, error } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
+            if (error || !art) throw new Error();
 
-            try {
-                const { data: art, error } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
-                if (error || !art) throw new Error();
-
-                const shareTools = `
-                    <div class="share-tools-container">
-                        <div class="share-tools-list">
-                            <button class="action-item" onclick="window.open('https://twitter.com/intent/tweet?url='+encodeURIComponent(window.location.href))">
-                                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-                                <span>Partager</span>
-                            </button>
-                            <button id="btn-save" class="action-item" onclick="toggleSaveArticle()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
-                                <span>Lire plus tard</span>
-                            </button>
-                            <button class="action-item" onclick="window.print()">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2m-12 0v4h12v-4"/></svg>
-                                <span>Imprimer</span>
-                            </button>
-                        </div>
-                        <div class="share-tools-list">
-                            <div class="action-item">
-                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                                <span class="comment-count" id="nb-comm">...</span>
-                            </div>
+            const shareTools = `
+                <div class="share-tools-container">
+                    <div class="share-tools-list">
+                        <button class="action-item" onclick="window.open('https://twitter.com/intent/tweet?url='+encodeURIComponent(window.location.href))">
+                            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            <span>Partager</span>
+                        </button>
+                        <button id="btn-save" class="action-item" onclick="toggleSaveArticle()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+                            <span>Lire plus tard</span>
+                        </button>
+                        <button class="action-item" onclick="window.print()">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2m-12 0v4h12v-4"/></svg>
+                            <span>Imprimer</span>
+                        </button>
+                    </div>
+                    <div class="share-tools-list">
+                        <div class="action-item">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            <span class="comment-count" id="nb-comm">...</span>
                         </div>
                     </div>
-                `;
+                </div>
+            `;
 
-                display.innerHTML = `
-                    <header class="article-header" style="max-width:800px; margin: 0 auto; padding: 20px 20px 0 20px;">
-                        <div class="article-meta" style="text-transform: uppercase; font-size: 0.75rem; color:#666; margin-bottom: 15px;">
-                            Rédaction MAKMUS — ${new Date(art.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})}
-                        </div>
-                        <h1 style="font-family:'Libre Baskerville', serif; font-size: 2.8rem; margin-bottom: 20px; line-height: 1.1; font-weight:700;">${art.titre}</h1>
-                    </header>
-                    
-                    ${shareTools}
-
-                    ${art.image_url ? `
-                        <div class="article-full-img" style="max-width:900px; margin: 0 auto 30px;">
-                            <img src="${art.image_url}" alt="${art.titre}">
-                        </div>` : ''}
-                    
-                    <div class="article-content" style="max-width:700px; margin: 0 auto; font-family:'Libre Baskerville', serif; font-size: 1.25rem; line-height: 1.8; padding: 0 20px 60px;">
-                        ${art.description}
+            display.innerHTML = `
+                <header class="article-header" style="max-width:800px; margin: 0 auto; padding: 20px 20px 0 20px;">
+                    <div class="article-meta" style="text-transform: uppercase; font-size: 0.75rem; color:#666; margin-bottom: 15px;">
+                        Rédaction MAKMUS — ${new Date(art.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})}
                     </div>
-                `;
+                    <h1 style="font-family:'Libre Baskerville', serif; font-size: 2.8rem; margin-bottom: 20px; line-height: 1.1; font-weight:700;">${art.titre}</h1>
+                </header>
                 
-                document.title = `${art.titre} — MAKMUS`;
-                getComments();
+                ${shareTools}
 
-            } catch (e) {
-                display.innerHTML = `<div style="text-align:center; padding: 100px;"><h2>Contenu indisponible</h2></div>`;
-            }
+                ${art.image_url ? `
+                    <div class="article-full-img" style="max-width:900px; margin: 0 auto 30px;">
+                        <img src="${art.image_url}" alt="${art.titre}">
+                    </div>` : ''}
+                
+                <div class="article-content" style="max-width:700px; margin: 0 auto; font-family:'Libre Baskerville', serif; font-size: 1.25rem; line-height: 1.8; padding: 0 20px 60px;">
+                    ${art.description}
+                </div>
+            `;
+            
+            document.title = `${art.titre} — MAKMUS`;
+            getComments();
+
+        } catch (e) {
+            display.innerHTML = `<div style="text-align:center; padding: 100px;"><h2>Contenu indisponible</h2></div>`;
         }
+    }
 
-        loadArticle();
-    </script>
+    loadArticle();
+</script>
 </body>
 </html>
