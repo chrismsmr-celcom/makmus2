@@ -176,7 +176,7 @@
     // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
     const BASE_URL = window.location.origin; 
     const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; // <--- COLLE TA CLÉ ICI
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
     const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
@@ -220,7 +220,7 @@
     }
     updateDate();
 
-    // --- LOGIQUE DE RÉCUPÉRATION (HYBRIDE MISE À JOUR) ---
+    // --- LOGIQUE DE RÉCUPÉRATION ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
@@ -235,10 +235,8 @@
         try {
             if(status) status.textContent = "CHARGEMENT...";
 
-            // 1. RÉCUPÉRATION SUPABASE (Articles MAKMUS avec filtre catégorie)
             let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
             
-            // FILTRE PAR CATÉGORIE : On n'applique le filtre que si on n'est pas sur "top"
             if (category !== 'top') {
                 sbQuery = sbQuery.eq('category', category);
             }
@@ -250,7 +248,6 @@
             const { data: myArticles, error: sbError } = await sbQuery;
             if (sbError) throw sbError;
 
-            // 2. RÉCUPÉRATION NEWSAPI (Avec Cache)
             let worldNews = [];
             if (cachedNews && newsTimestamp && (now - newsTimestamp < CACHE_DURATION)) {
                 worldNews = JSON.parse(cachedNews);
@@ -268,12 +265,12 @@
             renderAll({ myArticles: myArticles || [], worldNews }, query);
 
         } catch (e) { 
-            console.error("Erreur de récupération:", e);
+            console.error("Erreur:", e);
             if(status) status.textContent = "ERREUR DE CONNEXION.";
         }
     }
 
-    // --- FONCTION D'AFFICHAGE ---
+    // --- FONCTION D'AFFICHAGE (SANS ICONES DE PARTAGE) ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
@@ -281,8 +278,6 @@
         const { myArticles, worldNews } = data;
 
         const allPossible = [...myArticles, ...worldNews];
-
-        // Filtre anti-doublons
         const seenTitles = new Set();
         const uniqueArticles = allPossible.filter(art => {
             const t = (art.titre || art.title || "").trim().toLowerCase();
@@ -298,17 +293,17 @@
             return;
         }
 
-        // 1. GESTION DU HERO
+        // 1. HERO
         const h = uniqueArticles[0];
         const hTitle = h.titre || h.title;
         const hDesc = h.description || "";
-        const hImg = h.image_url || h.image || ""; // Supabase utilise image_url
+        const hImg = h.image_url || h.image || "";
         const hIsLocal = h.id ? true : false;
         const hLink = hIsLocal ? `redaction.html?id=${h.id}` : (h.link || "#");
 
-        renderHeroMarkup(hTitle, hDesc, hImg, hLink, hIsLocal);
+        renderHeroMarkup(hTitle, hDesc, hImg, hLink);
 
-        // 2. GESTION DE LA GRILLE
+        // 2. GRILLE
         const gridArticles = uniqueArticles.slice(1, 13);
         if(grid) {
             grid.innerHTML = gridArticles.map(art => {
@@ -318,25 +313,12 @@
                 const link = isLocal ? `redaction.html?id=${art.id}` : (art.link || "#");
                 const img = art.image_url || art.image || "";
                 
-                let shareHtml = "";
-                if (isLocal) {
-                    const fullUrl = encodeURIComponent(`${BASE_URL}/${link}`);
-                    const sTxt = encodeURIComponent(title);
-                    shareHtml = `
-                        <div class="share-box" onclick="event.stopPropagation()">
-                            <a href="https://wa.me/?text=${sTxt}%20${fullUrl}" target="_blank">WA</a>
-                            <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}" target="_blank">FB</a>
-                            <a href="https://twitter.com/intent/tweet?text=${sTxt}&url=${fullUrl}" target="_blank">X</a>
-                        </div>`;
-                }
-                
                 return `
                     <div class="article-card" onclick="window.location.href='${link}'">
                         ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
                         <div class="card-text">
                             <h3>${title}</h3>
                             <p class="card-desc">${desc.substring(0, 90)}...</p>
-                            ${shareHtml}
                         </div>
                     </div>`;
             }).join('');
@@ -345,21 +327,9 @@
         if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ACTUALITÉS MISES À JOUR`;
     }
 
-    function renderHeroMarkup(title, desc, img, link, isLocal) {
+    function renderHeroMarkup(title, desc, img, link) {
         const heroZone = document.getElementById('hero-zone');
         if(!heroZone) return;
-
-        let shareHero = "";
-        if(isLocal) {
-            const fullUrl = encodeURIComponent(`${BASE_URL}/${link}`);
-            const sTxt = encodeURIComponent(title);
-            shareHero = `
-                <div class="hero-share" onclick="event.stopPropagation()">
-                    <span>PARTAGER :</span>
-                    <a href="https://wa.me/?text=${sTxt}%20${fullUrl}" target="_blank">WhatsApp</a>
-                    <a href="https://www.facebook.com/sharer/sharer.php?u=${fullUrl}" target="_blank">Facebook</a>
-                </div>`;
-        }
 
         heroZone.innerHTML = `
             <div class="hero-container" onclick="window.location.href='${link}'">
@@ -367,7 +337,6 @@
                     <h1>${title}</h1>
                     <p>${desc ? desc.substring(0, 250) + '...' : ''}</p>
                     <button class="btn-read-more">LIRE LA SUITE →</button>
-                    ${shareHero}
                 </div>
                 ${img ? `<div class="hero-img"><img src="${img}"></div>` : ''}
             </div>`;
@@ -379,4 +348,5 @@
 </body>
 
 </html>
+
 
