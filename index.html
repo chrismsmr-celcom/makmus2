@@ -169,12 +169,28 @@
         </div>
     </div>
 </footer>
-   <script>
+  <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
+
+<script>
     // --- CONFIGURATION DYNAMIQUE ---
     const BASE_URL = window.location.origin; 
     const PB_URL = `${BASE_URL}/pb`; 
     const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
-    const CACHE_DURATION = 60 * 60 * 1000; 
+   
+
+    // --- INITIALISATION POCKETBASE (AJOUTÉ) ---
+    const pb = new PocketBase(PB_URL);
+
+    // --- RESTAURATION SESSION AU CHARGEMENT (AJOUTÉ) ---
+    window.addEventListener("load", () => {
+        if (pb.authStore.isValid) {
+            console.log("Session PocketBase active ✅", pb.authStore.model);
+            document.body.classList.add("logged");
+        } else {
+            console.log("Aucune session PocketBase ❌");
+            document.body.classList.remove("logged");
+        }
+    });
 
     // --- GESTION DU MENU ---
     const btnOpenMenu = document.getElementById('btnOpenMenu');
@@ -191,16 +207,14 @@
         document.body.style.overflow = 'auto'; 
     };
 
-    // --- RECHERCHE DEPUIS LE MENU ---
     window.executeMenuSearch = function() {
         const query = document.getElementById('menuSearchInput').value;
         if(query) {
             fetchAllContent('top', query);
-            closeMenuUI(); // Ferme le menu après recherche
+            closeMenuUI();
         }
     }
 
-    // Petite fonction utilitaire pour fermer le menu proprement
     function closeMenuUI() {
         if(fullMenu.classList.contains('open')) {
             fullMenu.classList.remove('open');
@@ -218,10 +232,7 @@
 
     // --- LOGIQUE DE RÉCUPÉRATION ---
     async function fetchAllContent(category = 'top', query = '') {
-        // AJOUT : Remonte la page en haut pour voir les nouveaux résultats
         window.scrollTo({ top: 0, behavior: 'smooth' });
-
-        // On ferme le menu si l'utilisateur a cliqué sur une catégorie
         closeMenuUI();
 
         const status = document.getElementById('status-line');
@@ -230,6 +241,7 @@
         const cacheTimestamp = localStorage.getItem(cacheKey + '_time');
         const now = new Date().getTime();
 
+        // ⚠️ NE TOUCHE PAS AU localStorage GLOBAL (AUTH)
         if (cachedData && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
             renderAll(JSON.parse(cachedData), query);
             return;
@@ -238,12 +250,10 @@
         try {
             if(status) status.textContent = "CHARGEMENT...";
 
-            // A. POCKETBASE
             let pbFilter = query ? `&filter=(titre~'${query}' || description~'${query}')` : "";
             const pbRes = await fetch(`${PB_URL}/api/collections/articles/records?sort=-created${pbFilter}`);
             const pbData = await pbRes.json();
 
-            // B. NEWS DATA API
             let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
             if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
             const newsRes = await fetch(newsUrl);
@@ -279,36 +289,49 @@
             return;
         }
 
-        // 1. HERO
+        // 1. GESTION DU HERO
         if (myArticles.length > 0) {
             const h = myArticles[0];
             const img = h.image ? `${PB_URL}/api/files/${h.collectionId}/${h.id}/${h.image}` : '';
-            renderHeroMarkup(h.titre, h.description, img, '#'); 
+            const localLink = `redaction.html?id=${h.id}`;
+            renderHeroMarkup(h.titre, h.description, img, localLink, true); 
         } else if (worldNews.length > 0) {
             const h = worldNews[0];
-            renderHeroMarkup(h.title, h.description, h.image_url, h.link);
+            renderHeroMarkup(h.title, h.description, h.image_url, h.link, false);
         }
 
-        // 2. GRILLE
+        // 2. GESTION DE LA GRILLE
         const remainingMy = myArticles.slice(1);
         const combined = [...remainingMy, ...worldNews];
 
         grid.innerHTML = combined.slice(0, 12).map(art => {
             const title = art.titre || art.title;
             const desc = art.description || "";
-            const link = art.link || "#";
+            let link = art.link || "#";
             let img = art.image_url || "";
+            let shareHtml = "";
             
             if (art.collectionId) {
                 img = art.image ? `${PB_URL}/api/files/${art.collectionId}/${art.id}/${art.image}` : '';
+                link = `redaction.html?id=${art.id}`;
+                
+                const sUrl = encodeURIComponent(`${window.location.origin}/${link}`);
+                const sTxt = encodeURIComponent(title);
+                shareHtml = `
+                    <div class="share-box" onclick="event.stopPropagation()">
+                        <a href="https://wa.me/?text=${sTxt}%20${sUrl}" target="_blank">WA</a>
+                        <a href="https://www.facebook.com/sharer/sharer.php?u=${sUrl}" target="_blank">FB</a>
+                        <a href="https://twitter.com/intent/tweet?text=${sTxt}&url=${sUrl}" target="_blank">X</a>
+                    </div>`;
             }
             
             return `
-                <div class="article-card" onclick="window.open('${link}', '_blank')">
+                <div class="article-card" onclick="window.location.href='${link}'">
                     ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
                     <div class="card-text">
                         <h3>${title}</h3>
                         <p class="card-desc">${desc.substring(0, 90)}...</p>
+                        ${shareHtml}
                     </div>
                 </div>`;
         }).join('');
@@ -316,15 +339,30 @@
         if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ACTUALITÉS MISES À JOUR`;
     }
 
-    function renderHeroMarkup(title, desc, img, link) {
+    // --- GÉNÉRATION DU HERO AVEC PARTAGE ---
+    function renderHeroMarkup(title, desc, img, link, isLocal) {
         const heroZone = document.getElementById('hero-zone');
         if(!heroZone) return;
+
+        let shareHero = "";
+        if(isLocal) {
+            const sUrl = encodeURIComponent(`${window.location.origin}/${link}`);
+            const sTxt = encodeURIComponent(title);
+            shareHero = `
+                <div class="hero-share" onclick="event.stopPropagation()">
+                    <span>PARTAGER :</span>
+                    <a href="https://wa.me/?text=${sTxt}%20${sUrl}" target="_blank">WhatsApp</a>
+                    <a href="https://www.facebook.com/sharer/sharer.php?u=${sUrl}" target="_blank">Facebook</a>
+                </div>`;
+        }
+
         heroZone.innerHTML = `
-            <div class="hero-container" onclick="window.open('${link}', '_blank')">
+            <div class="hero-container" onclick="window.location.href='${link}'">
                 <div class="hero-text">
                     <h1>${title}</h1>
                     <p>${desc ? desc.substring(0, 250) + '...' : ''}</p>
                     <button class="btn-read-more">LIRE LA SUITE →</button>
+                    ${shareHero}
                 </div>
                 ${img ? `<div class="hero-img"><img src="${img}"></div>` : ''}
             </div>`;
@@ -332,9 +370,11 @@
 
     window.onload = () => fetchAllContent('top');
 </script>
+
 </body>
 
 </html>
+
 
 
 
