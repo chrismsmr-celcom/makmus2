@@ -10,11 +10,13 @@ RUN wget https://github.com/pocketbase/pocketbase/releases/download/v${PB_VERSIO
     unzip pocketbase_${PB_VERSION}_linux_amd64.zip && \
     rm pocketbase_${PB_VERSION}_linux_amd64.zip
 
-# 2. Préparation de ton API News (le dossier server)
+# 2. Préparation de ton API News
 WORKDIR /app
 COPY server/package*.json ./
 RUN npm install
 COPY server/ .
+# AJOUTE CETTE LIGNE :
+COPY index.html style.css ./ 
 
 # 3. Script pour lancer les deux serveurs en même temps
 EXPOSE 8080
