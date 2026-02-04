@@ -171,26 +171,16 @@
 </footer>
   <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // --- CONFIGURATION DYNAMIQUE ---
+    // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
     const BASE_URL = window.location.origin; 
-    const PB_URL = `${BASE_URL}/pb`; 
+    const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; // <--- COLLE TA CLÉ ICI
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
     const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
     const CACHE_DURATION = 60 * 60 * 1000; 
-
-    // --- INITIALISATION POCKETBASE ---
-    const pb = new PocketBase(PB_URL);
-
-    // --- RESTAURATION SESSION ---
-    window.addEventListener("load", () => {
-        if (pb.authStore.isValid) {
-            console.log("Session PocketBase active ✅", pb.authStore.model);
-            document.body.classList.add("logged");
-        } else {
-            console.log("Aucune session PocketBase ❌");
-            document.body.classList.remove("logged");
-        }
-    });
 
     // --- GESTION DU MENU ---
     const btnOpenMenu = document.getElementById('btnOpenMenu');
@@ -230,14 +220,12 @@
     }
     updateDate();
 
-    // --- LOGIQUE DE RÉCUPÉRATION (HYBRIDE & CACHE SÉPARÉ) ---
+    // --- LOGIQUE DE RÉCUPÉRATION (HYBRIDE) ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
 
         const status = document.getElementById('status-line');
-        
-        // Configuration du cache spécifique pour NewsAPI uniquement
         const newsCacheKey = `news_api_${category}_${query}`;
         const newsCacheTimeKey = `${newsCacheKey}_time`;
         const cachedNews = localStorage.getItem(newsCacheKey);
@@ -247,11 +235,15 @@
         try {
             if(status) status.textContent = "CHARGEMENT...";
 
-            // 1. RÉCUPÉRATION POCKETBASE (Toujours instantané)
-            let pbFilter = query ? `&filter=(titre~'${query}' || description~'${query}')` : "";
-            const pbRes = await fetch(`${PB_URL}/api/collections/articles/records?sort=-created${pbFilter}`);
-            const pbData = await pbRes.json();
-            const myArticles = pbData.items || [];
+            // 1. RÉCUPÉRATION SUPABASE (Articles MAKMUS)
+            let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+            
+            if (query) {
+                sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
+            }
+
+            const { data: myArticles, error: sbError } = await sbQuery;
+            if (sbError) throw sbError;
 
             // 2. RÉCUPÉRATION NEWSAPI (Avec Cache)
             let worldNews = [];
@@ -268,25 +260,24 @@
                 localStorage.setItem(newsCacheTimeKey, now.toString());
             }
 
-            renderAll({ myArticles, worldNews }, query);
+            renderAll({ myArticles: myArticles || [], worldNews }, query);
 
         } catch (e) { 
-            console.error("Erreur:", e);
+            console.error("Erreur de récupération:", e);
             if(status) status.textContent = "ERREUR DE CONNEXION.";
         }
     }
 
-    // --- FONCTION D'AFFICHAGE AVEC ANTI-DOUBLONS ---
+    // --- FONCTION D'AFFICHAGE ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
         const status = document.getElementById('status-line');
         const { myArticles, worldNews } = data;
 
-        // Combinaison : Tes articles en premier
         const allPossible = [...myArticles, ...worldNews];
 
-        // Filtre anti-doublons par titre
+        // Filtre anti-doublons
         const seenTitles = new Set();
         const uniqueArticles = allPossible.filter(art => {
             const t = (art.titre || art.title || "").trim().toLowerCase();
@@ -302,34 +293,28 @@
             return;
         }
 
-        // 1. GESTION DU HERO (Le 1er article unique)
+        // 1. GESTION DU HERO
         const h = uniqueArticles[0];
-        let hImg = h.image_url || "";
-        let hLink = h.link || "#";
-        let hIsLocal = false;
+        const hTitle = h.titre || h.title;
+        const hDesc = h.description || "";
+        const hImg = h.image_url || h.image || ""; // Supabase utilise image_url
+        const hIsLocal = h.id ? true : false;
+        const hLink = hIsLocal ? `redaction.html?id=${h.id}` : (h.link || "#");
 
-        if (h.collectionId) {
-            hImg = h.image ? `${PB_URL}/api/files/${h.collectionId}/${h.id}/${h.image}` : '';
-            hLink = `redaction.html?id=${h.id}`;
-            hIsLocal = true;
-        }
-        renderHeroMarkup(h.titre || h.title, h.description || "", hImg, hLink, hIsLocal);
+        renderHeroMarkup(hTitle, hDesc, hImg, hLink, hIsLocal);
 
-        // 2. GESTION DE LA GRILLE (Articles suivants, max 12)
+        // 2. GESTION DE LA GRILLE
         const gridArticles = uniqueArticles.slice(1, 13);
-
         if(grid) {
             grid.innerHTML = gridArticles.map(art => {
                 const title = art.titre || art.title;
                 const desc = art.description || "";
-                let link = art.link || "#";
-                let img = art.image_url || "";
-                let shareHtml = "";
+                const isLocal = art.id ? true : false;
+                const link = isLocal ? `redaction.html?id=${art.id}` : (art.link || "#");
+                const img = art.image_url || art.image || "";
                 
-                if (art.collectionId) {
-                    img = art.image ? `${PB_URL}/api/files/${art.collectionId}/${art.id}/${art.image}` : '';
-                    link = `redaction.html?id=${art.id}`;
-                    
+                let shareHtml = "";
+                if (isLocal) {
                     const fullUrl = encodeURIComponent(`${BASE_URL}/${link}`);
                     const sTxt = encodeURIComponent(title);
                     shareHtml = `
@@ -355,7 +340,6 @@
         if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ACTUALITÉS MISES À JOUR`;
     }
 
-    // --- GÉNÉRATION DU HERO ---
     function renderHeroMarkup(title, desc, img, link, isLocal) {
         const heroZone = document.getElementById('hero-zone');
         if(!heroZone) return;
@@ -390,16 +374,3 @@
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
