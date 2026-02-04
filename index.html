@@ -220,7 +220,7 @@
     }
     updateDate();
 
-    // --- LOGIQUE DE RÉCUPÉRATION (HYBRIDE) ---
+    // --- LOGIQUE DE RÉCUPÉRATION (HYBRIDE MISE À JOUR) ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
@@ -235,8 +235,13 @@
         try {
             if(status) status.textContent = "CHARGEMENT...";
 
-            // 1. RÉCUPÉRATION SUPABASE (Articles MAKMUS)
+            // 1. RÉCUPÉRATION SUPABASE (Articles MAKMUS avec filtre catégorie)
             let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+            
+            // FILTRE PAR CATÉGORIE : On n'applique le filtre que si on n'est pas sur "top"
+            if (category !== 'top') {
+                sbQuery = sbQuery.eq('category', category);
+            }
             
             if (query) {
                 sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
@@ -374,3 +379,4 @@
 </body>
 
 </html>
+
