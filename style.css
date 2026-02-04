@@ -245,4 +245,33 @@ body {
         text-align: center;
     }
     .bottom-legal a { margin: 0 10px; }
+
+}
+/* Style pour le partage dans la grille */
+.share-box {
+    margin-top: 10px;
+    display: flex;
+    gap: 8px;
+    padding-top: 8px;
+    border-top: 1px dotted #ccc;
+}
+.share-box a {
+    font-size: 10px;
+    font-weight: bold;
+    color: #333;
+    padding: 2px 5px;
+    border: 1px solid #333;
+    text-decoration: none;
+}
+
+/* Style pour le partage dans le Hero */
+.hero-share {
+    margin-top: 15px;
+    font-size: 12px;
+}
+.hero-share a {
+    margin-left: 10px;
+    color: #000;
+    text-decoration: underline;
+    font-weight: bold;
 }
