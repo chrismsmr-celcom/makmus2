@@ -162,9 +162,15 @@
     </div>
 </footer>
     <script>
-    const PB_URL = "https://makmus-backend.onrender.com";
-    const NEWAPI_PROXY = "https://ton-lien-newapi.onrender.com/api/news"; // Mets ton vrai lien ici
-    const CACHE_DURATION = 60 * 60 * 1000; // 1 heure en millisecondes
+    // --- CONFIGURATION DES URLS ---
+    // On utilise la même base car les deux services tournent sur le même domaine Render
+    const BASE_URL = "https://makmus2-backend-api.onrender.com";
+    const PB_URL = BASE_URL; 
+    
+    // Ton proxy NewsAPI (Node.js) tourne sur le même serveur
+    const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
+    
+    const CACHE_DURATION = 60 * 60 * 1000; // 1 heure
 
     // --- GESTION DU MENU ---
     const btnOpenMenu = document.getElementById('btnOpenMenu');
@@ -175,32 +181,28 @@
 
     // --- LOGIQUE DE RÉCUPÉRATION AVEC CACHE ---
     async function fetchAllContent(category = 'top', query = '') {
-        const hero = document.getElementById('hero-zone');
-        const grid = document.getElementById('news-grid');
         const status = document.getElementById('status-line');
-        
-        // Identifiant unique pour le cache (ex: news_top)
         const cacheKey = `news_${category}_${query}`;
         const cachedData = localStorage.getItem(cacheKey);
         const cacheTimestamp = localStorage.getItem(cacheKey + '_time');
-
         const now = new Date().getTime();
 
-        // 1. VERIFIER LE CACHE (Si moins d'une heure et qu'on a des données)
+        // 1. VERIFIER LE CACHE
         if (cachedData && cacheTimestamp && (now - cacheTimestamp < CACHE_DURATION)) {
-            console.log("Chargement depuis le cache (Economie d'API)");
+            console.log("Chargement depuis le cache local");
             renderAll(JSON.parse(cachedData), query);
             return;
         }
 
         try {
-            console.log("Appel des APIs (Données fraîches)");
-            // A. POCKETBASE (Tes articles)
+            console.log("Appel des APIs (Mise à jour des données)");
+            
+            // A. POCKETBASE (Tes articles persos)
             let pbFilter = query ? `&filter=(titre~'${query}' || description~'${query}')` : "";
             const pbRes = await fetch(`${PB_URL}/api/collections/articles/records?sort=-created${pbFilter}`);
             const pbData = await pbRes.json();
 
-            // B. NEWAPI (News mondiales)
+            // B. NEWAPI (Les news mondiales via ton server.js)
             let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
             if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
             const newsRes = await fetch(newsUrl);
@@ -211,42 +213,41 @@
                 worldNews: newsData.results || []
             };
 
-            // SAUVEGARDER DANS LE CACHE
+            // SAUVEGARDER
             localStorage.setItem(cacheKey, JSON.stringify(combinedData));
             localStorage.setItem(cacheKey + '_time', now.toString());
 
             renderAll(combinedData, query);
 
         } catch (e) { 
-            console.error("Erreur:", e);
-            status.textContent = "ERREUR DE CONNEXION.";
+            console.error("Erreur de récupération:", e);
+            status.textContent = "ERREUR DE CONNEXION AU SERVEUR.";
         }
     }
 
-    // --- FONCTION D'AFFICHAGE (Sépare la logique du rendu) ---
+    // --- FONCTION D'AFFICHAGE ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
         const status = document.getElementById('status-line');
-        
         const { myArticles, worldNews } = data;
 
         if (myArticles.length === 0 && worldNews.length === 0) {
-            status.textContent = "AUCUNE INFO DISPONIBLE.";
+            status.textContent = "AUCUNE ACTUALITÉ POUR LE MOMENT.";
             return;
         }
 
-        // Affichage du HERO
+        // AFFICHAGE DU HERO (Priorité à tes articles PocketBase)
         if (myArticles.length > 0) {
             const h = myArticles[0];
             const img = h.image ? `${PB_URL}/api/files/${h.collectionId}/${h.id}/${h.image}` : '';
             renderHeroMarkup(h.titre, h.description, img, '#'); 
-        } else {
+        } else if (worldNews.length > 0) {
             const h = worldNews[0];
             renderHeroMarkup(h.title, h.description, h.image_url, h.link);
         }
 
-        // Affichage de la GRILLE
+        // AFFICHAGE DE LA GRILLE (Mélange)
         const remainingMy = myArticles.slice(1);
         const combined = [...remainingMy, ...worldNews];
 
@@ -255,14 +256,19 @@
             const desc = art.description || "";
             const link = art.link || "#";
             let img = art.image_url || "";
+            
+            // Formatage image si PocketBase
             if (art.collectionId) {
                 img = art.image ? `${PB_URL}/api/files/${art.collectionId}/${art.id}/${art.image}` : '';
             }
+            
             return `
                 <div class="article-card" onclick="window.open('${link}', '_blank')">
-                    ${img ? `<img src="${img}">` : ''}
-                    <h3>${title}</h3>
-                    <p class="card-desc">${desc.substring(0, 90)}...</p>
+                    ${img ? `<div class="card-img-wrapper"><img src="${img}"></div>` : ''}
+                    <div class="card-content">
+                        <h3>${title}</h3>
+                        <p class="card-desc">${desc.substring(0, 90)}...</p>
+                    </div>
                 </div>`;
         }).join('');
 
@@ -274,7 +280,7 @@
             <div class="hero-container" onclick="window.open('${link}', '_blank')">
                 <div class="hero-text">
                     <h1>${title}</h1>
-                    <p>${desc ? desc.substring(0, 250) + '...' : ''}</p>
+                    <p>${desc ? desc.substring(0, 220) + '...' : ''}</p>
                     <button class="btn-read-more">LIRE LA SUITE →</button>
                 </div>
                 ${img ? `<div class="hero-img"><img src="${img}"></div>` : ''}
@@ -286,5 +292,6 @@
 </body>
 
 </html>
+
 
 
