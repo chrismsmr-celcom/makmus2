@@ -18,11 +18,58 @@
         .article-content p { margin-bottom: 1.5rem; }
         .back-link { display: inline-block; margin-bottom: 20px; text-decoration: none; color: #000; font-weight: bold; border-bottom: 2px solid #000; }
         #loader { text-align: center; padding: 100px; font-family: serif; font-style: italic; font-size: 1.5rem; }
+        .article-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+.article-content td, .article-content th {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+        /* Section Recommandations */
+.recommendations {
+    max-width: 850px;
+    margin: 60px auto;
+    padding: 20px;
+    border-top: 3px double #000;
+}
+.recommendations h3 {
+    font-family: 'Playfair Display', serif;
+    text-transform: uppercase;
+    text-align: center;
+    letter-spacing: 2px;
+    margin-bottom: 30px;
+}
+.rec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+.rec-card {
+    text-decoration: none;
+    color: #000;
+    transition: 0.3s;
+}
+.rec-card:hover { opacity: 0.7; }
+.rec-card img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+}
+.rec-card h4 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1rem;
+    line-height: 1.3;
+    margin: 0;
+}
     </style>
 </head>
 <body>
 
-    <div class="full-menu" id="fullMenu">
+   <div class="full-menu" id="fullMenu">
         <div class="menu-header">
             <div class="menu-logo">MAKMUS</div>
             <span class="close-menu" id="closeMenu">&times; FERMER</span>
@@ -30,9 +77,40 @@
         <div class="menu-content">
             <div class="menu-search">
                 <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
-                <button onclick="window.location.href='index.html?search=' + document.getElementById('menuSearchInput').value">OK</button>
+                <button onclick="executeMenuSearch()">OK</button>
             </div>
-            <p style="text-align: center; margin-top: 20px;"><a href="index.html" style="color:white; text-decoration: none; font-weight: bold;">← RETOUR À L'ACCUEIL</a></p>
+            <div class="menu-grid">
+                <div class="menu-section">
+                    <h3>ACTUALITÉS</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
+                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+                        <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
+                        <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
+                        <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
+                    </ul>
+                </div>
+                <div class="menu-section">
+                    <h3>ÉCONOMIE & TECH</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
+                        <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
+                        <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
+                        <li><a href="#" onclick="fetchAllContent('top', 'crypto'); return false;">Crypto-monnaie</a></li>
+                    </ul>
+                </div>
+                <div class="menu-section">
+                    <h3>LOISIRS & SOCIÉTÉ</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
+                        <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
+                        <li><a href="#" onclick="fetchAllContent('health'); return false;">Santé</a></li>
+                        <li><a href="#" onclick="fetchAllContent('lifestyle'); return false;">Style de vie / Food</a></li>
+                        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">Voyages</a></li>
+                        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -60,100 +138,213 @@
         </div>
     </header>
 
-    <nav class="nav-compact">
+    <nav class="nav-compact" id="navMenu">
         <ul>
-            <li><a href="index.html">ACCUEIL</a></li>
-            <li><a href="index.html?cat=politics">POLITIQUE</a></li>
-            <li><a href="index.html?cat=business">ÉCONOMIE</a></li>
-            <li><a href="index.html?cat=sports">SPORT</a></li>
+            <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+            <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+            <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
+            <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
             <li><a href="jeux.html" class="nav-red">JEUX</a></li>
         </ul>
     </nav>
 
-    <main class="article-container">
-        <a href="index.html" class="back-link">← RETOUR À L'ACCUEIL</a>
-        
-        <article id="full-article">
-            <div id="loader">Chargement du récit en cours...</div>
-        </article>
+    <main class="newspaper-body">
+        <div id="status-line" class="status-line">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
+        <section id="hero-zone"></section>
+        <hr class="double-hr">
+        <div class="news-grid" id="news-grid"></div>
     </main>
 
+    <div class="modal" id="modalAccount">
+        <div class="modal-box">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <div class="modal-header">MAKMUS</div>
+            <p>Accès réservé aux abonnés.</p>
+            <input type="email" placeholder="Email">
+            <input type="password" placeholder="Mot de passe">
+            <button class="btn-submit">SE CONNECTER</button>
+        </div>
+    </div>
+    <section class="recommendations">
+    <h3>À lire aussi</h3>
+    <div class="rec-grid" id="recommendations-grid">
+        </div>
+     </section>
     <footer class="nyt-footer">
-        <div class="footer-container">
-            <div class="footer-brand">
-                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-                <p>&copy; 2026 MAKMUS MEDIA GROUP. La vérité pour mémoire.</p>
+    <div class="footer-container">
+        <div class="footer-brand">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
+        </div>
+
+       <div class="footer-links-grid">
+    <div class="footer-col">
+        <h4>SECTIONS</h4>
+        <ul>
+        <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
+        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>AIDE</h4>
+        <ul>
+            <li><a href="#">Abonnements</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Publicité</a></li>
+            <li><a href="#">Emploi</a></li>
+            <li><a href="#">Makmus magazine</a></li>
+            <li><a href="#">Makila Emmanuel Heritage </a></li>
+            <li><a href="#">Météo </a></li>
+            <li><a href="#">Makem screen Studio</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>SUIVEZ-NOUS</h4>
+        <div class="social-links">
+            <a href="#">FB</a>
+            <a href="#">X</a>
+            <a href="#">IG</a>
+            <a href="#">YT</a>
+        </div>
+    </div>
+</div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
+            <div class="bottom-legal">
+                <a href="#">Mentions Légales</a>
+                <a href="#">Confidentialité</a>
+                <a href="#">CGU</a>
             </div>
         </div>
-    </footer>
+    </div>
+</footer>
+
 
  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <script>
-        // --- CONFIGURATION ---
-        const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
-        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; // <--- COLLE TA CLÉ ICI
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    // --- 1. CONFIGURATION ---
+    const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; 
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        const params = new URLSearchParams(window.location.search);
-        const articleId = params.get('id');
+    const params = new URLSearchParams(window.location.search);
+    const articleId = params.get('id');
 
-        // --- GESTION DE LA DATE ---
-        function updateDate() {
-            const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-            const liveDate = document.getElementById('live-date');
-            if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+    // --- 2. GESTION DU MENU (Ouverture/Fermeture) ---
+    const btnOpenMenu = document.getElementById('btnOpenMenu');
+    const btnCloseMenu = document.getElementById('closeMenu');
+    const fullMenu = document.getElementById('fullMenu');
+
+    if (btnOpenMenu) {
+        btnOpenMenu.onclick = () => fullMenu.classList.add('open');
+    }
+    if (btnCloseMenu) {
+        btnCloseMenu.onclick = () => fullMenu.classList.remove('open');
+    }
+
+    // Fermer le menu si on clique sur un lien
+    document.querySelectorAll('.menu-content a').forEach(link => {
+        link.onclick = () => fullMenu.classList.remove('open');
+    });
+
+    // --- 3. GESTION DE LA DATE ---
+    function updateDate() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const liveDate = document.getElementById('live-date');
+        if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+    }
+    updateDate();
+
+    // --- 4. CHARGEMENT DES RECOMMANDATIONS (À lire aussi) ---
+    async function loadRecommendations(excludeId) {
+        const recGrid = document.getElementById('recommendations-grid');
+        if (!recGrid) return;
+
+        try {
+            const { data: recs, error } = await supabaseClient
+                .from('articles')
+                .select('id, titre, image_url')
+                .neq('id', excludeId) // Ne pas suggérer l'article actuel
+                .limit(3)
+                .order('created_at', { ascending: false });
+
+            if (error || !recs) return;
+
+            recGrid.innerHTML = recs.map(post => `
+                <a href="redaction.html?id=${post.id}" class="rec-card">
+                    ${post.image_url ? `<img src="${post.image_url}" alt="${post.titre}">` : '<div style="height:150px; background:#eee;"></div>'}
+                    <h4>${post.titre}</h4>
+                </a>
+            `).join('');
+        } catch (e) {
+            console.error("Erreur reco:", e);
         }
-        updateDate();
+    }
 
-        // --- CHARGEMENT DE L'ARTICLE ---
-        async function loadArticle() {
-            const display = document.getElementById('full-article');
+    // --- 5. CHARGEMENT DE L'ARTICLE ---
+    async function loadArticle() {
+        const display = document.getElementById('full-article');
 
-            if (!articleId) {
-                display.innerHTML = "<p>Erreur : Aucun article sélectionné.</p>";
-                return;
-            }
+        if (!articleId) {
+            display.innerHTML = "<p style='text-align:center; padding:50px;'>Erreur : Aucun article sélectionné.</p>";
+            return;
+        }
 
-            try {
-                const { data: art, error } = await supabaseClient
-                    .from('articles')
-                    .select('*')
-                    .eq('id', articleId)
-                    .single();
+        try {
+            const { data: art, error } = await supabaseClient
+                .from('articles')
+                .select('*')
+                .eq('id', articleId)
+                .single();
 
-                if (error || !art) throw new Error("Article introuvable");
+            if (error || !art) throw new Error("Article introuvable");
 
-                display.innerHTML = `
-                    <header class="article-header">
-                        <div class="article-meta">
-                            Publié par la Rédaction MAKMUS — ${new Date(art.created_at).toLocaleDateString('fr-FR')}
-                        </div>
-                        <h1>${art.titre}</h1>
-                    </header>
-                    
-                    ${art.image_url ? `
-                        <div class="article-full-img">
-                            <img src="${art.image_url}" alt="${art.titre}">
-                        </div>` : ''}
-                    
-                    <div class="article-content">${art.description}</div>
-                `;
+            display.innerHTML = `
+                <header class="article-header">
+                    <div class="article-meta">
+                        Publié par la Rédaction MAKMUS — ${new Date(art.created_at).toLocaleDateString('fr-FR')}
+                    </div>
+                    <h1>${art.titre}</h1>
+                </header>
                 
-                document.title = `${art.titre} - MAKMUS`;
+                ${art.image_url ? `
+                    <div class="article-full-img">
+                        <img src="${art.image_url}" alt="${art.titre}">
+                    </div>` : ''}
+                
+                <div class="article-content">${art.description}</div>
+            `;
+            
+            document.title = `${art.titre} - MAKMUS`;
 
-            } catch (e) {
-                console.error(e);
-                display.innerHTML = `
-                    <div style="text-align:center; padding: 40px;">
-                        <h2>Article introuvable</h2>
-                        <p>Il se peut que cet article n'existe plus.</p>
-                        <a href="index.html">Retourner à l'accueil</a>
-                    </div>`;
-            }
+            // Charger les recommandations après avoir affiché l'article
+            loadRecommendations(articleId);
+
+        } catch (e) {
+            console.error(e);
+            display.innerHTML = `
+                <div style="text-align:center; padding: 40px;">
+                    <h2>Article introuvable</h2>
+                    <p>Ce contenu a peut-être été archivé ou supprimé.</p>
+                    <a href="index.html" style="font-weight:bold; color:black; text-decoration:underline;">Retourner à l'accueil</a>
+                </div>`;
         }
+    }
 
-        loadArticle();
-    </script>
+    loadArticle();
+</script>
 </body>
 </html>
