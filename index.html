@@ -168,8 +168,6 @@
         </div>
     </div>
 </footer>
-  <script src="https://unpkg.com/pocketbase/dist/pocketbase.umd.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
@@ -181,7 +179,7 @@
     const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
     const CACHE_DURATION = 60 * 60 * 1000; 
 
-    // --- SYSTÈME ANALYTICS MAKMUS (Souverain) ---
+    // --- SYSTÈME ANALYTICS MAKMUS ---
     const tracker = {
         getVisitorId: () => {
             let id = sessionStorage.getItem('makmus_visitor_id');
@@ -243,7 +241,6 @@
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
-
         const status = document.getElementById('status-line');
         const now = new Date().getTime();
 
@@ -251,7 +248,6 @@
             if(status) status.textContent = "CHARGEMENT...";
             tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            // 1. Appel Supabase
             let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
             if (category !== 'top') sbQuery = sbQuery.eq('category', category);
             if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
@@ -259,7 +255,6 @@
             const { data: myArticles, error: sbError } = await sbQuery;
             if (sbError) throw sbError;
 
-            // 2. Appel NewsAPI (avec Cache)
             const newsCacheKey = `news_api_${category}_${query}`;
             const cachedNews = localStorage.getItem(newsCacheKey);
             const newsTimestamp = localStorage.getItem(`${newsCacheKey}_time`);
@@ -285,7 +280,7 @@
         }
     }
 
-    // --- FONCTION D'AFFICHAGE ---
+    // --- FONCTION D'AFFICHAGE (ÉPURÉE) ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
@@ -314,20 +309,15 @@
             hero.innerHTML = `
                 <div class="hero-container">
                     <div class="hero-text">
-                        <h1 onclick="captureAction('${hTitle}', '${data.category}', '${hLink}')">${hTitle}</h1>
+                        <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
                         <p>${(h.description || "").substring(0, 250)}...</p>
-                        <div class="hero-share">
-                            <span>PARTAGER :</span>
-                            <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(hTitle)}&url=${encodeURIComponent(hLink)}" target="_blank">X</a>
-                            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(hLink)}" target="_blank">FB</a>
-                        </div>
-                        <button class="btn-read-more" onclick="captureAction('${hTitle}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
+                        <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
                     </div>
-                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
+                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
                 </div>`;
         }
 
-        // 2. RENDER GRILLE
+        // 2. RENDER GRILLE (SANS PARTAGE)
         if(grid) {
             grid.innerHTML = uniqueArticles.slice(1, 13).map(art => {
                 const title = art.titre || art.title;
@@ -335,15 +325,11 @@
                 const img = art.image_url || art.image || "";
                 
                 return `
-                    <div class="article-card">
-                        ${img ? `<div class="card-img" onclick="captureAction('${title}', '${data.category}', '${link}')"><img src="${img}"></div>` : ''}
+                    <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
+                        ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
                         <div class="card-text">
-                            <h3 onclick="captureAction('${title}', '${data.category}', '${link}')">${title}</h3>
+                            <h3>${title}</h3>
                             <p class="card-desc">${(art.description || "").substring(0, 90)}...</p>
-                            <div class="share-box">
-                                <a href="#" onclick="captureAction('${title}', '${data.category}', '${link}')">LIRE</a>
-                                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}" target="_blank">PARTAGER</a>
-                            </div>
                         </div>
                     </div>`;
             }).join('');
@@ -355,16 +341,15 @@
     // --- GESTIONNAIRE DE CLIC ET ANALYTICS ---
     window.captureAction = function(title, category, link) {
         tracker.log('click', { title, category });
-        // Petit délai pour laisser le log partir avant de changer de page
         setTimeout(() => { window.location.href = link; }, 150);
     }
 
     window.onload = () => fetchAllContent('top');
 </script>
-
 </body>
 
 </html>
+
 
 
 
