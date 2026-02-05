@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MAKMUS — Mémoire & Vérité</title>
     <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-<script src="https://www.highperformanceformat.com/62e33e744312bd2932bbce8fcc7fd3c8/invoke.js"></script>
-<script src="https://pl28656188.effectivegatecpm.com/61/d9/f8/61d9f8a5233fbd5ec9a92f8be5b76675.js"></script>
 </head>
 <body>
 <div class="full-menu" id="fullMenu">
@@ -347,51 +344,18 @@
     }
 
     window.onload = () => fetchAllContent('top');
-    // Fonction pour le bouton ABONNEZ-VOUS
+// Fonction pour le bouton ABONNEZ-VOUS
 function handleSubscribe() {
-    // Log l'intention d'achat dans tes stats
-    tracker.log('click_subscribe', { title: 'Bouton Header Abonnement' });
-    
-    // Redirection vers une page d'abonnement ou affichage d'un message
-    alert("Merci de votre intérêt pour MAKMUS ! La page de paiement sécurisée est en cours de déploiement.");
-    // window.location.href = 'abonnement.html'; // Quand tu auras la page
-}
-
-// Fonction pour ouvrir/fermer le Modal de connexion (Mon Compte)
-function toggleLoginModal() {
-    const modal = document.getElementById('loginModal'); // Assure-toi que ton modal a cet ID
-    if (modal) {
-        const isVisible = modal.style.display === 'flex';
-        modal.style.display = isVisible ? 'none' : 'flex';
-        
-        if (!isVisible) {
-            tracker.log('open_account', { title: 'Tentative de connexion' });
-        }
-    }
-}
-
-// Fermeture du modal si on clique sur la croix (déjà existant normalement)
-const closeBtn = document.querySelector('.close-btn');
-if(closeBtn) {
-    closeBtn.onclick = () => {
-        document.getElementById('loginModal').style.display = 'none';
-    };
-}
-function handleSubscribe() {
-    // On enregistre l'intérêt dans Supabase
     tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement Header' });
-    
-    // Message amical pour fidéliser
     alert("Bientôt disponible ! MAKMUS prépare une offre exclusive pour ses lecteurs fidèles.");
 }
 
+// Fonction pour ouvrir/fermer le Modal de connexion
 function toggleLoginModal() {
-    // Log de la tentative de connexion
     tracker.log('click_account_login', { title: 'Bouton Mon Compte' });
-    
-    const modal = document.getElementById('loginModal');
+    const modal = document.getElementById('modalAccount'); // Vérifie bien l'ID ici (c'était modalAccount plus haut dans ton HTML)
     if (modal) {
-        modal.style.display = 'flex';
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
     } else {
         alert("L'espace membre sera disponible lors de la prochaine mise à jour.");
     }
@@ -400,14 +364,4 @@ function toggleLoginModal() {
 </body>
 
 </html>
-
-
-
-
-
-
-
-
-
-
 
