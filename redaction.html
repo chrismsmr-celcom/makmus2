@@ -7,36 +7,47 @@
     <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7567982675325882" crossorigin="anonymous"></script>
     
     <style>
-        /* --- STYLES ACTIONS & MODAL --- */
+        /* --- STYLE ACTIONS & INTERFACE --- */
         .share-tools-container { max-width: 800px; margin: 0 auto 25px auto; padding: 12px 20px; border-top: 2px solid #121212; border-bottom: 1px solid #e2e2e2; display: flex; justify-content: space-between; align-items: center; }
         .share-tools-list { display: flex; align-items: center; gap: 20px; }
         .action-item { display: flex; align-items: center; gap: 8px; cursor: pointer; background: none; border: none; font-family: Arial, sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; color: #121212; }
-        .action-item svg { width: 18px; height: 18px; }
-        .action-item.active svg { fill: #c00; stroke: #c00; }
-        .comment-count, .like-count { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+        .action-item img.share-icon { width: 28px; height: 28px; transition: transform 0.2s; }
+        .action-item:hover img.share-icon { transform: scale(1.1); }
+        .comment-count { background: #f0f0f0; padding: 2px 6px; border-radius: 4px; font-size: 11px; }
+
+        /* --- MODAL PARTAGE (GRID) --- */
+        .share-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-top: 20px; }
+        .share-option { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; color: #121212; font-size: 10px; font-family: Arial, sans-serif; font-weight: bold; cursor: pointer; border: 1px solid #eee; padding: 10px; border-radius: 4px; transition: background 0.2s; text-align: center; }
+        .share-option:hover { background: #f9f9f9; }
 
         /* --- STYLE AUTEUR --- */
         .author-box { display: flex; align-items: center; gap: 12px; margin: 30px 0; padding-bottom: 20px; border-bottom: 1px solid #eee; }
-        .author-photo { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; background: #eee; }
-        .author-info { font-family: Arial, sans-serif; }
-        .author-by { font-size: 0.7rem; color: #666; text-transform: uppercase; display: block; }
-        .author-name { font-size: 0.95rem; font-weight: bold; color: #121212; }
+        .author-photo { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
+        .author-name { font-family: Arial, sans-serif; font-weight: bold; font-size: 1rem; color: #121212; }
 
-        /* --- MODAL --- */
-        .modal { display: none; position: fixed; z-index: 3000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); }
-        .modal-content { background: #fff; margin: 5% auto; padding: 25px; width: 90%; max-width: 500px; border-radius: 4px; position: relative; max-height: 80vh; overflow-y: auto; }
-        .close-modal { position: absolute; right: 15px; top: 10px; font-size: 28px; cursor: pointer; }
-
-        /* --- RELATED --- */
-        .related-section { max-width: 800px; margin: 40px auto; padding: 20px; border-top: 4px solid #121212; }
-        .related-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; margin-top: 20px; }
+        /* --- SECTION ARTICLES SIMILAIRES --- */
+        .related-section { max-width: 800px; margin: 50px auto; padding: 20px; border-top: 4px solid #121212; }
+        .related-title { font-family: Arial, sans-serif; font-weight: 900; font-size: 1.2rem; text-transform: uppercase; margin-bottom: 20px; }
+        .related-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
         .related-card { text-decoration: none; color: inherit; }
-        .related-card img { width: 100%; height: 130px; object-fit: cover; }
+        .related-card img { width: 100%; height: 120px; object-fit: cover; margin-bottom: 10px; border: 1px solid #eee; }
+        .related-card h4 { font-family: 'Libre Baskerville'; font-size: 1rem; margin: 0; line-height: 1.3; }
+        .related-card h4:hover { text-decoration: underline; }
 
-        @media (max-width: 768px) { .action-item span { display: none; } }
+        /* --- MODALS --- */
+        .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
+        .modal-content { background: #fff; margin: 10% auto; padding: 25px; width: 90%; max-width: 450px; border-radius: 2px; position: relative; }
+        .close-modal { position: absolute; right: 15px; top: 10px; font-size: 28px; cursor: pointer; color: #000; }
+
+        /* --- IMPRESSION JOURNAL --- */
+        @media print {
+            .no-print, .main-header, .top-bar, .nav-compact, .share-tools-container, .nyt-footer, .full-menu, .status-line, .related-section { display: none !important; }
+            body { background: white !important; color: black !important; padding: 0; }
+            .article-content { column-count: 2; column-gap: 30px; text-align: justify; font-size: 11pt; }
+            h1 { font-size: 26pt !important; margin-bottom: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -82,14 +93,14 @@
     </div>
 </div>
 
-<div class="top-bar">
+<div class="top-bar no-print">
     <div class="top-bar-content">
         <div id="live-date">---</div>
         <div class="auth-section"><button id="openModal">MON COMPTE</button></div>
     </div>
 </div>
 
-<header class="main-header">
+<header class="main-header no-print">
     <div class="header-left">
         <div class="menu-toggle" id="btnOpenMenu">
             <span></span><span></span><span></span>
@@ -97,14 +108,16 @@
         </div>
     </div>
     <div class="logo-container">
-        <a href="index.html"><img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS"></a>
+        <a href="index.html">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+        </a>
     </div>
     <div class="header-right-spacer">
         <button class="btn-subscribe">S'ABONNER</button>
     </div>
 </header>
 
-<nav class="nav-compact" id="navMenu">
+<nav class="nav-compact no-print" id="navMenu">
     <ul>
         <li><a href="index.html" class="active">À LA UNE</a></li>
         <li><a href="index.html">RDC</a></li>
@@ -119,71 +132,62 @@
 </nav>
 
 <main class="newspaper-body" id="full-article">
-    <div id="status-line" class="status-line">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
-    <p style="text-align:center; padding: 50px;">Chargement de l'article...</p>
+    <div id="status-line" class="status-line no-print">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
+    <p style="text-align:center; padding: 100px;">Chargement de l'édition numérique...</p>
 </main>
 
-<section class="related-section" id="related-box" style="display:none;">
-    <h3 style="font-family:Arial; font-size:1.1rem; text-transform:uppercase;">Dans la même catégorie</h3>
+<section class="related-section no-print" id="related-box" style="display:none;">
+    <h3 class="related-title">Dans la même catégorie</h3>
     <div class="related-grid" id="related-container"></div>
 </section>
 
-<div id="commentModal" class="modal">
-    <div class="modal-content">
-        <span class="close-modal" onclick="closeComments()">&times;</span>
-        <h3 style="margin-top:0;">Commentaires (<span id="modal-count">0</span>)</h3>
-        <input type="text" id="comm-name" style="width:100%; padding:10px; margin-bottom:10px;" placeholder="Votre nom">
-        <textarea id="comm-msg" style="width:100%; padding:10px; margin-bottom:10px;" rows="4" placeholder="Votre message..."></textarea>
-        <button onclick="postComment()" style="background:#121212; color:#fff; border:none; padding:12px; width:100%; cursor:pointer;">PUBLIER</button>
-        <div id="modal-list" style="margin-top:20px;"></div>
-    </div>
-</div>
-
-<footer class="nyt-footer">
+<footer class="nyt-footer no-print">
     <div class="footer-container">
         <div class="footer-brand">
             <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
             <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
         </div>
 
-       <div class="footer-links-grid">
-    <div class="footer-col">
-        <h4>SECTIONS</h4>
-        <ul>
-        <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
-        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-        </ul>
-    </div>
-    <div class="footer-col">
-        <h4>AIDE</h4>
-        <ul>
-            <li><a href="#">Abonnements</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Publicité</a></li>
-            <li><a href="#">Emploi</a></li>
-            <li><a href="#">Makmus magazine</a></li>
-            <li><a href="#">Makila Emmanuel Heritage </a></li>
-            <li><a href="#">Météo </a></li>
-            <li><a href="#">Makem screen Studio</a></li>
-        </ul>
-    </div>
-    <div class="footer-col">
-        <h4>SUIVEZ-NOUS</h4>
-        <div class="social-links">
-            <a href="#">FB</a>
-            <a href="#">X</a>
-            <a href="#">IG</a>
-            <a href="#">YT</a>
+        <div class="footer-links-grid">
+            <div class="footer-col">
+                <h4>SECTIONS</h4>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+                    <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+                    <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+                    <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+                    <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+                    <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+                    <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+                    <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
+                    <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-col">
+                <h4>AIDE</h4>
+                <ul>
+                    <li><a href="#">Abonnements</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Publicité</a></li>
+                    <li><a href="#">Emploi</a></li>
+                    <li><a href="#">Makmus magazine</a></li>
+                    <li><a href="#">Makila Emmanuel Heritage</a></li>
+                    <li><a href="#">Météo</a></li>
+                    <li><a href="#">Makem screen Studio</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-col">
+                <h4>SUIVEZ-NOUS</h4>
+                <div class="social-links">
+                    <a href="#">FB</a>
+                    <a href="#">X</a>
+                    <a href="#">IG</a>
+                    <a href="#">YT</a>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
         <div class="footer-bottom">
             <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
@@ -195,6 +199,26 @@
         </div>
     </div>
 </footer>
+
+<div id="shareModal" class="modal no-print">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeShare()">&times;</span>
+        <h3 style="margin-top:0; font-family:Arial; text-align:center;">PARTAGER</h3>
+        <div class="share-grid" id="shareButtons"></div>
+    </div>
+</div>
+
+<div id="commentModal" class="modal no-print">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeComments()">&times;</span>
+        <h3 id="comm-title">Commentaires (0)</h3>
+        <div id="comments-list" style="max-height:300px; overflow-y:auto; margin-bottom:15px;"></div>
+        <input type="text" id="comm-name" placeholder="Votre nom" style="width:100%; margin-bottom:10px; padding:8px;">
+        <textarea id="comm-text" placeholder="Ajouter un commentaire..." style="width:100%; height:80px; padding:8px;"></textarea>
+        <button onclick="postComment()" style="width:100%; padding:10px; background:#121212; color:white; border:none; cursor:pointer;">PUBLIER</button>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
@@ -207,106 +231,165 @@
     document.getElementById('btnOpenMenu').onclick = () => document.getElementById('fullMenu').classList.add('open');
     document.getElementById('closeMenu').onclick = () => document.getElementById('fullMenu').classList.remove('open');
 
-    function updateDate() {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('live-date').textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
-    }
-    updateDate();
+    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    document.getElementById('live-date').textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
 
-    // ACTIONS
-    async function handleLike() {
-        const btn = document.querySelector('.btn-like');
-        if(btn.classList.contains('active')) return;
-        const currentLikes = parseInt(document.getElementById('like-nb').innerText);
-        const { error } = await supabaseClient.from('articles').update({ likes: currentLikes + 1 }).eq('id', articleId);
-        if(!error) { document.getElementById('like-nb').innerText = currentLikes + 1; btn.classList.add('active'); }
+    function openShare() { document.getElementById('shareModal').style.display = 'block'; }
+    function closeShare() { document.getElementById('shareModal').style.display = 'none'; }
+    function copyLink() {
+        navigator.clipboard.writeText(window.location.href);
+        alert("Lien copié !");
     }
 
     function openComments() { document.getElementById('commentModal').style.display = 'block'; fetchComments(); }
     function closeComments() { document.getElementById('commentModal').style.display = 'none'; }
 
     async function fetchComments() {
-        const { data, count } = await supabaseClient.from('article_comments').select('*', { count: 'exact' }).eq('article_id', articleId).order('created_at', { ascending: false });
-        document.getElementById('modal-count').innerText = count || 0;
-        document.getElementById('nb-comm').innerText = count || 0;
-        document.getElementById('modal-list').innerHTML = data.map(c => `
-            <div style="padding:10px 0; border-bottom:1px solid #eee;">
-                <b>${c.nom}</b><p style="margin:5px 0; font-size:0.9rem;">${c.message}</p>
-            </div>
-        `).join('');
+        const { data } = await supabaseClient.from('article_comments').select('*').eq('article_id', articleId).order('created_at', {ascending: false});
+        if(data) {
+            document.getElementById('nb-comm').innerText = data.length;
+            document.getElementById('comm-title').innerText = `Commentaires (${data.length})`;
+            document.getElementById('comments-list').innerHTML = data.map(c => `
+                <div style="border-bottom:1px solid #eee; padding:10px 0;">
+                    <b style="font-size:0.8rem;">${c.nom}</b>
+                    <p style="margin:5px 0; font-size:0.9rem;">${c.message}</p>
+                </div>
+            `).join('');
+        }
     }
 
     async function postComment() {
         const nom = document.getElementById('comm-name').value;
-        const msg = document.getElementById('comm-msg').value;
-        if (!nom || !msg) return;
+        const msg = document.getElementById('comm-text').value;
+        if(!nom || !msg) return;
         await supabaseClient.from('article_comments').insert([{ article_id: articleId, nom, message: msg }]);
-        document.getElementById('comm-msg').value = "";
+        document.getElementById('comm-text').value = "";
         fetchComments();
+    }
+
+    async function loadRelated(category, currentId) {
+        const { data } = await supabaseClient.from('articles')
+            .select('id, titre, image_url')
+            .eq('category', category)
+            .neq('id', currentId)
+            .limit(4);
+        
+        if (data && data.length > 0) {
+            document.getElementById('related-box').style.display = 'block';
+            document.getElementById('related-container').innerHTML = data.map(item => `
+                <a href="redaction.html?id=${item.id}" class="related-card">
+                    <img src="${item.image_url}" alt="${item.titre}">
+                    <h4>${item.titre}</h4>
+                </a>
+            `).join('');
+        }
     }
 
     async function loadArticle() {
         if (!articleId) return;
         const { data: art, error } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
+        
         if (art) {
-            const shareUrl = encodeURIComponent(window.location.href);
+            const url = encodeURIComponent(window.location.href);
+            const title = encodeURIComponent(art.titre);
             const display = document.getElementById('full-article');
-            
+
             display.innerHTML = `
+                <div id="status-line" class="status-line no-print">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
                 <header class="article-header" style="max-width:800px; margin: 0 auto; padding: 20px;">
-                    <div style="color:#c00; font-weight:bold; font-size:0.75rem; text-transform:uppercase; margin-bottom:10px;">${art.category}</div>
-                    <h1 style="font-family:'Libre Baskerville'; font-size: 2.8rem; line-height:1.1; margin:0;">${art.titre}</h1>
+                    <div style="color:#c00; font-weight:bold; font-size:0.8rem; text-transform:uppercase; margin-bottom:10px;">${art.category}</div>
+                    <h1 style="font-family:'Libre Baskerville'; font-size: 3rem; line-height:1.1; margin:0;">${art.titre}</h1>
                 </header>
 
-                <div class="share-tools-container">
+                <div class="share-tools-container no-print">
                     <div class="share-tools-list">
-                        <button class="action-item" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${shareUrl}')">FB</button>
-                        <button class="action-item" onclick="window.open('https://api.whatsapp.com/send?text=${shareUrl}')">WA</button>
-                        <button class="action-item btn-like" onclick="handleLike()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
-                            <span id="like-nb">${art.likes || 0}</span>
+                        <button class="action-item" onclick="openShare()">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAACIUlEQVR4nO2ZPUscURSGn2jcoAQV/QGSIthHUsRs5T+wF0wqTZc6sZ2QRlyXxM40iShaKO5fMESstLXdbJcUIbgrYvbKwC0OlzWz92M+FuaFy8LMvee8791zzj0zAyVKlCgxCKgCe0ALuAXUf0YHiBx8RMBfoA4MhSL+EPiUQLjXiInY4o9Yvx1KhAt5139g3bDjLaJqGDwC5oAK6WBIkw4mYk8YOiYbPAC2DBFfXEW0hJF450PiCbAEfAZ+AJfAL6B7T1jGiW0NWW1ChM0k8AY4c8irKxeH0oAPxoA1XZmU49jMS8Ai0OxBqK3z6h2wADwFpoHhkInsIyAOuVqPmD4HVoCJLKqQchQQk/turP8JvEogUwt9DrgIGAdOjbX7+noS2qFPYlsBj4ATseYf8NbC30fgGtgI1UbYCqiL+V1dMnOFshCwaCSszc7|" class="share-icon" alt="Partager">
+                            <span>Partager</span>
                         </button>
                     </div>
                     <div class="share-tools-list">
                         <button class="action-item" onclick="openComments()">
-                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
                             <span class="comment-count" id="nb-comm">0</span>
                         </button>
                     </div>
                 </div>
-
-                <div style="max-width:900px; margin: 0 auto;"><img src="${art.image_url}" style="width:100%;"></div>
+                <div class="share-tools-list">
+    <button class="action-item" onclick="toggleSpeech()" id="speech-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+        </svg>
+        <span id="speech-text">ÉCOUTER L'ARTICLE</span>
+    </button>
+</div>
+                <div style="max-width:1000px; margin: 0 auto;"><img src="${art.image_url}" style="width:100%; display:block;"></div>
 
                 <div style="max-width:700px; margin: 0 auto; padding: 0 20px;">
                     <div class="author-box">
                         <img src="${art.author_image || 'https://via.placeholder.com/50'}" class="author-photo">
                         <div class="author-info">
-                            <span class="author-by">Par</span>
-                            <span class="author-name">${art.author_name || 'Rédaction Makmus'}</span>
+                            <span style="font-size:0.7rem; color:#666; text-transform:uppercase;">Par</span><br>
+                            <span class="author-name">${art.author_name || 'La Rédaction Makmus'}</span>
                         </div>
                     </div>
-
-                    <div class="article-content" style="font-family:'Libre Baskerville'; font-size:1.25rem; line-height:1.8; margin-top:20px;">
+                    <div class="article-content" style="font-family:'Libre Baskerville'; font-size:1.25rem; line-height:1.8;">
                         ${art.description}
                     </div>
                 </div>
             `;
+
+            document.getElementById('shareButtons').innerHTML = `
+                <a class="share-option" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${url}')">Facebook</a>
+                <a class="share-option" onclick="window.open('https://twitter.com/intent/tweet?url=${url}&text=${title}')">X / Twitter</a>
+                <a class="share-option" onclick="window.open('https://api.whatsapp.com/send?text=${title}%20${url}')">WhatsApp</a>
+                <a class="share-option" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=${url}')">LinkedIn</a>
+                <a class="share-option" onclick="window.open('https://telegram.me/share/url?url=${url}&text=${title}')">Telegram</a>
+                <a class="share-option" onclick="window.open('mailto:?subject=${title}&body=${url}')">Email</a>
+                <div class="share-option" onclick="copyLink()">Copier Lien</div>
+                <div class="share-option" onclick="window.print()" style="color:#c00; border-color:#c00;">Imprimer</div>
+            `;
+            
             loadRelated(art.category, art.id);
             fetchComments();
         }
     }
+    
+    loadArticle();
+    let speechInstance = null;
 
-    async function loadRelated(cat, id) {
-        const { data } = await supabaseClient.from('articles').select('id, titre, image_url').eq('category', cat).neq('id', id).limit(3);
-        if (data && data.length > 0) {
-            document.getElementById('related-box').style.display = 'block';
-            document.getElementById('related-container').innerHTML = data.map(item => `
-                <a href="redaction.html?id=${item.id}" class="related-card"><img src="${item.image_url}"><h4>${item.titre}</h4></a>
-            `).join('');
-        }
+function toggleSpeech() {
+    const btnText = document.getElementById('speech-text');
+    const content = document.querySelector('.article-content').innerText;
+
+    // Si on est déjà en train de lire, on arrête
+    if (window.speechSynthesis.speaking) {
+        window.speechSynthesis.cancel();
+        btnText.innerText = "ÉCOUTER L'ARTICLE";
+        return;
     }
 
-    loadArticle();
+    // Configuration de la lecture
+    speechInstance = new SpeechSynthesisUtterance(content);
+    speechInstance.lang = 'fr-FR';
+    speechInstance.rate = 1; // Vitesse normale
+
+    speechInstance.onstart = () => {
+        btnText.innerText = "ARRÊTER L'ÉCOUTE";
+    };
+
+    speechInstance.onend = () => {
+        btnText.innerText = "ÉCOUTER L'ARTICLE";
+    };
+
+    window.speechSynthesis.speak(speechInstance);
+}
+
+// Arrêter la lecture si l'utilisateur quitte la page
+window.onbeforeunload = () => {
+    window.speechSynthesis.cancel();
+};
 </script>
 </body>
 </html>
