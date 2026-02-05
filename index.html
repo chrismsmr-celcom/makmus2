@@ -181,6 +181,29 @@
     const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
     const CACHE_DURATION = 60 * 60 * 1000; 
 
+    // --- SYSTÈME ANALYTICS MAKMUS (Souverain) ---
+    const tracker = {
+        getVisitorId: () => {
+            let id = sessionStorage.getItem('makmus_visitor_id');
+            if (!id) {
+                id = 'v-' + Math.random().toString(36).substr(2, 9);
+                sessionStorage.setItem('makmus_visitor_id', id);
+            }
+            return id;
+        },
+        log: async (type, data = {}) => {
+            try {
+                await supabaseClient.from('stats').insert([{
+                    event_type: type,
+                    article_title: data.title || 'Page Accueil',
+                    category: data.category || 'Général',
+                    path: window.location.pathname,
+                    visitor_id: tracker.getVisitorId()
+                }]);
+            } catch (e) { console.warn("Analytics non configuré"); }
+        }
+    };
+
     // --- GESTION DU MENU ---
     const btnOpenMenu = document.getElementById('btnOpenMenu');
     const btnCloseMenu = document.getElementById('closeMenu');
@@ -191,10 +214,7 @@
         document.body.style.overflow = 'hidden'; 
     };
     
-    if(btnCloseMenu) btnCloseMenu.onclick = () => { 
-        fullMenu.classList.remove('open'); 
-        document.body.style.overflow = 'auto'; 
-    };
+    if(btnCloseMenu) btnCloseMenu.onclick = () => closeMenuUI();
 
     window.executeMenuSearch = function() {
         const query = document.getElementById('menuSearchInput').value;
@@ -205,7 +225,7 @@
     }
 
     function closeMenuUI() {
-        if(fullMenu && fullMenu.classList.contains('open')) {
+        if(fullMenu) {
             fullMenu.classList.remove('open');
             document.body.style.overflow = 'auto';
         }
@@ -225,28 +245,25 @@
         closeMenuUI();
 
         const status = document.getElementById('status-line');
-        const newsCacheKey = `news_api_${category}_${query}`;
-        const newsCacheTimeKey = `${newsCacheKey}_time`;
-        const cachedNews = localStorage.getItem(newsCacheKey);
-        const newsTimestamp = localStorage.getItem(newsCacheTimeKey);
         const now = new Date().getTime();
 
         try {
             if(status) status.textContent = "CHARGEMENT...";
+            tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
+            // 1. Appel Supabase
             let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
-            
-            if (category !== 'top') {
-                sbQuery = sbQuery.eq('category', category);
-            }
-            
-            if (query) {
-                sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
-            }
+            if (category !== 'top') sbQuery = sbQuery.eq('category', category);
+            if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
 
             const { data: myArticles, error: sbError } = await sbQuery;
             if (sbError) throw sbError;
 
+            // 2. Appel NewsAPI (avec Cache)
+            const newsCacheKey = `news_api_${category}_${query}`;
+            const cachedNews = localStorage.getItem(newsCacheKey);
+            const newsTimestamp = localStorage.getItem(`${newsCacheKey}_time`);
+            
             let worldNews = [];
             if (cachedNews && newsTimestamp && (now - newsTimestamp < CACHE_DURATION)) {
                 worldNews = JSON.parse(cachedNews);
@@ -256,12 +273,11 @@
                 const newsRes = await fetch(newsUrl);
                 const newsData = await newsRes.json();
                 worldNews = newsData.results || [];
-
                 localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
-                localStorage.setItem(newsCacheTimeKey, now.toString());
+                localStorage.setItem(`${newsCacheKey}_time`, now.toString());
             }
 
-            renderAll({ myArticles: myArticles || [], worldNews }, query);
+            renderAll({ myArticles: myArticles || [], worldNews, category }, query);
 
         } catch (e) { 
             console.error("Erreur:", e);
@@ -269,14 +285,13 @@
         }
     }
 
-    // --- FONCTION D'AFFICHAGE (SANS ICONES DE PARTAGE) ---
+    // --- FONCTION D'AFFICHAGE ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
         const status = document.getElementById('status-line');
-        const { myArticles, worldNews } = data;
-
-        const allPossible = [...myArticles, ...worldNews];
+        
+        const allPossible = [...data.myArticles, ...data.worldNews];
         const seenTitles = new Set();
         const uniqueArticles = allPossible.filter(art => {
             const t = (art.titre || art.title || "").trim().toLowerCase();
@@ -287,58 +302,61 @@
 
         if (uniqueArticles.length === 0) {
             if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
-            if(hero) hero.innerHTML = "";
-            if(grid) grid.innerHTML = "";
             return;
         }
 
-        // 1. HERO
+        // 1. RENDER HERO
         const h = uniqueArticles[0];
         const hTitle = h.titre || h.title;
-        const hDesc = h.description || "";
-        const hImg = h.image_url || h.image || "";
-        const hIsLocal = h.id ? true : false;
-        const hLink = hIsLocal ? `redaction.html?id=${h.id}` : (h.link || "#");
+        const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
+        
+        if(hero) {
+            hero.innerHTML = `
+                <div class="hero-container">
+                    <div class="hero-text">
+                        <h1 onclick="captureAction('${hTitle}', '${data.category}', '${hLink}')">${hTitle}</h1>
+                        <p>${(h.description || "").substring(0, 250)}...</p>
+                        <div class="hero-share">
+                            <span>PARTAGER :</span>
+                            <a href="https://twitter.com/intent/tweet?text=${encodeURIComponent(hTitle)}&url=${encodeURIComponent(hLink)}" target="_blank">X</a>
+                            <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(hLink)}" target="_blank">FB</a>
+                        </div>
+                        <button class="btn-read-more" onclick="captureAction('${hTitle}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
+                    </div>
+                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
+                </div>`;
+        }
 
-        renderHeroMarkup(hTitle, hDesc, hImg, hLink);
-
-        // 2. GRILLE
-        const gridArticles = uniqueArticles.slice(1, 13);
+        // 2. RENDER GRILLE
         if(grid) {
-            grid.innerHTML = gridArticles.map(art => {
+            grid.innerHTML = uniqueArticles.slice(1, 13).map(art => {
                 const title = art.titre || art.title;
-                const desc = art.description || "";
-                const isLocal = art.id ? true : false;
-                const link = isLocal ? `redaction.html?id=${art.id}` : (art.link || "#");
+                const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
                 const img = art.image_url || art.image || "";
                 
                 return `
-                    <div class="article-card" onclick="window.location.href='${link}'">
-                        ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
+                    <div class="article-card">
+                        ${img ? `<div class="card-img" onclick="captureAction('${title}', '${data.category}', '${link}')"><img src="${img}"></div>` : ''}
                         <div class="card-text">
-                            <h3>${title}</h3>
-                            <p class="card-desc">${desc.substring(0, 90)}...</p>
+                            <h3 onclick="captureAction('${title}', '${data.category}', '${link}')">${title}</h3>
+                            <p class="card-desc">${(art.description || "").substring(0, 90)}...</p>
+                            <div class="share-box">
+                                <a href="#" onclick="captureAction('${title}', '${data.category}', '${link}')">LIRE</a>
+                                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(link)}" target="_blank">PARTAGER</a>
+                            </div>
                         </div>
                     </div>`;
             }).join('');
         }
 
-        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ACTUALITÉS MISES À JOUR`;
+        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
     }
 
-    function renderHeroMarkup(title, desc, img, link) {
-        const heroZone = document.getElementById('hero-zone');
-        if(!heroZone) return;
-
-        heroZone.innerHTML = `
-            <div class="hero-container" onclick="window.location.href='${link}'">
-                <div class="hero-text">
-                    <h1>${title}</h1>
-                    <p>${desc ? desc.substring(0, 250) + '...' : ''}</p>
-                    <button class="btn-read-more">LIRE LA SUITE →</button>
-                </div>
-                ${img ? `<div class="hero-img"><img src="${img}"></div>` : ''}
-            </div>`;
+    // --- GESTIONNAIRE DE CLIC ET ANALYTICS ---
+    window.captureAction = function(title, category, link) {
+        tracker.log('click', { title, category });
+        // Petit délai pour laisser le log partir avant de changer de page
+        setTimeout(() => { window.location.href = link; }, 150);
     }
 
     window.onload = () => fetchAllContent('top');
@@ -347,6 +365,7 @@
 </body>
 
 </html>
+
 
 
 
