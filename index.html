@@ -345,10 +345,41 @@
     }
 
     window.onload = () => fetchAllContent('top');
+    // Fonction pour le bouton ABONNEZ-VOUS
+function handleSubscribe() {
+    // Log l'intention d'achat dans tes stats
+    tracker.log('click_subscribe', { title: 'Bouton Header Abonnement' });
+    
+    // Redirection vers une page d'abonnement ou affichage d'un message
+    alert("Merci de votre intérêt pour MAKMUS ! La page de paiement sécurisée est en cours de déploiement.");
+    // window.location.href = 'abonnement.html'; // Quand tu auras la page
+}
+
+// Fonction pour ouvrir/fermer le Modal de connexion (Mon Compte)
+function toggleLoginModal() {
+    const modal = document.getElementById('loginModal'); // Assure-toi que ton modal a cet ID
+    if (modal) {
+        const isVisible = modal.style.display === 'flex';
+        modal.style.display = isVisible ? 'none' : 'flex';
+        
+        if (!isVisible) {
+            tracker.log('open_account', { title: 'Tentative de connexion' });
+        }
+    }
+}
+
+// Fermeture du modal si on clique sur la croix (déjà existant normalement)
+const closeBtn = document.querySelector('.close-btn');
+if(closeBtn) {
+    closeBtn.onclick = () => {
+        document.getElementById('loginModal').style.display = 'none';
+    };
+}
 </script>
 </body>
 
 </html>
+
 
 
 
