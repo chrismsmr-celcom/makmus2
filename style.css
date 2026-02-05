@@ -228,3 +228,49 @@ body {
 /* Style pour le partage dans le Hero */
 .hero-share { margin-top: 15px; font-size: 12px; font-family: var(--font-ui); }
 .hero-share a { margin-left: 10px; color: #000; text-decoration: underline; font-weight: bold; }
+/* --- BOUTONS HEADER --- */
+.btn-subscribe {
+    background: var(--accent); /* Rouge pour attirer l'attention */
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    text-transform: uppercase;
+    transition: 0.3s;
+    font-family: var(--font-ui);
+    white-space: nowrap;
+}
+
+.btn-subscribe:hover { background: #000; }
+
+#openModal { 
+    background: none; 
+    border: 1px solid #000; 
+    padding: 5px 10px; 
+    cursor: pointer; 
+    font-size: 10px; 
+    font-weight: bold;
+    font-family: var(--font-ui);
+    text-transform: uppercase;
+}
+
+/* --- AJUSTEMENTS MOBILE --- */
+@media (max-width: 768px) {
+    .btn-subscribe {
+        padding: 5px 8px;
+        font-size: 9px;
+    }
+    
+    #openModal {
+        padding: 4px 6px;
+        font-size: 9px;
+    }
+
+    /* Optionnel: Masquer le texte "$/SEMAINE" sur très petit écran pour gagner de la place */
+    @media (max-width: 480px) {
+        .btn-subscribe span { display: none; }
+    }
+}
