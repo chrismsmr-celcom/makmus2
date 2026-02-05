@@ -274,3 +274,37 @@ body {
         .btn-subscribe span { display: none; }
     }
 }
+/* --- BOUTONS HEADER CONSOLIDÉS --- */
+.header-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-subscribe {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: var(--font-ui);
+    transition: background 0.2s;
+}
+
+.btn-subscribe:hover { background: #000; }
+
+/* Masquage intelligent du prix sur mobile */
+@media (max-width: 600px) {
+    .price-tag { display: none; } /* Cache "POUR 1 $/SEMAINE" */
+    .btn-subscribe { padding: 6px 10px; font-size: 10px; }
+    #openModal { padding: 5px 8px; font-size: 10px; }
+    .header-right { gap: 5px; }
+}
+
+@media (max-width: 400px) {
+    .btn-subscribe { font-size: 9px; }
+    #openModal { font-size: 9px; }
+}
