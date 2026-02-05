@@ -220,23 +220,32 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // --- STYLES (LIKES, PARTAGE, LÉGENDES & PROGRESS BAR) ---
+    // --- STYLES (UI, MODALS, ANIMATIONS & PROGRESS BAR) ---
     const styleApp = document.createElement('style');
     styleApp.innerHTML = `
         @keyframes heartbeat { 0% { transform: scale(1); } 25% { transform: scale(1.3); } 50% { transform: scale(1); } 100% { transform: scale(1); } }
         .animate-like { animation: heartbeat 0.45s ease-in-out; }
-        .share-list-simple { display: flex; flex-direction: column; gap: 0; margin-top: 15px; }
-        .share-option-text { padding: 15px; text-align: center; font-family: Arial, sans-serif; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #121212; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
+        
+        /* Modal Style pour Partage et Commentaires */
+        .modal { display: none; position: fixed; z-index: 20000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
+        .modal-content { background: white; margin: 10% auto; padding: 0; width: 90%; max-width: 450px; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
+        .modal-header { padding: 20px; border-bottom: 1px solid #eee; text-align: center; font-weight: bold; font-family: Arial, sans-serif; }
+        .close-btn { position: absolute; right: 20px; top: 18px; cursor: pointer; font-size: 24px; color: #666; }
+        
+        /* Liste Partage Social */
+        .share-option-text { padding: 18px; text-align: center; font-family: Arial, sans-serif; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; color: #121212; border-bottom: 1px solid #eee; cursor: pointer; transition: background 0.2s; }
         .share-option-text:last-child { border-bottom: none; }
         .share-option-text:hover { background: #f9f9f9; color: #c00; }
-        .img-caption-style { font-size: 0.75rem; color: #6b7280; margin-top: 8px; text-align: right; font-style: italic; display: block; }
 
-        /* Barre d'évolution discrète */
-        #audio-progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: rgba(0,0,0,0.05); z-index: 10000; display: none; }
+        /* Barre d'évolution discrète en haut de page */
+        #audio-progress-container { position: fixed; top: 0; left: 0; width: 100%; height: 3px; background: rgba(0,0,0,0.05); z-index: 30000; display: none; }
         #audio-progress-bar { width: 0%; height: 100%; background: #c00; transition: width 0.3s linear; }
+        
+        .img-caption-style { font-size: 0.75rem; color: #6b7280; margin-top: 8px; text-align: right; font-style: italic; display: block; }
     `;
     document.head.appendChild(styleApp);
 
+    // Injection de la barre de progression
     document.body.insertAdjacentHTML('afterbegin', '<div id="audio-progress-container"><div id="audio-progress-bar"></div></div>');
 
     // --- CONFIGURATION SUPABASE ---
@@ -247,11 +256,72 @@
     const params = new URLSearchParams(window.location.search);
     const articleId = params.get('id');
 
-    // --- SYSTÈME AUDIO GRATUIT (NAVIGATEUR) ---
+    // --- VARIABLES GLOBALES AUDIO ---
+    let currentAudioFile = null; 
     let speechInstance = null;
     let progressInterval = null;
 
-    function stopAudio() {
+    // --- LOGIQUE AUDIO HYBRIDE (MP3 PRIORITAIRE) ---
+    async function toggleSpeech() {
+        const btnText = document.getElementById('speech-text');
+        const pContainer = document.getElementById('audio-progress-container');
+        const pBar = document.getElementById('audio-progress-bar');
+
+        if ((currentAudioFile && !currentAudioFile.paused) || window.speechSynthesis.speaking) {
+            stopAllAudio();
+            return;
+        }
+
+        btnText.innerText = "CHARGEMENT...";
+        const { data: art } = await supabaseClient.from('articles').select('description, audio_url').eq('id', articleId).single();
+
+        if (!art) return (btnText.innerText = "ÉCOUTER");
+
+        if (art.audio_url) {
+            // Lecture du fichier Piper/Coqui
+            currentAudioFile = new Audio(art.audio_url);
+            currentAudioFile.ontimeupdate = () => {
+                pBar.style.width = (currentAudioFile.currentTime / currentAudioFile.duration * 100) + "%";
+            };
+            currentAudioFile.onplay = () => { 
+                btnText.innerText = "ARRÊTER"; 
+                pContainer.style.display = 'block'; 
+            };
+            currentAudioFile.onended = () => stopAllAudio();
+            currentAudioFile.play().catch(() => startSystemFallback(art.description));
+        } else {
+            startSystemFallback(art.description);
+        }
+    }
+
+    function startSystemFallback(text) {
+        const btnText = document.getElementById('speech-text');
+        const pContainer = document.getElementById('audio-progress-container');
+        const pBar = document.getElementById('audio-progress-bar');
+
+        speechInstance = new SpeechSynthesisUtterance(text);
+        speechInstance.lang = 'fr-FR';
+        
+        const voices = window.speechSynthesis.getVoices();
+        const frenchVoice = voices.find(v => v.lang.startsWith('fr') && (v.name.includes('Julie') || v.name.includes('Google') || v.name.includes('Premium'))) || voices.find(v => v.lang.startsWith('fr'));
+        if (frenchVoice) speechInstance.voice = frenchVoice;
+
+        speechInstance.onstart = () => {
+            btnText.innerText = "ARRÊTER";
+            pContainer.style.display = 'block';
+            let start = Date.now();
+            let duration = text.length * 65; 
+            progressInterval = setInterval(() => {
+                let pct = Math.min(((Date.now() - start) / duration) * 100, 99);
+                pBar.style.width = pct + "%";
+            }, 500);
+        };
+        speechInstance.onend = () => stopAllAudio();
+        window.speechSynthesis.speak(speechInstance);
+    }
+
+    function stopAllAudio() {
+        if (currentAudioFile) { currentAudioFile.pause(); currentAudioFile = null; }
         window.speechSynthesis.cancel();
         if (progressInterval) clearInterval(progressInterval);
         document.getElementById('speech-text').innerText = "ÉCOUTER";
@@ -259,49 +329,9 @@
         document.getElementById('audio-progress-bar').style.width = "0%";
     }
 
-    function toggleSpeech() {
-        const btnText = document.getElementById('speech-text');
-        const content = document.getElementById('printable-content').innerText;
-        const pContainer = document.getElementById('audio-progress-container');
-        const pBar = document.getElementById('audio-progress-bar');
+    window.addEventListener('beforeunload', stopAllAudio);
 
-        if (window.speechSynthesis.speaking) {
-            stopAudio();
-            return;
-        }
-
-        speechInstance = new SpeechSynthesisUtterance(content);
-        speechInstance.lang = 'fr-FR';
-        speechInstance.rate = 1.0; 
-
-        // Recherche d'une voix féminine de qualité
-        const voices = window.speechSynthesis.getVoices();
-        const frenchVoice = voices.find(v => v.lang.startsWith('fr') && (v.name.includes('Hortense') || v.name.includes('Julie') || v.name.includes('Google') || v.name.includes('Premium'))) || voices.find(v => v.lang.startsWith('fr'));
-        
-        if (frenchVoice) speechInstance.voice = frenchVoice;
-
-        speechInstance.onstart = () => {
-            btnText.innerText = "ARRÊTER";
-            pContainer.style.display = 'block';
-            
-            // Simulation d'évolution de la barre (le navigateur ne donne pas la durée exacte pour la synthèse vocale)
-            let estimatedDuration = content.length * 60; // Estimation grossière 60ms par caractère
-            let startTime = Date.now();
-            progressInterval = setInterval(() => {
-                let elapsed = Date.now() - startTime;
-                let pct = Math.min((elapsed / estimatedDuration) * 100, 98);
-                pBar.style.width = pct + "%";
-            }, 500);
-        };
-
-        speechInstance.onend = () => { stopAudio(); };
-        window.speechSynthesis.speak(speechInstance);
-    }
-
-    // Sécurité arrêt audio
-    window.addEventListener('beforeunload', () => { window.speechSynthesis.cancel(); });
-
-    // --- FONCTIONS SUPABASE (LIKES/COMMENTS) ---
+    // --- LIKES & COMMENTAIRES ---
     async function fetchLikes() {
         const { count } = await supabaseClient.from('article_likes').select('*', { count: 'exact', head: true }).eq('article_id', articleId);
         if (document.getElementById('nb-like')) document.getElementById('nb-like').innerText = count || 0;
@@ -322,11 +352,23 @@
         }
     }
 
+    async function fetchComments() {
+        const { data } = await supabaseClient.from('article_comments').select('*').eq('article_id', articleId).order('created_at', {ascending: false});
+        if(data) {
+            document.getElementById('nb-comm').innerText = data.length;
+            const list = document.getElementById('comments-list');
+            if(list) list.innerHTML = data.map(c => `<div style="border-bottom:1px solid #eee; padding:15px 0;"><b style="font-size:0.85rem;">${c.nom}</b><p style="margin:5px 0; font-size:0.95rem;">${c.message}</p></div>`).join('');
+        }
+    }
+
+    // --- CHARGEMENT ARTICLE ET MODAL PARTAGE ---
     async function loadArticle() {
         if (!articleId) return;
         const { data: art } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
         if (art) {
-            const url = encodeURIComponent(window.location.href);
+            const currentUrl = encodeURIComponent(window.location.href);
+            const shareTitle = encodeURIComponent(art.titre);
+
             document.getElementById('full-article').innerHTML = `
                 <div id="status-line" class="status-line no-print">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
                 <header class="article-header" style="max-width:800px; margin: 0 auto; padding: 20px;">
@@ -361,49 +403,34 @@
                     </div>
                 </div>
             `;
-            // Configuration partage
-            const shareCont = document.getElementById('shareButtons');
-            shareCont.innerHTML = `
-                <div class="share-option-text" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${url}')">Facebook</div>
-                <div class="share-option-text" onclick="window.open('https://twitter.com/intent/tweet?url=${url}')">X / Twitter</div>
-                <div class="share-option-text" onclick="window.open('https://t.me/share/url?url=${url}')">Telegram</div>
-                <div class="share-option-text" onclick="copyLink()">Copier le lien</div>
-                <div class="share-option-text" onclick="window.print()" style="color:#c00;">Imprimer</div>
+            
+            // On remplit dynamiquement le modal de partage
+            document.getElementById('shareModal').innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-header">PARTAGER CETTE ÉDITION <span class="close-btn" onclick="closeShare()">×</span></div>
+                    <div class="share-option-text" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${currentUrl}')">Facebook</div>
+                    <div class="share-option-text" onclick="window.open('https://twitter.com/intent/tweet?url=${currentUrl}&text=${shareTitle}')">X</div>
+                    <div class="share-option-text" onclick="window.open('https://wa.me/?text=${shareTitle}%20${currentUrl}')">WhatsApp</div>
+                    <div class="share-option-text" onclick="window.open('https://t.me/share/url?url=${currentUrl}')">Telegram</div>
+                    <div class="share-option-text" onclick="copyLink()">Copier le lien</div>
+                    <div class="share-option-text" onclick="window.print()" style="color:#c00;">Imprimer l'article</div>
+                </div>
             `;
             fetchComments(); fetchLikes();
         }
     }
 
-    async function fetchComments() {
-        const { data } = await supabaseClient.from('article_comments').select('*').eq('article_id', articleId).order('created_at', {ascending: false});
-        if(data) {
-            document.getElementById('nb-comm').innerText = data.length;
-            const list = document.getElementById('comments-list');
-            if(list) list.innerHTML = data.map(c => `<div style="border-bottom:1px solid #eee; padding:15px 0;"><b style="font-size:0.85rem;">${c.nom}</b><p style="margin:5px 0; font-size:0.95rem;">${c.message}</p></div>`).join('');
-        }
-    }
-
-    async function postComment() {
-        const nom = document.getElementById('comm-nom').value;
-        const msg = document.getElementById('comm-msg').value;
-        if (!nom || !msg) return alert("Remplissez tout.");
-        const { error } = await supabaseClient.from('article_comments').insert([{ article_id: articleId, nom: nom, message: msg }]);
-        if (!error) {
-            document.getElementById('comm-nom').value = ''; document.getElementById('comm-msg').value = '';
-            closeComments(); fetchComments();
-        }
-    }
-
-    // Pré-chargement voix navigateur
-    window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
-    loadArticle();
-    
-    // NAVIGATION & MODALS (RAPPEL)
+    // --- NAVIGATION MODALS ---
     function openShare() { document.getElementById('shareModal').style.display = 'block'; }
     function closeShare() { document.getElementById('shareModal').style.display = 'none'; }
     function openComments() { document.getElementById('commentModal').style.display = 'block'; fetchComments(); }
     function closeComments() { document.getElementById('commentModal').style.display = 'none'; }
+    function copyLink() { navigator.clipboard.writeText(window.location.href); alert("Lien copié !"); closeShare(); }
+
+    window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+    loadArticle();
 </script>
+
 
 </body>
 </html>
