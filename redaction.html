@@ -219,7 +219,6 @@
 
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     // Style pour l'animation Like et le Modal de partage épuré
     const styleApp = document.createElement('style');
@@ -232,7 +231,6 @@
         }
         .animate-like { animation: heartbeat 0.45s ease-in-out; }
         
-        /* Style des options de partage en texte simple */
         .share-list-simple {
             display: flex;
             flex-direction: column;
@@ -254,6 +252,15 @@
         }
         .share-option-text:last-child { border-bottom: none; }
         .share-option-text:hover { background: #f9f9f9; color: #c00; }
+        
+        .img-caption-style {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 8px;
+            text-align: right;
+            font-style: italic;
+            display: block;
+        }
     `;
     document.head.appendChild(styleApp);
 
@@ -275,41 +282,49 @@
         alert("Lien copié !");
     }
 
-    // Fonction Like
-    function toggleLike() {
+    // --- SYSTÈME DE LIKES ---
+    async function fetchLikes() {
+        const { count, error } = await supabaseClient
+            .from('article_likes')
+            .select('*', { count: 'exact', head: true })
+            .eq('article_id', articleId);
+        
+        if (!error && document.getElementById('nb-like')) {
+            document.getElementById('nb-like').innerText = count || 0;
+        }
+    }
+
+    async function toggleLike() {
         const btn = document.getElementById('like-btn');
         const svg = btn.querySelector('svg');
-        const countSpan = document.getElementById('nb-like');
-        let count = parseInt(countSpan.innerText);
         
         svg.classList.remove('animate-like');
         void svg.offsetWidth;
         svg.classList.add('animate-like');
 
-        if (btn.classList.contains('liked')) {
-            btn.classList.remove('liked');
-            svg.setAttribute('fill', 'none');
-            svg.setAttribute('stroke', 'currentColor');
-            btn.style.color = "#121212";
-            countSpan.innerText = count - 1;
-        } else {
-            btn.classList.add('liked');
-            svg.setAttribute('fill', '#e0245e');
-            svg.setAttribute('stroke', '#e0245e');
-            btn.style.color = "#e0245e";
-            countSpan.innerText = count + 1;
+        if (!btn.classList.contains('liked')) {
+            const { error } = await supabaseClient
+                .from('article_likes')
+                .insert([{ article_id: articleId }]);
+
+            if (!error) {
+                btn.classList.add('liked');
+                svg.setAttribute('fill', '#e0245e');
+                svg.setAttribute('stroke', '#e0245e');
+                btn.style.color = "#e0245e";
+                fetchLikes();
+            }
         }
     }
 
+    // --- CHARGEMENT ARTICLE ---
     async function loadArticle() {
         if (!articleId) return;
         const { data: art } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
         
         if (art) {
             const url = encodeURIComponent(window.location.href);
-            const title = encodeURIComponent(art.titre);
             
-            // Injection du contenu (Header, Barre d'outils, Image, Corps)
             const display = document.getElementById('full-article');
             display.innerHTML = `
                 <div id="status-line" class="status-line no-print">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
@@ -344,7 +359,10 @@
                     </div>
                 </div>
 
-                <div style="max-width:1000px; margin: 0 auto;"><img src="${art.image_url}" style="width:100%; display:block;"></div>
+                <div style="max-width:1000px; margin: 0 auto; padding: 0 10px;">
+                    <img src="${art.image_url}" style="width:100%; display:block;">
+                    <span class="img-caption-style">${art.image_caption || ''}</span>
+                </div>
 
                 <div style="max-width:700px; margin: 0 auto; padding: 0 20px;">
                     <div class="author-box">
@@ -357,26 +375,22 @@
                 </div>
             `;
 
-            // Configuration du Modal de Partage - TEXTE SIMPLE
             const shareCont = document.getElementById('shareButtons');
             shareCont.className = "share-list-simple";
             shareCont.innerHTML = `
                 <div class="share-option-text" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${url}')">Facebook</div>
-                <div class="share-option-text" onclick="window.open('https://www.instagram.com/')">Instagram</div>
                 <div class="share-option-text" onclick="window.open('https://twitter.com/intent/tweet?url=${url}')">X / Twitter</div>
                 <div class="share-option-text" onclick="window.open('https://t.me/share/url?url=${url}')">Telegram</div>
-                <div class="share-option-text" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=${url}')">LinkedIn</div>
-                <div class="share-option-text" onclick="window.open('https://www.reddit.com/submit?url=${url}')">Reddit</div>
-                <div class="share-option-text" onclick="window.open('https://medium.com/m/signin?redirect_to=${url}')">Medium</div>
                 <div class="share-option-text" onclick="copyLink()">Copier le lien</div>
                 <div class="share-option-text" onclick="window.print()" style="color:#c00;">Imprimer l'article</div>
             `;
             
             fetchComments();
+            fetchLikes();
         }
     }
 
-    // Speech & Comments (Inchangés)
+    // --- SPEECH ---
     let speechInstance = null;
     function toggleSpeech() {
         const btnText = document.getElementById('speech-text');
@@ -393,12 +407,44 @@
         window.speechSynthesis.speak(speechInstance);
     }
 
+    // --- COMMENTAIRES ---
     async function fetchComments() {
-        const { data } = await supabaseClient.from('article_comments').select('*').eq('article_id', articleId).order('created_at', {ascending: false});
-        if(data && document.getElementById('nb-comm')) {
+        const { data, error } = await supabaseClient
+            .from('article_comments')
+            .select('*')
+            .eq('article_id', articleId)
+            .order('created_at', {ascending: false});
+
+        if(!error && data) {
             document.getElementById('nb-comm').innerText = data.length;
-            document.getElementById('comm-title').innerText = `Commentaires (${data.length})`;
-            document.getElementById('comments-list').innerHTML = data.map(c => `<div style="border-bottom:1px solid #eee; padding:10px 0;"><b style="font-size:0.8rem;">${c.nom}</b><p style="margin:5px 0; font-size:0.9rem;">${c.message}</p></div>`).join('');
+            if(document.getElementById('comm-title')) document.getElementById('comm-title').innerText = `Commentaires (${data.length})`;
+            
+            const list = document.getElementById('comments-list');
+            if(list) {
+                list.innerHTML = data.map(c => `
+                    <div style="border-bottom:1px solid #eee; padding:15px 0;">
+                        <b style="font-size:0.85rem;">${c.nom}</b>
+                        <p style="margin:5px 0; font-size:0.95rem;">${c.message}</p>
+                    </div>
+                `).join('');
+            }
+        }
+    }
+
+    async function postComment() {
+        const nom = document.getElementById('comm-nom').value;
+        const msg = document.getElementById('comm-msg').value;
+
+        if (!nom || !msg) return alert("Veuillez remplir les champs");
+
+        const { error } = await supabaseClient
+            .from('article_comments')
+            .insert([{ article_id: articleId, nom: nom, message: msg }]);
+
+        if (!error) {
+            document.getElementById('comm-nom').value = '';
+            document.getElementById('comm-msg').value = '';
+            fetchComments();
         }
     }
 
