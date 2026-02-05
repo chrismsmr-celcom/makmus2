@@ -60,7 +60,7 @@
     <div class="top-bar">
         <div class="top-bar-content">
             <div id="live-date">---</div>
-            <div class="auth-section"><button id="openModal">MON COMPTE</button></div>
+            <<button id="openModal" onclick="toggleLoginModal()">MON COMPTE</button>/div>
         </div>
     </div>
 
@@ -76,9 +76,11 @@
                 <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
             </a>
         </div>
-        <div class="header-right-spacer">
-            <button class="btn-subscribe">ABONNEZ-VOUS POUR 1 $/SEMAINE</button>
-        </div>
+<div class="header-right">
+    <button class="btn-subscribe" onclick="handleSubscribe()">
+        ABONNEZ-VOUS <span class="price-tag">POUR 1 $/SEMAINE</span>
+    </button>
+</div>
     </header>
 
     <nav class="nav-compact" id="navMenu">
@@ -375,10 +377,30 @@ if(closeBtn) {
         document.getElementById('loginModal').style.display = 'none';
     };
 }
+function handleSubscribe() {
+    // On enregistre l'intérêt dans Supabase
+    tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement Header' });
+    
+    // Message amical pour fidéliser
+    alert("Bientôt disponible ! MAKMUS prépare une offre exclusive pour ses lecteurs fidèles.");
+}
+
+function toggleLoginModal() {
+    // Log de la tentative de connexion
+    tracker.log('click_account_login', { title: 'Bouton Mon Compte' });
+    
+    const modal = document.getElementById('loginModal');
+    if (modal) {
+        modal.style.display = 'flex';
+    } else {
+        alert("L'espace membre sera disponible lors de la prochaine mise à jour.");
+    }
+}
 </script>
 </body>
 
 </html>
+
 
 
 
