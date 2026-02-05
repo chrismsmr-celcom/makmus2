@@ -221,6 +221,21 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
+    // Ajout dynamique de l'animation de zoom pour le Like
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+        .animate-like { animation: heartbeat 0.45s ease-in-out; }
+        .action-item svg { transition: color 0.3s ease, fill 0.3s ease; }
+    `;
+    document.head.appendChild(style);
+
     const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; 
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -228,22 +243,54 @@
     const params = new URLSearchParams(window.location.search);
     const articleId = params.get('id');
 
+    // Navigation Menu
     document.getElementById('btnOpenMenu').onclick = () => document.getElementById('fullMenu').classList.add('open');
     document.getElementById('closeMenu').onclick = () => document.getElementById('fullMenu').classList.remove('open');
 
+    // Date
     const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    document.getElementById('live-date').textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+    const dateEl = document.getElementById('live-date');
+    if(dateEl) dateEl.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
 
+    // Modals & Actions
     function openShare() { document.getElementById('shareModal').style.display = 'block'; }
     function closeShare() { document.getElementById('shareModal').style.display = 'none'; }
+    function openComments() { document.getElementById('commentModal').style.display = 'block'; fetchComments(); }
+    function closeComments() { document.getElementById('commentModal').style.display = 'none'; }
+    
     function copyLink() {
         navigator.clipboard.writeText(window.location.href);
         alert("Lien copié !");
     }
 
-    function openComments() { document.getElementById('commentModal').style.display = 'block'; fetchComments(); }
-    function closeComments() { document.getElementById('commentModal').style.display = 'none'; }
+    // Fonction Like avec Animation Zoom
+    function toggleLike() {
+        const btn = document.getElementById('like-btn');
+        const svg = btn.querySelector('svg');
+        const countSpan = document.getElementById('nb-like');
+        let count = parseInt(countSpan.innerText);
+        
+        // Déclenche l'animation
+        svg.classList.remove('animate-like');
+        void svg.offsetWidth; // Force le reflow pour rejouer l'animation
+        svg.classList.add('animate-like');
 
+        if (btn.classList.contains('liked')) {
+            btn.classList.remove('liked');
+            svg.setAttribute('fill', 'none');
+            svg.setAttribute('stroke', 'currentColor');
+            btn.style.color = "#121212";
+            countSpan.innerText = count - 1;
+        } else {
+            btn.classList.add('liked');
+            svg.setAttribute('fill', '#e0245e');
+            svg.setAttribute('stroke', '#e0245e');
+            btn.style.color = "#e0245e";
+            countSpan.innerText = count + 1;
+        }
+    }
+
+    // Commentaires
     async function fetchComments() {
         const { data } = await supabaseClient.from('article_comments').select('*').eq('article_id', articleId).order('created_at', {ascending: false});
         if(data) {
@@ -269,16 +316,14 @@
         fetchComments();
     }
 
+    // Articles Similaires
     async function loadRelated(category, currentId) {
-        const { data } = await supabaseClient.from('articles')
-            .select('id, titre, image_url')
-            .eq('category', category)
-            .neq('id', currentId)
-            .limit(4);
-        
+        const { data } = await supabaseClient.from('articles').select('id, titre, image_url').eq('category', category).neq('id', currentId).limit(4);
         if (data && data.length > 0) {
-            document.getElementById('related-box').style.display = 'block';
-            document.getElementById('related-container').innerHTML = data.map(item => `
+            const relBox = document.getElementById('related-box');
+            if(relBox) relBox.style.display = 'block';
+            const relCont = document.getElementById('related-container');
+            if(relCont) relCont.innerHTML = data.map(item => `
                 <a href="redaction.html?id=${item.id}" class="related-card">
                     <img src="${item.image_url}" alt="${item.titre}">
                     <h4>${item.titre}</h4>
@@ -287,9 +332,10 @@
         }
     }
 
+    // Chargement Article principal
     async function loadArticle() {
         if (!articleId) return;
-        const { data: art, error } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
+        const { data: art } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
         
         if (art) {
             const url = encodeURIComponent(window.location.href);
@@ -305,13 +351,25 @@
 
                 <div class="share-tools-container no-print">
                     <div class="share-tools-list">
+                        <button class="action-item" onclick="toggleLike()" id="like-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            <span class="like-count" id="nb-like">0</span>
+                        </button>
+
                         <button class="action-item" onclick="openShare()">
-                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADAAAAAwCAYAAABXAvmHAAAACXBIWXMAAAsTAAALEwEAmpwYAAACIUlEQVR4nO2ZPUscURSGn2jcoAQV/QGSIthHUsRs5T+wF0wqTZc6sZ2QRlyXxM40iShaKO5fMESstLXdbJcUIbgrYvbKwC0OlzWz92M+FuaFy8LMvee8791zzj0zAyVKlCgxCKgCe0ALuAXUf0YHiBx8RMBfoA4MhSL+EPiUQLjXiInY4o9Yvx1KhAt5139g3bDjLaJqGDwC5oAK6WBIkw4mYk8YOiYbPAC2DBFfXEW0hJF450PiCbAEfAZ+AJfAL6B7T1jGiW0NWW1ChM0k8AY4c8irKxeH0oAPxoA1XZmU49jMS8Ai0OxBqK3z6h2wADwFpoHhkInsIyAOuVqPmD4HVoCJLKqQchQQk/turP8JvEogUwt9DrgIGAdOjbX7+noS2qFPYlsBj4ATseYf8NbC30fgGtgI1UbYCqiL+V1dMnOFshCwaCSszc7|" class="share-icon" alt="Partager">
-                            <span>Partager</span>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                            <span>PARTAGER</span>
                         </button>
 
                         <button class="action-item" onclick="openComments()">
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/>
+                            </svg>
                             <span class="comment-count" id="nb-comm">0</span>
                         </button>
 
@@ -342,45 +400,37 @@
             `;
 
             document.getElementById('shareButtons').innerHTML = `
-                <a class="share-option" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${url}')">Facebook</a>
-                <a class="share-option" onclick="window.open('https://twitter.com/intent/tweet?url=${url}&text=${title}')">X / Twitter</a>
-                <a class="share-option" onclick="window.open('https://api.whatsapp.com/send?text=${title}%20${url}')">WhatsApp</a>
-                <a class="share-option" onclick="window.open('https://www.linkedin.com/sharing/share-offsite/?url=${url}')">LinkedIn</a>
-                <a class="share-option" onclick="window.open('https://telegram.me/share/url?url=${url}&text=${title}')">Telegram</a>
-                <a class="share-option" onclick="window.open('mailto:?subject=${title}&body=${url}')">Email</a>
+                <div class="share-option" onclick="window.open('https://www.facebook.com/sharer/sharer.php?u=${url}')">Facebook</div>
+                <div class="share-option" onclick="window.open('https://api.whatsapp.com/send?text=${title}%20${url}')">WhatsApp</div>
                 <div class="share-option" onclick="copyLink()">Copier Lien</div>
-                <div class="share-option" onclick="window.print()" style="color:#c00; border-color:#c00;">Imprimer</div>
+                <div class="share-option" onclick="window.print()">Imprimer</div>
             `;
             
             loadRelated(art.category, art.id);
             fetchComments();
         }
     }
-    
-    loadArticle();
 
+    // Audio
     let speechInstance = null;
     function toggleSpeech() {
         const btnText = document.getElementById('speech-text');
         const content = document.getElementById('printable-content').innerText;
-
         if (window.speechSynthesis.speaking) {
             window.speechSynthesis.cancel();
             btnText.innerText = "ÉCOUTER";
             return;
         }
-
         speechInstance = new SpeechSynthesisUtterance(content);
         speechInstance.lang = 'fr-FR';
-        speechInstance.rate = 1;
-
         speechInstance.onstart = () => { btnText.innerText = "ARRÊTER"; };
         speechInstance.onend = () => { btnText.innerText = "ÉCOUTER"; };
-
         window.speechSynthesis.speak(speechInstance);
     }
 
     window.onbeforeunload = () => { window.speechSynthesis.cancel(); };
+
+    loadArticle();
 </script>
 </body>
 </html>
