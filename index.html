@@ -248,7 +248,7 @@
     }
     updateDate();
 
-    // --- LOGIQUE DE RÉCUPÉRATION (FILTRE ARCHIVE AJOUTÉ) ---
+    // --- LOGIQUE DE RÉCUPÉRATION (PRIORITÉ + ARCHIVE + 24 ARTICLES) ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
@@ -259,12 +259,15 @@
             if(status) status.textContent = "CHARGEMENT...";
             tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            // AJOUT DU FILTRE is_published: true POUR ARCHIVAGE
+            // DOUBLE TRI : 
+            // 1. Les articles prioritaires d'abord (is_priority)
+            // 2. Les plus récents ensuite (created_at)
             let sbQuery = supabaseClient
                 .from('articles')
                 .select('*')
-                .eq('is_published', true) // <--- ICI : Seuls les articles non-archivés
-                .order('created_at', { ascending: false });
+                .eq('is_published', true) 
+                .order('is_priority', { ascending: false }) // Priorité en haut
+                .order('created_at', { ascending: false }); // Puis chronologique
 
             if (category !== 'top') sbQuery = sbQuery.eq('category', category);
             if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
@@ -291,6 +294,7 @@
                 } catch (e) { console.warn("API News Indisponible"); }
             }
 
+            // On envoie tout à la fonction d'affichage qui gère le 1 + 24
             renderAll({ myArticles: myArticles || [], worldNews, category }, query);
 
         } catch (e) { 
@@ -380,6 +384,7 @@
 </script>
 </body>
 </html>
+
 
 
 
