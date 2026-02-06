@@ -304,7 +304,7 @@
     }
 
 // --- FONCTION D'AFFICHAGE (MISE À JOUR : 1 HERO + 24 GRILLE) ---
-    function renderAll(data, query) {
+function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
         const status = document.getElementById('status-line');
@@ -323,15 +323,19 @@
             return;
         }
 
-        // 1. GESTION DU HERO (L'article à l'index 0)
+        // 1. GESTION DU HERO
         const h = uniqueArticles[0];
         const hTitle = h.titre || h.title;
         const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
         
+        // Badge pour le Hero
+        const heroBadge = h.is_priority ? `<span style="color:#c00; font-weight:bold; font-size:0.9rem; text-transform:uppercase; display:block; margin-bottom:10px;">● À LA UNE</span>` : '';
+
         if(hero) {
             hero.innerHTML = `
                 <div class="hero-container">
                     <div class="hero-text">
+                        ${heroBadge}
                         <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
                         <p>${(h.description || "").replace(/<[^>]*>/g, "").substring(0, 250)}...</p>
                         <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
@@ -340,16 +344,21 @@
                 </div>`;
         }
 
-        // 2. GESTION DE LA GRILLE (Les articles de l'index 1 à 24 soit 24 articles)
+        // 2. GESTION DE LA GRILLE (24 ARTICLES)
         if(grid) {
             grid.innerHTML = uniqueArticles.slice(1, 25).map(art => {
                 const title = art.titre || art.title;
                 const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
                 const img = art.image_url || art.image || "";
+                
+                // Badge pour les cartes de la grille
+                const cardBadge = art.is_priority ? `<span style="color:#c00; font-weight:bold; font-size:0.7rem; text-transform:uppercase; margin-bottom:5px; display:block;">À LA UNE</span>` : '';
+
                 return `
                     <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
                         ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
                         <div class="card-text">
+                            ${cardBadge}
                             <h3>${title}</h3>
                             <p class="card-desc">${(art.description || "").replace(/<[^>]*>/g, "").substring(0, 90)}...</p>
                         </div>
@@ -384,6 +393,7 @@
 </script>
 </body>
 </html>
+
 
 
 
