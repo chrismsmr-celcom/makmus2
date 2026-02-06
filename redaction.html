@@ -173,62 +173,58 @@
         }
         /* --- IMPRESSION JOURNAL --- */
 @media print {
-    /* 1. ON FORCE TOUT À DISPARAÎTRE PAR DÉFAUT */
-    html, body, div, header, nav, footer, aside, section {
-        display: none !important;
-        position: static !important;
-        height: auto !important;
-        margin: 0 !important;
-        padding: 0 !important;
+    /* 1. Configuration de la page Magazine */
+    @page {
+        size: A4;
+        margin: 1.5cm; /* Marges plus serrées que le journal pour faire "Magazine" */
     }
 
-    /* 2. ON NE RÉATIVE QUE LE CONTENEUR DE L'ARTICLE ET SES ENFANTS */
-    #full-article, 
-    #full-article div, 
-    #full-article h1, 
-    #full-article p, 
-    #full-article img, 
-    #full-article span,
-    .print-only-header,
-    .print-only-header * {
-        display: block !important;
+    /* 2. Nettoyage radical */
+    body * { visibility: hidden; }
+    #full-article, #full-article * { visibility: visible; }
+    #full-article { 
+        position: absolute; 
+        top: 0; 
+        left: 0; 
+        width: 100%;
     }
 
-    /* 3. CONFIGURATION DE LA PAGE */
-    #full-article {
-        width: 100% !important;
-        overflow: visible !important;
-        padding: 1cm !important; /* Marge de sécurité pour l'imprimante */
-    }
-
-    /* 4. LE LOGO MAKMUS EN HAUT */
-    .print-only-header {
-        display: block !important;
-        border-bottom: 2px solid black !important;
-        margin-bottom: 30px !important;
-        text-align: center !important;
-    }
-
-    /* 5. LE TEXTE EN 2 COLONNES STYLE JOURNAL */
+    /* 3. Look Magazine : 2 colonnes avec lignes de séparation */
     .article-content {
         display: block !important;
-        column-count: 2 !important;
-        column-gap: 1.5cm !important;
-        text-align: justify !important;
-        font-size: 11pt !important;
-        line-height: 1.5 !important;
+        column-count: 2;
+        column-gap: 1cm;
+        column-rule: 1px solid #eee; /* Petite ligne discrète entre les colonnes */
+        text-align: justify;
+        font-size: 10pt;
+        line-height: 1.4;
+        font-family: 'Georgia', serif;
     }
 
-    /* Empêche les images et titres de se couper */
-    h1, .article-header, img, .author-box {
-        column-span: all !important;
-        break-inside: avoid !important;
+    /* 4. Gestion des visuels */
+    h1 {
+        column-span: all; /* Le titre traverse les colonnes */
+        font-size: 30pt !important;
+        margin-bottom: 0.5cm !important;
+        text-transform: uppercase;
+        letter-spacing: -1px;
     }
 
-    /* On s'assure que les images sont visibles et pas grises */
     img {
         max-width: 100% !important;
-        filter: none !important;
+        break-inside: avoid; /* Évite de couper une image entre deux pages */
+        filter: contrast(1.1); /* Donne du peps aux photos à l'impression */
+    }
+
+    /* 5. Signature Magazine en bas de page */
+    .article-content::after {
+        content: "© MAKMUS MAGAZINE - 2026";
+        display: block;
+        text-align: center;
+        font-size: 8pt;
+        margin-top: 1cm;
+        border-top: 1px solid #000;
+        padding-top: 5px;
     }
 }
         
@@ -702,7 +698,43 @@
     function openShare() { document.getElementById('shareModal').style.display = 'block'; }
     function closeShare() { document.getElementById('shareModal').style.display = 'none'; }
     
-    // Ajoute ici tes fonctions fetchComments() et socialShare() si besoin
+    /* ---------------------------------------------------------
+       4. LOGIQUE DE PARTAGE COMPLÈTE
+    --------------------------------------------------------- */
+    function socialShare(platform) {
+        const url = encodeURIComponent(window.location.href);
+        const title = encodeURIComponent(document.title);
+        let shareUrl = '';
+
+        switch (platform) {
+            case 'facebook': 
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`; 
+                break;
+            case 'x': 
+                shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`; 
+                break;
+            case 'whatsapp': 
+                shareUrl = `https://wa.me/?text=${title}%20${url}`; 
+                break;
+            case 'linkedin': 
+                shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`; 
+                break;
+            case 'telegram': 
+                shareUrl = `https://t.me/share/url?url=${url}&text=${title}`; 
+                break;
+            case 'reddit': 
+                shareUrl = `https://reddit.com/submit?url=${url}&title=${title}`; 
+                break;
+            case 'instagram': 
+                shareUrl = `https://www.instagram.com/`; 
+                alert("Instagram ne permet pas le partage direct de lien. Nous vous redirigeons vers le site.");
+                break;
+        }
+
+        if (shareUrl) {
+            window.open(shareUrl, '_blank', 'width=600,height=450,resizable=yes,scrollbars=yes');
+        }
+    }
 </script>
 </body>
 </html>
