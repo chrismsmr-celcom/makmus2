@@ -198,16 +198,22 @@
         },
         log: async (type, data = {}) => {
             try {
+                // Fusion : Conservation de ta structure avec ajout du created_at pour forcer l'insertion
                 await supabaseClient.from('stats').insert([{
                     event_type: type,
                     article_title: data.title || 'Page Accueil',
                     category: data.category || 'Général',
                     path: window.location.pathname,
-                    visitor_id: tracker.getVisitorId()
+                    visitor_id: tracker.getVisitorId(),
+                    created_at: new Date().toISOString()
                 }]);
+                console.log("Analytics sent:", type);
             } catch (e) { console.warn("Analytics non configuré"); }
         }
     };
+
+    // --- LOG PRIORITAIRE (Pour détecter les nouveaux téléphones immédiatement) ---
+    tracker.log('view', { title: 'Visite Page Accueil' });
 
     // --- GESTION DU MENU ---
     const btnOpenMenu = document.getElementById('btnOpenMenu');
@@ -255,7 +261,7 @@
             if(status) status.textContent = "CHARGEMENT...";
             tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            // Tri par date uniquement (le plus récent en premier)
+            // Tri par date uniquement
             let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
             if (category !== 'top') sbQuery = sbQuery.eq('category', category);
             if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
@@ -310,7 +316,6 @@
             return;
         }
 
-        // 1. RENDER HERO
         const h = uniqueArticles[0];
         const hTitle = h.titre || h.title;
         const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
@@ -327,13 +332,11 @@
                 </div>`;
         }
 
-        // 2. RENDER GRILLE
         if(grid) {
             grid.innerHTML = uniqueArticles.slice(1, 13).map(art => {
                 const title = art.titre || art.title;
                 const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
                 const img = art.image_url || art.image || "";
-                
                 return `
                     <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
                         ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
@@ -374,3 +377,4 @@
 </script>
 </body>
 </html>
+
