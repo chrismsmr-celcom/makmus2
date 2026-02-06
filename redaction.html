@@ -465,9 +465,13 @@
     function closeShare() { document.getElementById('shareModal').style.display = 'none'; }
     function openComments() { document.getElementById('commentModal').style.display = 'block'; fetchComments(); }
     function closeComments() { document.getElementById('commentModal').style.display = 'none'; }
+window.speechSynthesis.onvoiceschanged = () => {
+    window.speechSynthesis.getVoices();
+};
 
-    window.addEventListener('beforeunload', stopAllAudio);
+document.addEventListener('DOMContentLoaded', () => {
     loadArticle();
+});
 </script>
 
 
