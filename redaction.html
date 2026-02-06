@@ -173,47 +173,90 @@
         }
         /* --- IMPRESSION JOURNAL --- */
 @media print {
-    /* Cache tout ce qui n'est pas l'article */
+    /* 1. Reset de base pour forcer l'affichage de tout le document */
+    html, body {
+        height: auto !important;
+        overflow: visible !important;
+        background: white !important;
+        margin: 0;
+        padding: 0;
+    }
+
+    /* 2. Cacher les éléments parasites */
     .no-print, 
     .main-header, 
     .top-bar, 
     .nav-compact, 
     .share-tools-container, 
-    .nyt-footer, 
-    .modal, 
-    .related-section,
-    .btn-subscribe { 
+    #shareModal, 
+    #commentModal,
+    .nyt-footer,
+    #status-line,
+    .audio-progress-container { 
         display: none !important; 
     }
 
-    body { 
-        background: white !important; 
-        color: black !important; 
-        padding: 0;
-        margin: 0;
+    /* 3. Ajustement du conteneur principal */
+    #full-article {
+        display: block !important;
+        position: static !important;
+        width: 100% !important;
+        margin: 0 !important;
+        padding: 0.5cm !important;
     }
 
-    /* Mise en page style Gazette */
-    .article-content { 
+    /* 4. LE STYLE JOURNAL (Colonnes) */
+    .article-content {
+        display: block !important;
         column-count: 2; 
-        column-gap: 30px; 
-        text-align: justify; 
-        font-size: 11pt; 
-        line-height: 1.5;
+        column-gap: 1.2cm;
+        column-fill: auto;
+        text-align: justify;
+        orphans: 3; 
+        widows: 3;
+        font-size: 11pt; /* Taille idéale pour la lecture papier */
     }
 
-    h1 { 
-        font-size: 28pt !important; 
-        margin-bottom: 20px !important;
-        column-span: all; /* Le titre prend toute la largeur */
+    /* Empêche les coupures bizarres */
+    h1, .article-header, img, .img-caption-style, .author-box, .print-only-header {
+        column-span: all;
+        break-inside: avoid;
+        break-after: avoid;
     }
 
-    img { 
-        max-width: 100%; 
-        height: auto; 
-        filter: grayscale(100%); /* Optionnel : pour économiser l'encre et faire style rétro */
+    h1 {
+        font-size: 32pt !important;
+        margin-top: 10pt !important;
+        margin-bottom: 20pt !important;
+        line-height: 1.1;
+        font-family: 'Libre Baskerville', serif;
+    }
+
+    img {
+        max-width: 100% !important;
+        height: auto !important;
+        margin-bottom: 5px;
+    }
+
+    /* 5. Affichage du Header Spécial Impression */
+    .print-only-header { 
+        display: block !important; 
+        text-align: center;
+        border-bottom: 2px solid black;
+        margin-bottom: 30px;
+        padding-bottom: 10px;
+    }
+    
+     .print-only-header { display: block !important; }
+    
+    /* 6. Forcer le texte noir sur blanc */
+    * {
+        color: black !important;
+        text-shadow: none !important;
+        box-shadow: none !important;
     }
 }
+        
         /* --- NOUVEAU STYLE PARTAGE MODERNE --- */
 .share-grid-modern {
     display: grid;
@@ -283,6 +326,29 @@
 
 .share-item-modern:active {
     transform: scale(0.95);
+}
+.img-caption-style {
+    display: block;
+    font-family: Arial, sans-serif; /* Police neutre pour trancher avec le texte du journal */
+    font-size: 11px;               /* Très discret */
+    color: #727272;               /* Gris moyen */
+    text-align: right;            /* Aligné à droite sous l'image */
+    margin-top: 6px;              /* Espace sous la photo */
+    line-height: 1.3;
+    letter-spacing: 0.2px;        /* Un peu d'espacement pour la clarté */
+    max-width: 1000px;            /* Aligné sur la largeur max de l'image */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Style spécifique pour le crédit (souvent en majuscules discrètes dans les journaux) */
+.img-caption-style strong, .img-caption-style .photo-credit {
+    text-transform: uppercase;
+    font-weight: 400;
+    color: #121212;
+    margin-left: 5px;
+    border-left: 1px solid #ccc;
+    padding-left: 5px;
 }
     </style>
 </head>
@@ -666,11 +732,22 @@
         const { data: art } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
         if (art) {
             document.getElementById('full-article').innerHTML = `
-                <div id="status-line" class="status-line no-print">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
-                <header class="article-header" style="max-width:800px; margin: 0 auto; padding: 20px;">
-                    <div style="color:#c00; font-weight:bold; font-size:0.8rem; text-transform:uppercase; margin-bottom:10px;">${art.category || 'Actualité'}</div>
-                    <h1 style="font-family:'Libre Baskerville'; font-size: 3rem; line-height:1.1; margin:0;">${art.titre}</h1>
-                </header>
+    <div class="print-only-header" style="display:none; text-align:center; border-bottom:3px double black; margin-bottom:30px; padding-bottom:10px;">
+        <h1 style="font-family:serif; font-size:60px; margin:0; font-weight:900; letter-spacing:-2px;">MAKMUS</h1>
+        <div style="border-top:1px solid black; border-bottom:1px solid black; padding:4px 0; margin-top:5px; font-size:11px; text-transform:uppercase; display:flex; justify-content:space-between; font-family:Arial, sans-serif;">
+            <span>Édition Nationale</span>
+            <span style="font-weight:bold;">${new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase()}</span>
+            <span>Congo, RDC</span>
+        </div>
+    </div>
+
+    <div id="status-line" class="status-line no-print">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
+    
+    <header class="article-header" style="max-width:800px; margin: 0 auto; padding: 20px;">
+        <div style="color:#c00; font-weight:bold; font-size:0.8rem; text-transform:uppercase; margin-bottom:10px;">${art.category || 'Actualité'}</div>
+        <h1 style="font-family:'Libre Baskerville'; font-size: 3rem; line-height:1.1; margin:0;">${art.titre}</h1>
+    </header>
+    ...
                 
                 <div class="share-tools-container no-print">
                     <div class="share-tools-list">
