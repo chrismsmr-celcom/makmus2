@@ -652,14 +652,49 @@
     /* ---------------------------------------------------------
        FONCTION : ENVOYER UN COMMENTAIRE
     --------------------------------------------------------- */
-    async function postComment() {
-        // 1. Récupération des champs
-        const nomInput = document.getElementById('comm-name');
-        const msgInput = document.getElementById('comm-text');
-        const postBtn = document.querySelector('.comment-form-evo button');
+async function postComment() {
+    const nomInput = document.getElementById('comm-name');
+    const msgInput = document.getElementById('comm-text');
+    const postBtn = document.querySelector('.comment-form-evo button');
 
-        const nom = nomInput.value.trim();
-        const msg = msgInput.value.trim();
+    const nom = nomInput.value.trim();
+    const msg = msgInput.value.trim();
+
+    if (!nom || !msg) {
+        alert("Veuillez remplir les champs.");
+        return;
+    }
+
+    postBtn.disabled = true;
+    postBtn.innerText = "ENVOI...";
+
+    try {
+        // Envoi à Supabase
+        const { error } = await supabaseClient
+            .from('article_comments')
+            .insert([{ article_id: articleId, nom: nom, message: msg }]);
+
+        if (error) throw error;
+
+        // Si l'envoi réussit :
+        msgInput.value = '';
+        
+        // On vérifie si fetchComments existe avant de l'appeler
+        if (typeof fetchComments === 'function') {
+            await fetchComments();
+        } else {
+            console.warn("La fonction fetchComments n'est pas encore définie.");
+            location.reload(); // Solution de secours : recharge la page
+        }
+
+    } catch (error) {
+        console.error("Erreur détaillée:", error); // Regarde dans la console (F12)
+        alert("Erreur technique : " + error.message);
+    } finally {
+        postBtn.disabled = false;
+        postBtn.innerText = "POST";
+    }
+}
 
         // 2. Vérification simple
         if (!nom || !msg) {
