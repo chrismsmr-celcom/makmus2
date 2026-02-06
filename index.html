@@ -243,7 +243,7 @@
         if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
     }
 
-    // --- LOGIQUE DE RÉCUPÉRATION (FILTRE 48H) ---
+    // --- LOGIQUE DE RÉCUPÉRATION (PRIORITÉ & 48H) ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
@@ -254,13 +254,10 @@
             if(status) status.textContent = "CHARGEMENT...";
             tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            // CALCUL 48 HEURES
-            const twoDaysAgo = new Date(now.getTime() - (48 * 60 * 60 * 1000)).toISOString();
-
-            // REQUÊTE SUPABASE AVEC FILTRE DE TEMPS
+            // 1. REQUÊTE SUPABASE : Tri par priorité puis par date
             let sbQuery = supabaseClient.from('articles')
                 .select('*')
-                .gt('created_at', twoDaysAgo) // On force l'actualité fraîche de moins de 2 jours
+                .order('is_priority', { ascending: false })
                 .order('created_at', { ascending: false });
 
             if (category !== 'top') sbQuery = sbQuery.eq('category', category);
@@ -269,7 +266,14 @@
             let { data: myArticles, error: sbError } = await sbQuery;
             if (sbError) throw sbError;
 
-            // SÉCURITÉ ANTI-VIDE : Si aucun article frais (<48h), on récupère les 3 derniers quoi qu'il arrive
+            // FILTRE 48H INTELLIGENT : On garde si < 48h OU si Prioritaire
+            const twoDaysAgo = new Date(now.getTime() - (48 * 60 * 60 * 1000));
+            myArticles = myArticles.filter(art => {
+                const isRecent = new Date(art.created_at) > twoDaysAgo;
+                return art.is_priority === true || isRecent;
+            });
+
+            // SÉCURITÉ ANTI-VIDE
             if (!myArticles || myArticles.length === 0) {
                 const { data: fallback } = await supabaseClient.from('articles')
                     .select('*')
@@ -278,7 +282,7 @@
                 myArticles = fallback || [];
             }
 
-            // RÉCUPÉRATION NEWS MONDIALES (CACHE)
+            // 2. RÉCUPÉRATION NEWS MONDIALES (CACHE)
             const newsCacheKey = `news_api_${category}_${query}`;
             const cachedNews = localStorage.getItem(newsCacheKey);
             const newsTimestamp = localStorage.getItem(`${newsCacheKey}_time`);
@@ -289,11 +293,13 @@
             } else {
                 let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
                 if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
-                const newsRes = await fetch(newsUrl);
-                const newsData = await newsRes.json();
-                worldNews = newsData.results || [];
-                localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
-                localStorage.setItem(`${newsCacheKey}_time`, now.getTime().toString());
+                try {
+                    const newsRes = await fetch(newsUrl);
+                    const newsData = await newsRes.json();
+                    worldNews = newsData.results || [];
+                    localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
+                    localStorage.setItem(`${newsCacheKey}_time`, now.getTime().toString());
+                } catch(err) { console.warn("News mondiales indisponibles"); }
             }
 
             renderAll({ myArticles, worldNews, category }, query);
@@ -305,74 +311,70 @@
     }
 
     // --- FONCTION D'AFFICHAGE ---
-  function renderAll(data, query) {
-    const hero = document.getElementById('hero-zone');
-    const grid = document.getElementById('news-grid');
-    const status = document.getElementById('status-line');
-    
-    // 1. On filtre les articles pour ne garder que ceux de la catégorie choisie
-    // Sauf si on est sur 'top' (accueil), là on prend tout.
-    const filteredMyArticles = (data.category === 'top' || query) 
-        ? data.myArticles 
-        : data.myArticles.filter(art => art.category === data.category);
+    function renderAll(data, query) {
+        const hero = document.getElementById('hero-zone');
+        const grid = document.getElementById('news-grid');
+        const status = document.getElementById('status-line');
+        
+        // On fusionne les nôtres et les mondiales
+        const allPossible = [...data.myArticles, ...data.worldNews];
+        
+        const seenTitles = new Set();
+        const uniqueArticles = allPossible.filter(art => {
+            const t = (art.titre || art.title || "").trim().toLowerCase();
+            if(!t || seenTitles.has(t)) return false;
+            seenTitles.add(t);
+            return true;
+        });
 
-    const allPossible = [...filteredMyArticles, ...data.worldNews];
-    
-    const seenTitles = new Set();
-    const uniqueArticles = allPossible.filter(art => {
-        const t = (art.titre || art.title || "").trim().toLowerCase();
-        if(!t || seenTitles.has(t)) return false;
-        seenTitles.add(t);
-        return true;
-    });
+        if (uniqueArticles.length === 0) {
+            if(hero) hero.innerHTML = ""; 
+            if(grid) grid.innerHTML = "<p style='text-align:center; padding:50px;'>Aucun article dans cette catégorie pour le moment.</p>";
+            if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
+            return;
+        }
 
-    if (uniqueArticles.length === 0) {
-        if(hero) hero.innerHTML = ""; // Vide la une si rien n'est trouvé
-        if(grid) grid.innerHTML = "<p style='text-align:center; padding:50px;'>Aucun article dans cette catégorie pour le moment.</p>";
-        if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
-        return;
-    }
-
-    // 2. RENDER HERO (Le premier article de la catégorie sélectionnée)
-    const h = uniqueArticles[0];
-    const hTitle = h.titre || h.title;
-    const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
-    
-    if(hero) {
-        hero.innerHTML = `
-            <div class="hero-container">
-                <div class="hero-text">
-                    <span class="tag-category">${(h.category || 'INFO').toUpperCase()}</span>
-                    <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
-                    <p>${(h.description || "").substring(0, 230)}...</p>
-                    <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
-                </div>
-                ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
-            </div>`;
-    }
-
-    // 3. RENDER GRILLE (Le reste)
-    if(grid) {
-        grid.innerHTML = uniqueArticles.slice(1, 13).map(art => {
-            const title = art.titre || art.title;
-            const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
-            const img = art.image_url || art.image || "";
-            const cat = art.category || "News";
-            
-            return `
-                <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
-                    ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
-                    <div class="card-text">
-                        <span class="tag-mini">${cat.toUpperCase()}</span>
-                        <h3>${title}</h3>
-                        <p class="card-desc">${(art.description || "").substring(0, 85)}...</p>
+        // 2. RENDER HERO
+        const h = uniqueArticles[0];
+        const hTitle = h.titre || h.title;
+        const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
+        const hCatLabel = h.is_priority ? "À LA UNE" : (h.category || 'INFO').toUpperCase();
+        
+        if(hero) {
+            hero.innerHTML = `
+                <div class="hero-container">
+                    <div class="hero-text">
+                        <span class="tag-category" style="${h.is_priority ? 'background:#d32f2f; color:#fff;' : ''}">${hCatLabel}</span>
+                        <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')">${hTitle}</h1>
+                        <p>${(h.description || "").replace(/<[^>]*>/g, "").substring(0, 230)}...</p>
+                        <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')">LIRE LA SUITE →</button>
                     </div>
+                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
                 </div>`;
-        }).join('');
-    }
+        }
 
-    if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ${data.category.toUpperCase()} ACTUALISÉE`;
-}
+        // 3. RENDER GRILLE
+        if(grid) {
+            grid.innerHTML = uniqueArticles.slice(1, 13).map(art => {
+                const title = art.titre || art.title;
+                const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
+                const img = art.image_url || art.image || "";
+                const cat = (art.category || "News").toUpperCase();
+                
+                return `
+                    <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${cat}', '${link}')">
+                        ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
+                        <div class="card-text">
+                            <span class="tag-mini">${cat}</span>
+                            <h3>${title}</h3>
+                            <p class="card-desc">${(art.description || "").replace(/<[^>]*>/g, "").substring(0, 85)}...</p>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
+
+        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ${data.category.toUpperCase()} ACTUALISÉE`;
+    }
 
     // --- GESTIONNAIRE DE CLIC ET ANALYTICS ---
     window.captureAction = function(title, category, link) {
@@ -381,12 +383,12 @@
     }
 
     // --- BOUTONS HEADER ---
-    function handleSubscribe() {
+    window.handleSubscribe = function() {
         tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement' });
         alert("Bientôt disponible ! MAKMUS prépare une offre exclusive.");
     }
 
-    function toggleLoginModal() {
+    window.toggleLoginModal = function() {
         tracker.log('click_account_login', { title: 'Bouton Mon Compte' });
         const modal = document.getElementById('modalAccount');
         if (modal) {
@@ -404,6 +406,7 @@
 </body>
 
 </html>
+
 
 
 
