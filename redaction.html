@@ -172,64 +172,13 @@
             font-family: Arial, sans-serif;
         }
         /* --- IMPRESSION JOURNAL --- */
-@media print {
-    /* Cache les boutons d'actions et les éléments interactifs */
-    .no-print, 
-    .share-tools-container, 
-    .share-tools-list, 
-    .action-item, 
-    #speech-btn, 
-    #like-btn, 
-    .modal, 
-    #audio-progress-container,
-    #status-line { 
-        display: none !important; 
-    }
+ @media print {
+            .no-print, .main-header, .top-bar, .nav-compact, .share-tools-container, .nyt-footer, .full-menu, .status-line, .related-section { display: none !important; }
+            body { background: white !important; color: black !important; padding: 0; }
+            .article-content { column-count: 2; column-gap: 30px; text-align: justify; font-size: 11pt; }
+            h1 { font-size: 26pt !important; margin-bottom: 15px; }
+        }
 
-    /* Supprime les bordures et ombres des boutons qui pourraient laisser des traces */
-    button { display: none !important; }
-
-    /* Ajuste la zone de texte pour qu'elle utilise tout l'espace */
-    .article-content {
-        column-count: 2;
-        column-gap: 1.5cm;
-        text-align: justify;
-        color: black !important;
-    }
-
-    /* Force le titre à être bien imposant en haut */
-    h1 {
-        column-span: all;
-        font-weight: 900;
-        text-transform: uppercase;
-        margin-bottom: 20px !important;
-    }
-}
-        @media print {
-    /* Cache le modal entier et son contenu */
-    #commentModal, 
-    .modal, 
-    .modal-content, 
-    .comment-evo { 
-        display: none !important; 
-    }
-
-    /* Cache spécifiquement le formulaire et la notice */
-    .comment-form-evo, 
-    .mod-notice, 
-    .close-btn,
-    .comment-title { 
-        display: none !important; 
-    }
-
-    /* Optionnel : Si tu veux imprimer les commentaires à la fin de l'article 
-       (comme dans certains journaux), ne cache PAS #comments-list. 
-       Mais pour un look "Magazine" pur, cache tout : */
-    #comments-list { 
-        display: none !important; 
-    }
-}
-        
         /* --- NOUVEAU STYLE PARTAGE MODERNE --- */
 .share-grid-modern {
     display: grid;
