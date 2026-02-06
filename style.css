@@ -318,3 +318,24 @@ body {
 .hero-text span, .card-text span {
     animation: pulse-red 2s infinite;
 }
+.mute-control {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+}
+
+.icon-vol-container svg {
+    stroke: white;
+    display: block;
+}
