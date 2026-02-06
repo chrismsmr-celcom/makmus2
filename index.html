@@ -108,7 +108,35 @@
         <hr class="double-hr">
         <div class="news-grid" id="news-grid"></div>
     </main>
+<div id="trending-tags" class="no-print" style="border-bottom: 1px solid #eee; padding: 10px 0; background: #fff;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 15px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;">
+        <span style="font-weight: 800; font-size: 0.7rem; color: #c00; text-transform: uppercase; letter-spacing: 1px;">En ce moment :</span>
+        <div id="tags-container" style="display: flex; gap: 10px;">
+            </div>
+    </div>
+</div>
 
+<style>
+    /* Cache la barre de défilement pour les tags */
+    #trending-tags div::-webkit-scrollbar { display: none; }
+    
+    .tag-item {
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #444;
+        text-decoration: none;
+        padding: 4px 12px;
+        background: #f3f4f6;
+        border-radius: 20px;
+        transition: all 0.2s;
+        cursor: pointer;
+    }
+    
+    .tag-item:hover {
+        background: #000;
+        color: #fff;
+    }
+</style>
     <div class="modal" id="modalAccount">
         <div class="modal-box">
             <span class="close-btn" id="closeModal">&times;</span>
@@ -508,7 +536,70 @@ function handleVideoClick(video) {
         video.pause();
     }
 }
+// --- FONCTION 1 : CHARGER LES TAGS AUTOMATIQUEMENT ---
+async function loadAutoTrendingTags() {
+    try {
+        // On récupère les tags des 15 derniers articles
+        const { data, error } = await supabaseClient
+            .from('articles')
+            .select('tags')
+            .not('tags', 'is', null) // On ignore les articles sans tags
+            .order('created_at', { ascending: false })
+            .limit(15);
 
+        if (error || !data) return;
+
+        // On extrait tous les mots, on nettoie les espaces et on met tout en minuscule
+        let allTags = [];
+        data.forEach(item => {
+            const splitTags = item.tags.split(',').map(t => t.trim());
+            allTags = [...allTags, ...splitTags];
+        });
+
+        // Supprimer les doublons et garder les 8 premiers tags uniques
+        // On garde la casse originale pour l'affichage (Set ne gère pas l'insensibilité à la casse seul)
+        const uniqueTags = [...new Set(allTags)].filter(t => t.length > 1).slice(0, 8);
+
+        const container = document.getElementById('tags-container');
+        if (!container) return;
+
+        container.innerHTML = uniqueTags.map(tag => `
+            <span class="tag-item" onclick="filterByTag('${tag.replace(/'/g, "\\'")}')">${tag}</span>
+        `).join('');
+
+    } catch (e) {
+        console.warn("Erreur chargement tags:", e);
+    }
+}
+
+// --- FONCTION 2 : FILTRER PAR TAG ---
+async function filterByTag(tagName) {
+    console.log("Recherche des articles pour : " + tagName);
+    
+    // On change un peu le style du bouton pour montrer qu'il est actif
+    // (Optionnel : tu peux ajouter une classe .active)
+
+    const { data, error } = await supabaseClient
+        .from('articles')
+        .select('*')
+        .ilike('tags', `%${tagName}%`) // Filtre SQL : "contient ce mot"
+        .order('created_at', { ascending: false });
+
+    if (!error && data) {
+        // ATTENTION : Remplace 'displayArticles' par le nom de TA fonction 
+        // qui affiche les articles dans ta grille (ex: renderGrid)
+        if (typeof displayArticles === "function") {
+            displayArticles(data); 
+        }
+        
+        // On scrolle doucement vers la zone des articles
+        const mainContent = document.getElementById('main-grid') || document.getElementById('articles-section');
+        if(mainContent) mainContent.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// Lancement au chargement de la page
+window.addEventListener('DOMContentLoaded', loadAutoTrendingTags);
 // 5. CHARGEMENT AU DÉMARRAGE
 window.onload = () => {
     fetchAllContent('top'); 
@@ -517,3 +608,4 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
