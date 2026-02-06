@@ -176,6 +176,7 @@
     </div>
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
     const BASE_URL = window.location.origin; 
@@ -243,7 +244,7 @@
         if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
     }
 
-    // --- LOGIQUE DE RÉCUPÉRATION (PRIORITÉ & 48H) ---
+    // --- LOGIQUE DE RÉCUPÉRATION (PRIORITÉ SANS SUPPRESSION) ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
@@ -254,7 +255,7 @@
             if(status) status.textContent = "CHARGEMENT...";
             tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            // 1. REQUÊTE SUPABASE : On récupère tout pour trier proprement en JS
+            // 1. REQUÊTE SUPABASE : On récupère tes articles triés par priorité
             let sbQuery = supabaseClient.from('articles')
                 .select('*')
                 .order('is_priority', { ascending: false })
@@ -263,17 +264,8 @@
             if (category !== 'top') sbQuery = sbQuery.eq('category', category);
             if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
 
-            let { data: allMyArticles, error: sbError } = await sbQuery;
-            
-            // On ne stoppe pas le script si Supabase est vide ou en erreur, on continue avec l'API
-            let myArticles = allMyArticles || [];
-
-            // FILTRE DYNAMIQUE (48H) : On garde si < 48h OU si coché Prioritaire
-            const twoDaysAgo = new Date(now.getTime() - (48 * 60 * 60 * 1000));
-            myArticles = myArticles.filter(art => {
-                const isRecent = new Date(art.created_at) > twoDaysAgo;
-                return art.is_priority === true || isRecent;
-            });
+            let { data: myArticles, error: sbError } = await sbQuery;
+            if (sbError) console.error("Erreur Supabase:", sbError);
 
             // 2. RÉCUPÉRATION NEWS MONDIALES (CACHE)
             const newsCacheKey = `news_api_${category}_${query}`;
@@ -295,11 +287,10 @@
                 } catch(err) { console.warn("News mondiales indisponibles"); }
             }
 
-            renderAll({ myArticles, worldNews, category }, query);
+            renderAll({ myArticles: myArticles || [], worldNews, category }, query);
 
         } catch (e) { 
-            console.error("Erreur:", e);
-            // On affiche un message plus doux au lieu de bloquer l'utilisateur
+            console.error("Erreur critique:", e);
             if(status) status.textContent = "ACTUALISATION DES INFOS...";
         }
     }
@@ -323,12 +314,12 @@
 
         if (uniqueArticles.length === 0) {
             if(hero) hero.innerHTML = ""; 
-            if(grid) grid.innerHTML = "<p style='text-align:center; padding:50px;'>Aucune actualité récente disponible.</p>";
+            if(grid) grid.innerHTML = "<p style='text-align:center; padding:50px;'>Aucune actualité disponible.</p>";
             if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
             return;
         }
 
-        // 2. RENDER HERO (L'article Prioritaire ou le plus récent)
+        // 2. RENDER HERO
         const h = uniqueArticles[0];
         const hTitle = h.titre || h.title;
         const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
@@ -400,8 +391,3 @@
 </body>
 
 </html>
-
-
-
-
-
