@@ -177,40 +177,6 @@
 </footer>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
-    const BASE_URL = window.location.origin; 
-    const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
-    const CACHE_DURATION = 60 * 60 * 1000; 
-
-    // --- SYSTÈME ANALYTICS MAKMUS ---
-    const tracker = {
-        getVisitorId: () => {
-            let id = sessionStorage.getItem('makmus_visitor_id');
-            if (!id) {
-                id = 'v-' + Math.random().toString(36).substr(2, 9);
-                sessionStorage.setItem('makmus_visitor_id', id);
-            }
-            return id;
-        },
-        log: async (type, data = {}) => {
-            try {
-                await supabaseClient.from('stats').insert([{
-                    event_type: type,
-                    article_title: data.title || 'Page Accueil',
-                    category: data.category || 'Général',
-                    path: window.location.pathname,
-                    visitor_id: tracker.getVisitorId()
-                }]);
-            } catch (e) { console.warn("Analytics non configuré"); }
-        }
-    };
-
-    // --- GESTION DU MENU ---
-    const btnOpenMenu = document.getElementById('btnOpenMenu');voici le script corrige cette fonctionalite et consolide le reste: <script>
     // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
     const BASE_URL = window.location.origin; 
     const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
@@ -405,4 +371,5 @@ function toggleLoginModal() {
 </script>
 </body>
 </html>
+
 
