@@ -255,19 +255,13 @@
             if(status) status.textContent = "CHARGEMENT...";
             tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            // TRI PAR PRIORITÉ PUIS PAR DATE (Rien n'est caché)
-            let sbQuery = supabaseClient.from('articles')
-                .select('*')
-                .order('is_priority', { ascending: false })
-                .order('created_at', { ascending: false });
-
+            let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
             if (category !== 'top') sbQuery = sbQuery.eq('category', category);
             if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
 
             const { data: myArticles, error: sbError } = await sbQuery;
             if (sbError) throw sbError;
 
-            // CACHE API NEWS
             const newsCacheKey = `news_api_${category}_${query}`;
             const cachedNews = localStorage.getItem(newsCacheKey);
             const newsTimestamp = localStorage.getItem(`${newsCacheKey}_time`);
@@ -276,15 +270,13 @@
             if (cachedNews && newsTimestamp && (now - newsTimestamp < CACHE_DURATION)) {
                 worldNews = JSON.parse(cachedNews);
             } else {
-                try {
-                    let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
-                    if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
-                    const newsRes = await fetch(newsUrl);
-                    const newsData = await newsRes.json();
-                    worldNews = newsData.results || [];
-                    localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
-                    localStorage.setItem(`${newsCacheKey}_time`, now.toString());
-                } catch(err) { console.warn("API Monde indisponible"); }
+                let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
+                if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
+                const newsRes = await fetch(newsUrl);
+                const newsData = await newsRes.json();
+                worldNews = newsData.results || [];
+                localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
+                localStorage.setItem(`${newsCacheKey}_time`, now.toString());
             }
 
             renderAll({ myArticles: myArticles || [], worldNews, category }, query);
@@ -295,7 +287,7 @@
         }
     }
 
-    // --- FONCTION D'AFFICHAGE ---
+    // --- FONCTION D'AFFICHAGE (ÉPURÉE) ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
@@ -319,36 +311,32 @@
         const h = uniqueArticles[0];
         const hTitle = h.titre || h.title;
         const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
-        const hCatLabel = h.is_priority ? "À LA UNE" : (h.category || 'INFO').toUpperCase();
         
         if(hero) {
             hero.innerHTML = `
                 <div class="hero-container">
                     <div class="hero-text">
-                        <span class="tag-category" style="${h.is_priority ? 'background:#d32f2f; color:#fff;' : ''}">${hCatLabel}</span>
-                        <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')">${hTitle}</h1>
-                        <p>${(h.description || "").replace(/<[^>]*>/g, "").substring(0, 250)}...</p>
-                        <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')">LIRE LA SUITE →</button>
+                        <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
+                        <p>${(h.description || "").substring(0, 250)}...</p>
+                        <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
                     </div>
-                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
+                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
                 </div>`;
         }
 
-        // 2. RENDER GRILLE
+        // 2. RENDER GRILLE (SANS PARTAGE)
         if(grid) {
             grid.innerHTML = uniqueArticles.slice(1, 13).map(art => {
                 const title = art.titre || art.title;
                 const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
                 const img = art.image_url || art.image || "";
-                const cat = (art.category || "News").toUpperCase();
                 
                 return `
-                    <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${cat}', '${link}')">
+                    <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
                         ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
                         <div class="card-text">
-                            <span class="tag-mini">${cat}</span>
                             <h3>${title}</h3>
-                            <p class="card-desc">${(art.description || "").replace(/<[^>]*>/g, "").substring(0, 90)}...</p>
+                            <p class="card-desc">${(art.description || "").substring(0, 90)}...</p>
                         </div>
                     </div>`;
             }).join('');
@@ -363,26 +351,42 @@
         setTimeout(() => { window.location.href = link; }, 150);
     }
 
-    // --- BOUTONS HEADER & MODAL ---
-    window.handleSubscribe = function() {
-        tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement Header' });
-        alert("Bientôt disponible ! MAKMUS prépare une offre exclusive pour ses lecteurs fidèles.");
-    }
+    window.onload = () => fetchAllContent('top');
 
-    window.toggleLoginModal = function() {
-        tracker.log('click_account_login', { title: 'Bouton Mon Compte' });
-        const modal = document.getElementById('modalAccount');
-        if (modal) {
-            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
-        } else {
-            alert("L'espace membre sera disponible lors de la prochaine mise à jour.");
+[06/02 à 02:21] Hey!!c’est Christopher: // Fonction pour le bouton ABONNEZ-VOUS
+function handleSubscribe() {
+    // Log l'intention d'achat dans tes stats
+    tracker.log('click_subscribe', { title: 'Bouton Header Abonnement' });
+    
+    // Redirection vers une page d'abonnement ou affichage d'un message
+    alert("Merci de votre intérêt pour MAKMUS ! La page de paiement sécurisée est en cours de déploiement.");
+    // window.location.href = 'abonnement.html'; // Quand tu auras la page
+}
+
+// Fonction pour ouvrir/fermer le Modal de connexion (Mon Compte)
+function toggleLoginModal() {
+    const modal = document.getElementById('loginModal'); // Assure-toi que ton modal a cet ID
+    if (modal) {
+        const isVisible = modal.style.display === 'flex';
+        modal.style.display = isVisible ? 'none' : 'flex';
+        
+        if (!isVisible) {
+            tracker.log('open_account', { title: 'Tentative de connexion' });
         }
     }
+}
 
-    window.onload = () => fetchAllContent('top');
+// Fermeture du modal si on clique sur la croix (déjà existant normalement)
+const closeBtn = document.querySelector('.close-btn');
+if(closeBtn) {
+    closeBtn.onclick = () => {
+        document.getElementById('loginModal').style.display = 'none';
+    };
+}
 </script>
 </body>
 </html>
+
 
 
 
