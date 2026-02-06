@@ -299,7 +299,7 @@
         }
     }
 
-    // --- FONCTION D'AFFICHAGE ---
+// --- FONCTION D'AFFICHAGE (MISE À JOUR : 1 HERO + 24 GRILLE) ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
@@ -319,6 +319,7 @@
             return;
         }
 
+        // 1. GESTION DU HERO (L'article à l'index 0)
         const h = uniqueArticles[0];
         const hTitle = h.titre || h.title;
         const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
@@ -335,8 +336,9 @@
                 </div>`;
         }
 
+        // 2. GESTION DE LA GRILLE (Les articles de l'index 1 à 24 soit 24 articles)
         if(grid) {
-            grid.innerHTML = uniqueArticles.slice(1, 13).map(art => {
+            grid.innerHTML = uniqueArticles.slice(1, 25).map(art => {
                 const title = art.titre || art.title;
                 const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
                 const img = art.image_url || art.image || "";
@@ -378,5 +380,6 @@
 </script>
 </body>
 </html>
+
 
 
