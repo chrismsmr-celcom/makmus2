@@ -210,196 +210,199 @@
     };
 
     // --- GESTION DU MENU ---
-    const btnOpenMenu = document.getElementById('btnOpenMenu');
-    const btnCloseMenu = document.getElementById('closeMenu');
-    const fullMenu = document.getElementById('fullMenu');
-    
-    if(btnOpenMenu) btnOpenMenu.onclick = () => { 
-        fullMenu.classList.add('open'); 
-        document.body.style.overflow = 'hidden'; 
-    };
-    
-    if(btnCloseMenu) btnCloseMenu.onclick = () => closeMenuUI();
+    const btnOpenMenu = document.getElementById('btnOpenMenu');voici le script corrige cette fonctionalite et consolide le reste: <script>
+    // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
+    const BASE_URL = window.location.origin; 
+    const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    window.executeMenuSearch = function() {
-        const query = document.getElementById('menuSearchInput').value;
-        if(query) {
-            fetchAllContent('top', query);
-            closeMenuUI();
-        }
-    }
+    const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
+    const CACHE_DURATION = 60 * 60 * 1000; 
 
-    function closeMenuUI() {
-        if(fullMenu) {
-            fullMenu.classList.remove('open');
-            document.body.style.overflow = 'auto';
-        }
-    }
+    // --- SYSTÈME ANALYTICS MAKMUS ---
+    const tracker = {
+        getVisitorId: () => {
+            let id = sessionStorage.getItem('makmus_visitor_id');
+            if (!id) {
+                id = 'v-' + Math.random().toString(36).substr(2, 9);
+                sessionStorage.setItem('makmus_visitor_id', id);
+            }
+            return id;
+        },
+        log: async (type, data = {}) => {
+            try {
+                await supabaseClient.from('stats').insert([{
+                    event_type: type,
+                    article_title: data.title || 'Page Accueil',
+                    category: data.category || 'Général',
+                    path: window.location.pathname,
+                    visitor_id: tracker.getVisitorId()
+                }]);
+            } catch (e) { console.warn("Analytics non configuré"); }
+        }
+    };
 
-    // --- GESTION DE LA DATE ---
-    function updateDate() {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const liveDate = document.getElementById('live-date');
-        if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
-    }
+    // --- GESTION DU MENU ---
+    const btnOpenMenu = document.getElementById('btnOpenMenu');
+    const btnCloseMenu = document.getElementById('closeMenu');
+    const fullMenu = document.getElementById('fullMenu');
+    
+    if(btnOpenMenu) btnOpenMenu.onclick = () => { 
+        fullMenu.classList.add('open'); 
+        document.body.style.overflow = 'hidden'; 
+    };
+    
+    if(btnCloseMenu) btnCloseMenu.onclick = () => closeMenuUI();
 
-    // --- LOGIQUE DE RÉCUPÉRATION (FILTRE 48H) ---
-    async function fetchAllContent(category = 'top', query = '') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        closeMenuUI();
-        const status = document.getElementById('status-line');
-        const now = new Date();
+    window.executeMenuSearch = function() {
+        const query = document.getElementById('menuSearchInput').value;
+        if(query) {
+            fetchAllContent('top', query);
+            closeMenuUI();
+        }
+    }
 
-        try {
-            if(status) status.textContent = "CHARGEMENT...";
-            tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
+    function closeMenuUI() {
+        if(fullMenu) {
+            fullMenu.classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+    }
 
-            // CALCUL 48 HEURES
-            const twoDaysAgo = new Date(now.getTime() - (48 * 60 * 60 * 1000)).toISOString();
+    // --- GESTION DE LA DATE ---
+    function updateDate() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const liveDate = document.getElementById('live-date');
+        if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+    }
+    updateDate();
 
-            // REQUÊTE SUPABASE AVEC FILTRE DE TEMPS
-            let sbQuery = supabaseClient.from('articles')
-                .select('*')
-                .gt('created_at', twoDaysAgo) // On force l'actualité fraîche de moins de 2 jours
-                .order('created_at', { ascending: false });
+    // --- LOGIQUE DE RÉCUPÉRATION ---
+    async function fetchAllContent(category = 'top', query = '') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        closeMenuUI();
+        const status = document.getElementById('status-line');
+        const now = new Date().getTime();
 
-            if (category !== 'top') sbQuery = sbQuery.eq('category', category);
-            if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
+        try {
+            if(status) status.textContent = "CHARGEMENT...";
+            tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            let { data: myArticles, error: sbError } = await sbQuery;
-            if (sbError) throw sbError;
+            let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+            if (category !== 'top') sbQuery = sbQuery.eq('category', category);
+            if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
 
-            // SÉCURITÉ ANTI-VIDE : Si aucun article frais (<48h), on récupère les 3 derniers quoi qu'il arrive
-            if (!myArticles || myArticles.length === 0) {
-                const { data: fallback } = await supabaseClient.from('articles')
-                    .select('*')
-                    .order('created_at', { ascending: false })
-                    .limit(3);
-                myArticles = fallback || [];
-            }
+            const { data: myArticles, error: sbError } = await sbQuery;
+            if (sbError) throw sbError;
 
-            // RÉCUPÉRATION NEWS MONDIALES (CACHE)
-            const newsCacheKey = `news_api_${category}_${query}`;
-            const cachedNews = localStorage.getItem(newsCacheKey);
-            const newsTimestamp = localStorage.getItem(`${newsCacheKey}_time`);
-            
-            let worldNews = [];
-            if (cachedNews && newsTimestamp && (now.getTime() - newsTimestamp < CACHE_DURATION)) {
-                worldNews = JSON.parse(cachedNews);
-            } else {
-                let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
-                if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
-                const newsRes = await fetch(newsUrl);
-                const newsData = await newsRes.json();
-                worldNews = newsData.results || [];
-                localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
-                localStorage.setItem(`${newsCacheKey}_time`, now.getTime().toString());
-            }
+            const newsCacheKey = `news_api_${category}_${query}`;
+            const cachedNews = localStorage.getItem(newsCacheKey);
+            const newsTimestamp = localStorage.getItem(`${newsCacheKey}_time`);
+            
+            let worldNews = [];
+            if (cachedNews && newsTimestamp && (now - newsTimestamp < CACHE_DURATION)) {
+                worldNews = JSON.parse(cachedNews);
+            } else {
+                let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
+                if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
+                const newsRes = await fetch(newsUrl);
+                const newsData = await newsRes.json();
+                worldNews = newsData.results || [];
+                localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
+                localStorage.setItem(`${newsCacheKey}_time`, now.toString());
+            }
 
-            renderAll({ myArticles, worldNews, category }, query);
+            renderAll({ myArticles: myArticles || [], worldNews, category }, query);
 
-        } catch (e) { 
-            console.error("Erreur:", e);
-            if(status) status.textContent = "ERREUR DE CONNEXION.";
-        }
-    }
+        } catch (e) { 
+            console.error("Erreur:", e);
+            if(status) status.textContent = "ERREUR DE CONNEXION.";
+        }
+    }
 
-    // --- FONCTION D'AFFICHAGE ---
-  function renderAll(data, query) {
-    const hero = document.getElementById('hero-zone');
-    const grid = document.getElementById('news-grid');
-    const status = document.getElementById('status-line');
-    
-    // 1. On filtre les articles pour ne garder que ceux de la catégorie choisie
-    // Sauf si on est sur 'top' (accueil), là on prend tout.
-    const filteredMyArticles = (data.category === 'top' || query) 
-        ? data.myArticles 
-        : data.myArticles.filter(art => art.category === data.category);
+    // --- FONCTION D'AFFICHAGE (ÉPURÉE) ---
+    function renderAll(data, query) {
+        const hero = document.getElementById('hero-zone');
+        const grid = document.getElementById('news-grid');
+        const status = document.getElementById('status-line');
+        
+        const allPossible = [...data.myArticles, ...data.worldNews];
+        const seenTitles = new Set();
+        const uniqueArticles = allPossible.filter(art => {
+            const t = (art.titre || art.title || "").trim().toLowerCase();
+            if(!t || seenTitles.has(t)) return false;
+            seenTitles.add(t);
+            return true;
+        });
 
-    const allPossible = [...filteredMyArticles, ...data.worldNews];
-    
-    const seenTitles = new Set();
-    const uniqueArticles = allPossible.filter(art => {
-        const t = (art.titre || art.title || "").trim().toLowerCase();
-        if(!t || seenTitles.has(t)) return false;
-        seenTitles.add(t);
-        return true;
-    });
+        if (uniqueArticles.length === 0) {
+            if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
+            return;
+        }
 
-    if (uniqueArticles.length === 0) {
-        if(hero) hero.innerHTML = ""; // Vide la une si rien n'est trouvé
-        if(grid) grid.innerHTML = "<p style='text-align:center; padding:50px;'>Aucun article dans cette catégorie pour le moment.</p>";
-        if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
-        return;
-    }
+        // 1. RENDER HERO
+        const h = uniqueArticles[0];
+        const hTitle = h.titre || h.title;
+        const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
+        
+        if(hero) {
+            hero.innerHTML = `
+                <div class="hero-container">
+                    <div class="hero-text">
+                        <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
+                        <p>${(h.description || "").substring(0, 250)}...</p>
+                        <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
+                    </div>
+                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
+                </div>`;
+        }
 
-    // 2. RENDER HERO (Le premier article de la catégorie sélectionnée)
-    const h = uniqueArticles[0];
-    const hTitle = h.titre || h.title;
-    const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
-    
-    if(hero) {
-        hero.innerHTML = `
-            <div class="hero-container">
-                <div class="hero-text">
-                    <span class="tag-category">${(h.category || 'INFO').toUpperCase()}</span>
-                    <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
-                    <p>${(h.description || "").substring(0, 230)}...</p>
-                    <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
-                </div>
-                ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
-            </div>`;
-    }
+        // 2. RENDER GRILLE (SANS PARTAGE)
+        if(grid) {
+            grid.innerHTML = uniqueArticles.slice(1, 13).map(art => {
+                const title = art.titre || art.title;
+                const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
+                const img = art.image_url || art.image || "";
+                
+                return `
+                    <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
+                        ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
+                        <div class="card-text">
+                            <h3>${title}</h3>
+                            <p class="card-desc">${(art.description || "").substring(0, 90)}...</p>
+                        </div>
+                    </div>`;
+            }).join('');
+        }
 
-    // 3. RENDER GRILLE (Le reste)
-    if(grid) {
-        grid.innerHTML = uniqueArticles.slice(1, 13).map(art => {
-            const title = art.titre || art.title;
-            const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
-            const img = art.image_url || art.image || "";
-            const cat = art.category || "News";
-            
-            return `
-                <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
-                    ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
-                    <div class="card-text">
-                        <span class="tag-mini">${cat.toUpperCase()}</span>
-                        <h3>${title}</h3>
-                        <p class="card-desc">${(art.description || "").substring(0, 85)}...</p>
-                    </div>
-                </div>`;
-        }).join('');
-    }
+        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
+    }
 
-    if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ${data.category.toUpperCase()} ACTUALISÉE`;
+    // --- GESTIONNAIRE DE CLIC ET ANALYTICS ---
+    window.captureAction = function(title, category, link) {
+        tracker.log('click', { title, category });
+        setTimeout(() => { window.location.href = link; }, 150);
+    }
+
+    window.onload = () => fetchAllContent('top');
+// Fonction pour le bouton ABONNEZ-VOUS
+function handleSubscribe() {
+    tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement Header' });
+    alert("Bientôt disponible ! MAKMUS prépare une offre exclusive pour ses lecteurs fidèles.");
 }
 
-    // --- GESTIONNAIRE DE CLIC ET ANALYTICS ---
-    window.captureAction = function(title, category, link) {
-        tracker.log('click', { title, category });
-        setTimeout(() => { window.location.href = link; }, 130);
-    }
-
-    // --- BOUTONS HEADER ---
-    function handleSubscribe() {
-        tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement' });
-        alert("Bientôt disponible ! MAKMUS prépare une offre exclusive.");
-    }
-
-    function toggleLoginModal() {
-        tracker.log('click_account_login', { title: 'Bouton Mon Compte' });
-        const modal = document.getElementById('modalAccount');
-        if (modal) {
-            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
-        } else {
-            alert("L'espace membre sera disponible prochainement.");
-        }
-    }
-
-    window.onload = () => {
-        updateDate();
-        fetchAllContent('top');
-    };
+// Fonction pour ouvrir/fermer le Modal de connexion
+function toggleLoginModal() {
+    tracker.log('click_account_login', { title: 'Bouton Mon Compte' });
+    const modal = document.getElementById('modalAccount'); // Vérifie bien l'ID ici (c'était modalAccount plus haut dans ton HTML)
+    if (modal) {
+        modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+    } else {
+        alert("L'espace membre sera disponible lors de la prochaine mise à jour.");
+    }
+}
 </script>
 </body>
 </html>
+
