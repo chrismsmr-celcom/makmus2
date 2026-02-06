@@ -336,7 +336,32 @@
         const { count } = await supabaseClient.from('article_likes').select('*', { count: 'exact', head: true }).eq('article_id', articleId);
         if (document.getElementById('nb-like')) document.getElementById('nb-like').innerText = count || 0;
     }
+   async function postComment() {
+    const name = document.getElementById('comm-name').value.trim();
+    const text = document.getElementById('comm-text').value.trim();
 
+    if (!name || !text) {
+        alert("Nom et commentaire requis");
+        return;
+    }
+
+    const { error } = await supabaseClient
+        .from('article_comments')
+        .insert([{
+            article_id: articleId,
+            nom: name,
+            message: text
+        }]);
+
+    if (error) {
+        console.error(error);
+        alert("Erreur lors de l'envoi du commentaire");
+        return;
+    }
+
+    document.getElementById('comm-text').value = '';
+    fetchComments();
+}
     async function toggleLike() {
         const btn = document.getElementById('like-btn');
         const svg = btn.querySelector('svg');
