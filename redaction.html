@@ -490,14 +490,13 @@
             document.getElementById('full-article').innerHTML = "<p style='text-align:center; padding:50px;'>ID de l'article manquant.</p>";
         }
         
-        // Injection propre de la barre audio si elle n'existe pas
         if(!document.getElementById('audio-progress-container')) {
             document.body.insertAdjacentHTML('afterbegin', '<div id="audio-progress-container"><div id="audio-progress-bar"></div></div>');
         }
     });
 
     /* ---------------------------------------------------------
-       2. CHARGEMENT DE L'ARTICLE (FONCTION UNIQUE)
+       2. CHARGEMENT DE L'ARTICLE
     --------------------------------------------------------- */
     async function loadArticle() {
         const { data: art, error } = await supabaseClient
@@ -569,7 +568,7 @@
     }
 
     /* ---------------------------------------------------------
-       3. LOGIQUE AUDIO, LIKES, COMMENTS, SHARE
+       3. LOGIQUE AUDIO, LIKES, COMMENTS
     --------------------------------------------------------- */
     async function toggleSpeech() {
         const btnText = document.getElementById('speech-text');
@@ -638,6 +637,70 @@
         }
     }
 
+    /* ---------------------------------------------------------
+       4. COMMENTAIRES
+    --------------------------------------------------------- */
+    async function fetchComments() {
+        const { data, error } = await supabaseClient
+            .from('article_comments')
+            .select('*')
+            .eq('article_id', articleId)
+            .order('created_at', { ascending: false });
+
+        if (!error && data) {
+            const list = document.getElementById('comments-list');
+            if(list) {
+                list.innerHTML = data.map(c => `
+                    <div class="comment-item" style="border-bottom:1px solid #eee; padding:10px 0;">
+                        <strong>${c.nom}</strong>
+                        <p style="margin:5px 0;">${c.message}</p>
+                    </div>
+                `).join('');
+            }
+            if(document.getElementById('nb-comm')) document.getElementById('nb-comm').innerText = data.length;
+            if(document.getElementById('nb-comm-header')) document.getElementById('nb-comm-header').innerText = data.length;
+        }
+    }
+
+    async function postComment() {
+        const nomInput = document.getElementById('comm-name');
+        const msgInput = document.getElementById('comm-text');
+        const postBtn = document.querySelector('.comment-form-evo button');
+
+        const nom = nomInput.value.trim();
+        const msg = msgInput.value.trim();
+
+        if (!nom || !msg) {
+            alert("Veuillez remplir les champs.");
+            return;
+        }
+
+        postBtn.disabled = true;
+        postBtn.innerText = "ENVOI...";
+
+        try {
+            const { error } = await supabaseClient
+                .from('article_comments')
+                .insert([{ article_id: articleId, nom: nom, message: msg }]);
+
+            if (error) throw error;
+
+            msgInput.value = '';
+            await fetchComments();
+            alert("Merci ! Votre commentaire a été publié.");
+
+        } catch (error) {
+            console.error("Erreur détaillée:", error);
+            alert("Désolé, une erreur est survenue lors de la publication.");
+        } finally {
+            postBtn.disabled = false;
+            postBtn.innerText = "POST";
+        }
+    }
+
+    /* ---------------------------------------------------------
+       5. INTERFACE & PARTAGE
+    --------------------------------------------------------- */
     function updateLiveDate() {
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         const el = document.getElementById('live-date');
@@ -649,132 +712,26 @@
     function openShare() { document.getElementById('shareModal').style.display = 'block'; }
     function closeShare() { document.getElementById('shareModal').style.display = 'none'; }
 
-    /* ---------------------------------------------------------
-       FONCTION : ENVOYER UN COMMENTAIRE
-    --------------------------------------------------------- */
-async function postComment() {
-    const nomInput = document.getElementById('comm-name');
-    const msgInput = document.getElementById('comm-text');
-    const postBtn = document.querySelector('.comment-form-evo button');
-
-    const nom = nomInput.value.trim();
-    const msg = msgInput.value.trim();
-
-    if (!nom || !msg) {
-        alert("Veuillez remplir les champs.");
-        return;
-    }
-
-    postBtn.disabled = true;
-    postBtn.innerText = "ENVOI...";
-
-    try {
-        // Envoi à Supabase
-        const { error } = await supabaseClient
-            .from('article_comments')
-            .insert([{ article_id: articleId, nom: nom, message: msg }]);
-
-        if (error) throw error;
-
-        // Si l'envoi réussit :
-        msgInput.value = '';
-        
-        // On vérifie si fetchComments existe avant de l'appeler
-        if (typeof fetchComments === 'function') {
-            await fetchComments();
-        } else {
-            console.warn("La fonction fetchComments n'est pas encore définie.");
-            location.reload(); // Solution de secours : recharge la page
-        }
-
-    } catch (error) {
-        console.error("Erreur détaillée:", error); // Regarde dans la console (F12)
-        alert("Erreur technique : " + error.message);
-    } finally {
-        postBtn.disabled = false;
-        postBtn.innerText = "POST";
-    }
-}
-
-        // 2. Vérification simple
-        if (!nom || !msg) {
-            alert("Veuillez entrer votre nom et votre message avant de publier.");
-            return;
-        }
-
-        // 3. Interface : On désactive le bouton pendant l'envoi
-        const originalBtnText = postBtn.innerText;
-        postBtn.innerText = "ENVOI...";
-        postBtn.disabled = true;
-
-        try {
-            // 4. Insertion dans Supabase
-            const { error } = await supabaseClient
-                .from('article_comments')
-                .insert([
-                    { 
-                        article_id: articleId, 
-                        nom: nom, 
-                        message: msg,
-                        created_at: new Date().toISOString()
-                    }
-                ]);
-
-            if (error) throw error;
-
-            // 5. Succès : On vide le champ message (on garde le nom pour le confort)
-            msgInput.value = '';
-            
-            // 6. Rafraîchir la liste des commentaires immédiatement
-            await fetchComments();
-            
-            alert("Merci ! Votre commentaire a été publié.");
-
-        } catch (error) {
-            console.error("Erreur lors de l'envoi :", error.message);
-            alert("Désolé, une erreur est survenue lors de la publication.");
-        } finally {
-            // 7. Rétablir le bouton
-            postBtn.innerText = originalBtnText;
-            postBtn.disabled = false;
-        }
-    }
-    
-    /* ---------------------------------------------------------
-       4. LOGIQUE DE PARTAGE COMPLÈTE
-    --------------------------------------------------------- */
     function socialShare(platform) {
         const url = encodeURIComponent(window.location.href);
         const title = encodeURIComponent(document.title);
         let shareUrl = '';
 
         switch (platform) {
-            case 'facebook': 
-                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`; 
-                break;
-            case 'x': 
-                shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`; 
-                break;
-            case 'whatsapp': 
-                shareUrl = `https://wa.me/?text=${title}%20${url}`; 
-                break;
-            case 'linkedin': 
-                shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`; 
-                break;
-            case 'telegram': 
-                shareUrl = `https://t.me/share/url?url=${url}&text=${title}`; 
-                break;
-            case 'reddit': 
-                shareUrl = `https://reddit.com/submit?url=${url}&title=${title}`; 
-                break;
+            case 'facebook': shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`; break;
+            case 'x': shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`; break;
+            case 'whatsapp': shareUrl = `https://wa.me/?text=${title}%20${url}`; break;
+            case 'linkedin': shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`; break;
+            case 'telegram': shareUrl = `https://t.me/share/url?url=${url}&text=${title}`; break;
+            case 'reddit': shareUrl = `https://reddit.com/submit?url=${url}&title=${title}`; break;
             case 'instagram': 
                 shareUrl = `https://www.instagram.com/`; 
-                alert("Instagram ne permet pas le partage direct de lien. Nous vous redirigeons vers le site.");
+                alert("Instagram ne permet pas le partage direct. Redirection vers le site...");
                 break;
         }
 
         if (shareUrl) {
-            window.open(shareUrl, '_blank', 'width=600,height=450,resizable=yes,scrollbars=yes');
+            window.open(shareUrl, '_blank', 'width=600,height=450,resizable=yes');
         }
     }
 </script>
