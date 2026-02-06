@@ -421,7 +421,12 @@ function renderAll(data, query) {
             alert("L'espace membre sera disponible lors de la prochaine mise à jour.");
         }
     }
-    async function fetchVideosVerticaux() {
+// 1. DÉFINITION DES ICÔNES (SVG minimalistes)
+const ICON_MUTE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
+const ICON_VOL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.08"></path></svg>`;
+
+// 2. FONCTION PRINCIPALE DE CHARGEMENT
+async function fetchVideosVerticaux() {
     try {
         const { data, error } = await supabaseClient
             .from('videos_du_jour')
@@ -430,49 +435,85 @@ function renderAll(data, query) {
             .order('created_at', { ascending: false });
 
         if (error || !data || data.length === 0) {
-            document.getElementById('video-section').style.display = 'none';
+            const section = document.getElementById('video-section');
+            if(section) section.style.display = 'none';
             return;
         }
 
         const slider = document.getElementById('video-slider');
+        if(!slider) return;
+
+        // Injection du HTML avec le bouton Mute SVG
         slider.innerHTML = data.map(vid => `
-            <div class="video-card">
+            <div class="video-card" style="position:relative;">
+                <div class="mute-control" onclick="toggleMute(event, this)">
+                    <span class="icon-vol-container">${ICON_MUTE}</span>
+                </div>
                 <video 
                     src="${vid.video_url}" 
                     poster="${vid.poster_url || ''}"
-                    loop 
-                    muted 
-                    playsinline
+                    loop muted playsinline
                     style="width:100%; height:100%; object-fit: cover; cursor: pointer;"
-                    onclick="this.paused ? this.play() : this.pause()">
+                    onclick="handleVideoClick(this)">
                 </video>
-                <div style="position:absolute; bottom:0; left:0; right:0; padding:20px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); pointer-events:none;">
+                <div class="video-overlay" style="position:absolute; bottom:0; left:0; right:0; padding:20px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); pointer-events:none;">
                     <h4 style="color:white; margin:0; font-family:Arial; font-size:0.9rem;">${vid.titre}</h4>
                 </div>
             </div>
         `).join('');
 
-        // Optionnel : Un petit tracker d'analytics pour les vidéos
+        // Tracker d'analytics
         document.querySelectorAll('.video-card video').forEach(v => {
-            v.onplay = () => tracker.log('video_portrait_play', { title: v.parentNode.querySelector('h4').innerText });
+            v.onplay = () => {
+                const title = v.closest('.video-card').querySelector('h4').innerText;
+                tracker.log('video_portrait_play', { title: title });
+            };
         });
 
     } catch (e) {
         console.warn("Erreur chargement vidéos:", e);
     }
 }
-    window.onload = () => {
-    fetchAllContent('top'); // Charge tes articles
-    fetchVideosVerticaux(); // Charge tes vidéos portrait
+
+// 3. GESTION DU SON (Toggle Mute)
+function toggleMute(event, btn) {
+    event.stopPropagation(); // Empêche de déclencher le pause/play de la vidéo
+    const video = btn.parentNode.querySelector('video');
+    const container = btn.querySelector('.icon-vol-container');
+
+    if (video.muted) {
+        video.muted = false;
+        container.innerHTML = ICON_VOL;
+    } else {
+        video.muted = true;
+        container.innerHTML = ICON_MUTE;
+    }
+}
+
+// 4. GESTION PLAY / PAUSE (Intelligente)
+function handleVideoClick(video) {
+    const btn = video.parentNode.querySelector('.mute-control');
+    const container = btn.querySelector('.icon-vol-container');
+
+    if (video.paused) {
+        // Arrête les autres vidéos pour éviter le mélange des sons
+        document.querySelectorAll('.video-card video').forEach(v => { if(v !== video) v.pause(); });
+        
+        // Au premier clic de lecture, on active souvent le son par défaut
+        video.muted = false;
+        container.innerHTML = ICON_VOL;
+        
+        video.play();
+    } else {
+        video.pause();
+    }
+}
+
+// 5. CHARGEMENT AU DÉMARRAGE
+window.onload = () => {
+    fetchAllContent('top'); 
+    fetchVideosVerticaux(); 
 };
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
