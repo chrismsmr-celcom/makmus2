@@ -198,7 +198,6 @@
         },
         log: async (type, data = {}) => {
             try {
-                // Fusion : Conservation de ta structure avec ajout du created_at pour forcer l'insertion
                 await supabaseClient.from('stats').insert([{
                     event_type: type,
                     article_title: data.title || 'Page Accueil',
@@ -212,7 +211,6 @@
         }
     };
 
-    // --- LOG PRIORITAIRE (Pour détecter les nouveaux téléphones immédiatement) ---
     tracker.log('view', { title: 'Visite Page Accueil' });
 
     // --- GESTION DU MENU ---
@@ -250,7 +248,7 @@
     }
     updateDate();
 
-    // --- LOGIQUE DE RÉCUPÉRATION ---
+    // --- LOGIQUE DE RÉCUPÉRATION (FILTRE ARCHIVE AJOUTÉ) ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
@@ -261,8 +259,13 @@
             if(status) status.textContent = "CHARGEMENT...";
             tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            // Tri par date uniquement
-            let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
+            // AJOUT DU FILTRE is_published: true POUR ARCHIVAGE
+            let sbQuery = supabaseClient
+                .from('articles')
+                .select('*')
+                .eq('is_published', true) // <--- ICI : Seuls les articles non-archivés
+                .order('created_at', { ascending: false });
+
             if (category !== 'top') sbQuery = sbQuery.eq('category', category);
             if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
 
@@ -296,7 +299,7 @@
         }
     }
 
-    // --- FONCTION D'AFFICHAGE (ÉPURÉE) ---
+    // --- FONCTION D'AFFICHAGE ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
@@ -351,7 +354,6 @@
         if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
     }
 
-    // --- GESTIONNAIRE DE CLIC ET ANALYTICS ---
     window.captureAction = function(title, category, link) {
         tracker.log('click', { title, category });
         setTimeout(() => { window.location.href = link; }, 150);
@@ -359,7 +361,6 @@
 
     window.onload = () => fetchAllContent('top');
 
-    // --- FONCTIONS HEADER & MODAL ---
     function handleSubscribe() {
         tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement Header' });
         alert("Bientôt disponible ! MAKMUS prépare une offre exclusive pour ses lecteurs fidèles.");
@@ -377,4 +378,5 @@
 </script>
 </body>
 </html>
+
 
