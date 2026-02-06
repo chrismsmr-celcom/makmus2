@@ -40,122 +40,136 @@
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
         .modal-content { background: #fff; margin: 10% auto; padding: 25px; width: 90%; max-width: 450px; border-radius: 2px; position: relative; }
         .close-modal { position: absolute; right: 15px; top: 10px; font-size: 28px; cursor: pointer; color: #000; }
-        /* === ÉVOLUTION MODAL COMMENTAIRES MODERNE === */
+/* === ÉVOLUTION MODAL COMMENTAIRES : STYLE NYT ACTUALISÉ === */
         .comment-evo {
-            max-width: 520px;
-            border-radius: 0; /* Look journal : angles droits pour plus de sérieux */
+            max-width: 600px;
+            border-radius: 0; 
             padding: 40px;
-            animation: commentFadeUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-            border-top: 6px solid #121212; /* Ligne de tête forte */
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            background: #ffffff;
+            animation: commentFadeUp 0.3s ease-out;
+            border-top: 1px solid #000; /* Ligne fine mais noire */
+            box-shadow: 0 15px 40px rgba(0,0,0,0.2);
         }
 
         @keyframes commentFadeUp {
-            from { transform: translateY(20px); opacity: 0; }
+            from { transform: translateY(15px); opacity: 0; }
             to   { transform: translateY(0); opacity: 1; }
         }
 
         .comment-title {
             font-family: 'Libre Baskerville', serif;
-            font-size: 1.6rem;
+            font-size: 26px;
             font-weight: 700;
-            margin-bottom: 25px;
+            margin-bottom: 20px;
             color: #121212;
-            letter-spacing: -0.5px;
+            display: flex;
+            align-items: baseline;
+            gap: 8px;
         }
 
         .comment-count {
-            color: #c00; /* Touche de rouge pour le dynamisme */
+            color: #727272;
             font-family: Arial, sans-serif;
-            font-weight: 800;
-            font-size: 0.9rem;
-            margin-left: 5px;
+            font-weight: 300;
+            font-size: 22px;
+            background: none; /* On enlève le gris de fond */
+            padding: 0;
         }
 
+        /* --- LISTE DES COMMENTAIRES --- */
         .comment-list-evo {
-            max-height: 350px;
+            max-height: 400px;
             overflow-y: auto;
-            padding-right: 15px;
-            margin-bottom: 30px;
-            border-bottom: 1px solid #eee;
+            padding-right: 10px;
+            margin: 25px 0;
+            border-top: 1px solid #eee;
         }
 
-        /* Scrollbar élégante */
-        .comment-list-evo::-webkit-scrollbar { width: 4px; }
-        .comment-list-evo::-webkit-scrollbar-thumb { background: #121212; }
+        .comment-list-evo::-webkit-scrollbar { width: 3px; }
+        .comment-list-evo::-webkit-scrollbar-thumb { background: #ccc; }
 
         .comment-item {
             padding: 20px 0;
-            border-bottom: 1px dashed #ddd; /* Séparateur discret */
+            border-bottom: 1px solid #f2f2f2;
         }
-
-        .comment-item:last-child { border-bottom: none; }
 
         .comment-author {
             font-family: Arial, sans-serif;
-            font-size: 0.75rem;
-            font-weight: 900;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 8px;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: none; /* Pas de majuscules forcées pour le look NYT */
             color: #121212;
+            margin-bottom: 4px;
         }
 
         .comment-text {
             font-family: 'Libre Baskerville', serif;
-            font-size: 1rem;
-            line-height: 1.6;
+            font-size: 15px;
+            line-height: 1.5;
             color: #333;
         }
 
-        /* FORMULAIRE ÉPURÉ */
+        /* --- FORMULAIRE D'ACTION --- */
         .comment-form-evo {
             display: flex;
             flex-direction: column;
-            gap: 20px;
+            gap: 12px;
+            background: #f9f9f9; /* Fond très léger pour la zone de saisie */
+            padding: 20px;
+            border: 1px solid #eee;
         }
 
         .comment-form-evo input,
         .comment-form-evo textarea {
             width: 100%;
             font-family: Arial, sans-serif;
-            font-size: 0.9rem;
-            padding: 12px 0;
-            border: none;
-            border-bottom: 1px solid #ccc; /* Champ souligné uniquement */
-            border-radius: 0;
-            background: transparent;
-            transition: border-color 0.3s ease;
+            font-size: 14px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background: #fff;
             outline: none;
+            transition: border-color 0.2s;
         }
 
         .comment-form-evo input:focus,
         .comment-form-evo textarea:focus {
-            border-bottom: 2px solid #121212;
+            border-color: #567b95;
         }
 
         .comment-form-evo textarea {
             resize: none;
-            height: 60px;
+            height: 80px;
         }
 
+        /* BOUTON BLEU NYT */
         .comment-form-evo button {
-            background: #121212;
+            background: #567b95; 
             color: #fff;
             border: none;
-            padding: 15px;
+            padding: 10px 20px;
             font-family: Arial, sans-serif;
-            font-size: 0.8rem;
-            font-weight: 900;
+            font-size: 12px;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            letter-spacing: 1px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            align-self: flex-end; /* Aligné à droite */
+            transition: background 0.2s;
         }
 
         .comment-form-evo button:hover {
-            background: #c00;
-            transform: translateY(-2px);
+            background: #324b5e;
+            transform: none;
+        }
+
+        /* Petit texte légal/modération sous le bouton */
+        .mod-notice {
+            font-size: 11px;
+            color: #888;
+            margin-top: 10px;
+            line-height: 1.3;
+            font-family: Arial, sans-serif;
         }
         /* --- IMPRESSION JOURNAL --- */
 @media print {
@@ -374,33 +388,25 @@
     </div>
 </div>
 
-<div id="commentModal" class="modal no-print">
-    <div class="modal-content comment-evo" onclick="event.stopPropagation()">
-
-        <span class="close-modal" onclick="closeComments()">&times;</span>
-
-        <h3 id="comm-title" class="comment-title">
-            Commentaires <span class="comment-count">(0)</span>
-        </h3>
-
-        <div id="comments-list" class="comment-list-evo"></div>
-
+<div id="commentModal" class="modal">
+    <div class="modal-content comment-evo">
+        <span class="close-btn" onclick="closeComments()">×</span>
+        
+        <h2 class="comment-title">Comments <span id="nb-comm-header" class="comment-count">0</span></h2>
+        
         <div class="comment-form-evo">
-            <input
-                type="text"
-                id="comm-name"
-                placeholder="Votre nom"
-            >
-            <textarea
-                id="comm-text"
-                placeholder="Ajouter un commentaire…"
-            ></textarea>
-
-            <button onclick="postComment(event)">
-                Publier
-            </button>
+            <input type="text" id="comm-name" placeholder="Your name" style="margin-bottom:10px; border:1px solid #ccc; padding:10px; border-radius:4px; width:100%;">
+            <textarea id="comm-text" placeholder="Share your thoughts."></textarea>
+            <button onclick="postComment()">POST</button>
         </div>
 
+        <div class="mod-notice">
+            The Times needs your voice. We welcome your on-topic commentary, criticism and expertise. 
+            <a href="#">Comments are moderated for civility.</a>
+        </div>
+
+        <div id="comments-list" class="comment-list-evo">
+            </div>
     </div>
 </div>
 
@@ -568,20 +574,33 @@
         }
     }
 
-    async function fetchComments() {
-        const { data } = await supabaseClient.from('article_comments').select('*').eq('article_id', articleId).order('created_at', {ascending: false});
-        if(data) {
-            const commCount = document.getElementById('nb-comm');
-            if (commCount) commCount.innerText = data.length;
-            const list = document.getElementById('comments-list');
-            if(list) list.innerHTML = data.map(c => `
-                <div style="border-bottom:1px solid #eee; padding:15px 0;">
-                    <b style="font-size:0.85rem;">${c.nom}</b>
-                    <p style="margin:5px 0; font-size:0.95rem;">${c.message}</p>
+async function fetchComments() {
+    const { data } = await supabaseClient.from('article_comments')
+        .select('*')
+        .eq('article_id', articleId)
+        .order('created_at', {ascending: false});
+        
+    if(data) {
+        // Mise à jour du compteur en haut
+        const countEl = document.getElementById('nb-comm-header');
+        if(countEl) countEl.innerText = data.length;
+
+        const list = document.getElementById('comments-list');
+        if(list) {
+            list.innerHTML = data.map(c => `
+                <div class="comment-item">
+                    <div class="comment-author">${c.nom}</div>
+                    <div class="comment-text">${c.message}</div>
+                    <div style="display:flex; gap:15px; font-size:13px; color:#567b95; font-weight:bold; cursor:pointer;">
+                        <span>Reply</span>
+                        <span style="color:#727272; font-weight:normal;">Recommend</span>
+                        <span style="color:#727272; font-weight:normal;">Share</span>
+                    </div>
                 </div>
             `).join('');
         }
     }
+}
 
     // --- CHARGEMENT ARTICLE ET MODAL PARTAGE ---
     async function loadArticle() {
