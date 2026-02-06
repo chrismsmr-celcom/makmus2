@@ -461,9 +461,14 @@ function renderAll(data, query) {
         console.warn("Erreur chargement vidéos:", e);
     }
 }
+    window.onload = () => {
+    fetchAllContent('top'); // Charge tes articles
+    fetchVideosVerticaux(); // Charge tes vidéos portrait
+};
 </script>
 </body>
 </html>
+
 
 
 
