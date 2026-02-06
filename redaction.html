@@ -50,7 +50,45 @@
             border-top: 1px solid #000; /* Ligne fine mais noire */
             box-shadow: 0 15px 40px rgba(0,0,0,0.2);
         }
+        /* 1. Limiter la hauteur du modal pour éviter qu'il ne sorte de l'écran */
+.comment-evo {
+    max-height: 90vh; /* 90% de la hauteur de l'écran */
+    display: flex;
+    flex-direction: column;
+}
 
+/* 2. Rendre la liste des commentaires scrollable */
+.comment-list-evo {
+    flex-grow: 1; /* Prend l'espace restant */
+    overflow-y: auto; /* Active le scroll vertical */
+    padding-right: 10px; /* Évite que le scroll cache le texte */
+    margin-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* 3. Design de la barre de défilement (optionnel mais recommandé) */
+.comment-list-evo::-webkit-scrollbar {
+    width: 5px;
+}
+
+.comment-list-evo::-webkit-scrollbar-track {
+    background: #f9f9f9;
+}
+
+.comment-list-evo::-webkit-scrollbar-thumb {
+    background: #d1d1d1;
+    border-radius: 10px;
+}
+
+.comment-list-evo::-webkit-scrollbar-thumb:hover {
+    background: #c00; /* Rappel du rouge Makmus au survol */
+}
+
+/* 4. Fixer le formulaire en haut */
+.comment-form-evo {
+    flex-shrink: 0; /* Empêche le formulaire de rétrécir */
+    padding-bottom: 15px;
+}
         @keyframes commentFadeUp {
             from { transform: translateY(15px); opacity: 0; }
             to   { transform: translateY(0); opacity: 1; }
@@ -108,6 +146,32 @@
             line-height: 1.5;
             color: #333;
         }
+        /* Conteneur de la liste des commentaires */
+.comment-list-evo {
+    max-height: 400px; /* Ajuste la hauteur selon tes besoins */
+    overflow-y: auto;  /* Active le scroll vertical */
+    padding-right: 10px; /* Espace pour la barre de défilement */
+    margin-top: 20px;
+    border-top: 1px solid #eee;
+}
+
+/* Personnalisation de la barre de défilement (Scrollbar) pour un look pro */
+.comment-list-evo::-webkit-scrollbar {
+    width: 6px;
+}
+
+.comment-list-evo::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+.comment-list-evo::-webkit-scrollbar-thumb {
+    background: #ccc;
+    border-radius: 10px;
+}
+
+.comment-list-evo::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
 
         /* --- FORMULAIRE D'ACTION --- */
         .comment-form-evo {
