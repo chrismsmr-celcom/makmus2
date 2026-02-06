@@ -242,19 +242,20 @@
         const liveDate = document.getElementById('live-date');
         if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
     }
+    updateDate();
 
-    // --- LOGIQUE DE RÉCUPÉRATION (SANS AUCUNE LIMITE DE TEMPS) ---
+    // --- LOGIQUE DE RÉCUPÉRATION ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
         const status = document.getElementById('status-line');
-        const now = new Date();
+        const now = new Date().getTime();
 
         try {
             if(status) status.textContent = "CHARGEMENT...";
             tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            // 1. REQUÊTE SUPABASE : On prend tout, trié par Priorité puis par Date
+            // TRI PAR PRIORITÉ PUIS PAR DATE (Rien n'est caché)
             let sbQuery = supabaseClient.from('articles')
                 .select('*')
                 .order('is_priority', { ascending: false })
@@ -263,16 +264,16 @@
             if (category !== 'top') sbQuery = sbQuery.eq('category', category);
             if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
 
-            let { data: myArticles, error: sbError } = await sbQuery;
-            if (sbError) console.error("Erreur Supabase:", sbError);
+            const { data: myArticles, error: sbError } = await sbQuery;
+            if (sbError) throw sbError;
 
-            // 2. RÉCUPÉRATION NEWS MONDIALES (API)
+            // CACHE API NEWS
             const newsCacheKey = `news_api_${category}_${query}`;
             const cachedNews = localStorage.getItem(newsCacheKey);
             const newsTimestamp = localStorage.getItem(`${newsCacheKey}_time`);
             
             let worldNews = [];
-            if (cachedNews && newsTimestamp && (now.getTime() - newsTimestamp < CACHE_DURATION)) {
+            if (cachedNews && newsTimestamp && (now - newsTimestamp < CACHE_DURATION)) {
                 worldNews = JSON.parse(cachedNews);
             } else {
                 try {
@@ -282,15 +283,15 @@
                     const newsData = await newsRes.json();
                     worldNews = newsData.results || [];
                     localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
-                    localStorage.setItem(`${newsCacheKey}_time`, now.getTime().toString());
+                    localStorage.setItem(`${newsCacheKey}_time`, now.toString());
                 } catch(err) { console.warn("API Monde indisponible"); }
             }
 
             renderAll({ myArticles: myArticles || [], worldNews, category }, query);
 
         } catch (e) { 
-            console.error("Erreur critique:", e);
-            if(status) status.textContent = "MISE À JOUR...";
+            console.error("Erreur:", e);
+            if(status) status.textContent = "ERREUR DE CONNEXION.";
         }
     }
 
@@ -300,9 +301,7 @@
         const grid = document.getElementById('news-grid');
         const status = document.getElementById('status-line');
         
-        // On fusionne tes articles et les mondiaux sans aucun filtre de date
         const allPossible = [...data.myArticles, ...data.worldNews];
-        
         const seenTitles = new Set();
         const uniqueArticles = allPossible.filter(art => {
             const t = (art.titre || art.title || "").trim().toLowerCase();
@@ -316,7 +315,7 @@
             return;
         }
 
-        // 1. RENDER HERO (Priorité ou dernier publié)
+        // 1. RENDER HERO
         const h = uniqueArticles[0];
         const hTitle = h.titre || h.title;
         const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
@@ -328,7 +327,7 @@
                     <div class="hero-text">
                         <span class="tag-category" style="${h.is_priority ? 'background:#d32f2f; color:#fff;' : ''}">${hCatLabel}</span>
                         <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')">${hTitle}</h1>
-                        <p>${(h.description || "").replace(/<[^>]*>/g, "").substring(0, 230)}...</p>
+                        <p>${(h.description || "").replace(/<[^>]*>/g, "").substring(0, 250)}...</p>
                         <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')">LIRE LA SUITE →</button>
                     </div>
                     ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
@@ -349,23 +348,25 @@
                         <div class="card-text">
                             <span class="tag-mini">${cat}</span>
                             <h3>${title}</h3>
-                            <p class="card-desc">${(art.description || "").replace(/<[^>]*>/g, "").substring(0, 85)}...</p>
+                            <p class="card-desc">${(art.description || "").replace(/<[^>]*>/g, "").substring(0, 90)}...</p>
                         </div>
                     </div>`;
             }).join('');
         }
 
-        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ${data.category.toUpperCase()} ACTUALISÉE`;
+        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
     }
 
+    // --- GESTIONNAIRE DE CLIC ET ANALYTICS ---
     window.captureAction = function(title, category, link) {
         tracker.log('click', { title, category });
-        setTimeout(() => { window.location.href = link; }, 130);
+        setTimeout(() => { window.location.href = link; }, 150);
     }
 
+    // --- BOUTONS HEADER & MODAL ---
     window.handleSubscribe = function() {
-        tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement' });
-        alert("Bientôt disponible ! MAKMUS prépare une offre exclusive.");
+        tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement Header' });
+        alert("Bientôt disponible ! MAKMUS prépare une offre exclusive pour ses lecteurs fidèles.");
     }
 
     window.toggleLoginModal = function() {
@@ -374,17 +375,15 @@
         if (modal) {
             modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
         } else {
-            alert("L'espace membre sera disponible prochainement.");
+            alert("L'espace membre sera disponible lors de la prochaine mise à jour.");
         }
     }
 
-    window.onload = () => {
-        updateDate();
-        fetchAllContent('top');
-    };
+    window.onload = () => fetchAllContent('top');
 </script>
 </body>
 </html>
+
 
 
 
