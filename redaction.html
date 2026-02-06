@@ -145,6 +145,46 @@
             body { background: white !important; color: black !important; padding: 0; }
             .article-content { column-count: 2; column-gap: 30px; text-align: justify; font-size: 11pt; }
         }
+        /* --- NOUVEAU STYLE PARTAGE MODERNE --- */
+.share-grid-modern {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    padding: 10px 0;
+}
+.share-item-modern {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    color: #121212;
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+.share-item-modern:hover { transform: translateY(-3px); }
+.share-item-modern span { font-size: 10px; font-weight: bold; margin-top: 8px; text-transform: uppercase; }
+
+.s-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 12px;
+}
+/* Couleurs Officielles */
+.bg-fb { background: #1877F2; }
+.bg-x { background: #000000; }
+.bg-wa { background: #25D366; }
+.bg-li { background: #0077B5; }
+.bg-tg { background: #0088CC; }
+.bg-rd { background: #FF4500; }
+.bg-ig { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); }
+.bg-cp { background: #666; }
+.bg-pr { background: #a30000; }
     </style>
 </head>
 <body>
@@ -298,10 +338,21 @@
 </footer>
 
 <div id="shareModal" class="modal no-print">
-    <div class="modal-content">
+    <div class="modal-content" style="border-radius:14px; padding:20px;">
         <span class="close-modal" onclick="closeShare()">&times;</span>
-        <h3 style="margin-top:0; font-family:Arial; text-align:center;">PARTAGER</h3>
-        <div class="share-grid" id="shareButtons"></div>
+        <h3 style="margin-top:0; font-family:Arial; text-align:center; font-size:1.1rem;">PARTAGER L'ÉDITION</h3>
+        
+        <div class="share-grid-modern">
+            <div onclick="socialShare('facebook')" class="share-item-modern"><div class="s-icon bg-fb">FB</div><span>Facebook</span></div>
+            <div onclick="socialShare('x')" class="share-item-modern"><div class="s-icon bg-x">X</div><span>Twitter</span></div>
+            <div onclick="socialShare('whatsapp')" class="share-item-modern"><div class="s-icon bg-wa">WA</div><span>WhatsApp</span></div>
+            <div onclick="socialShare('linkedin')" class="share-item-modern"><div class="s-icon bg-li">IN</div><span>LinkedIn</span></div>
+            <div onclick="socialShare('telegram')" class="share-item-modern"><div class="s-icon bg-tg">TG</div><span>Telegram</span></div>
+            <div onclick="socialShare('reddit')" class="share-item-modern"><div class="s-icon bg-rd">RD</div><span>Reddit</span></div>
+            <div onclick="socialShare('insta')" class="share-item-modern"><div class="s-icon bg-ig">IG</div><span>Instagram</span></div>
+            <div onclick="copyLink()" class="share-item-modern"><div class="s-icon bg-cp">link</div><span>Copier</span></div>
+            <div onclick="window.print()" class="share-item-modern"><div class="s-icon bg-pr">print</div><span>Imprimer</span></div>
+        </div>
     </div>
 </div>
 
@@ -338,25 +389,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-    // --- STYLES (UI, MODALS, ANIMATIONS & PROGRESS BAR) ---
-    const styleApp = document.createElement('style');
-    styleApp.innerHTML = `
-        @keyframes heartbeat { 0% { transform: scale(1); } 25% { transform: scale(1.3); } 50% { transform: scale(1); } 100% { transform: scale(1); } }
-        .animate-like { animation: heartbeat 0.45s ease-in-out; }
-        .modal { display: none; position: fixed; z-index: 20000; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); }
-        .modal-content { background: white; margin: 10% auto; padding: 0; width: 90%; max-width: 450px; border-radius: 12px; overflow: hidden; position: relative; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-        .modal-content { pointer-events: auto; }
-    `;
-    document.head.appendChild(styleApp);
-
-    document.addEventListener('DOMContentLoaded', () => {
-        document.body.insertAdjacentHTML(
-            'afterbegin',
-            '<div id="audio-progress-container"><div id="audio-progress-bar"></div></div>'
-        );
-    });
-
-    // --- CONFIGURATION SUPABASE ---
     const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -364,64 +396,16 @@
     const params = new URLSearchParams(window.location.search);
     const articleId = params.get('id');
 
-    // --- AUDIO ---
-    let currentAudioFile = null;
-    let speechInstance = null;
-    let progressInterval = null;
-
-    function stopAllAudio() {
-        if (currentAudioFile) { currentAudioFile.pause(); currentAudioFile = null; }
-        window.speechSynthesis.cancel();
-        if (progressInterval) clearInterval(progressInterval);
-        const t = document.getElementById('speech-text');
-        if (t) t.innerText = "ÉCOUTER";
-        const c = document.getElementById('audio-progress-container');
-        const b = document.getElementById('audio-progress-bar');
-        if (c) c.style.display = 'none';
-        if (b) b.style.width = "0%";
-    }
-
-    // --- LIKES ---
-    async function fetchLikes() {
-        const { count } = await supabaseClient
-            .from('article_likes')
-            .select('*', { count: 'exact', head: true })
-            .eq('article_id', articleId);
-
-        const el = document.getElementById('nb-like');
-        if (el) el.innerText = count || 0;
-    }
-
-    async function toggleLike() {
-        const btn = document.getElementById('like-btn');
-        if (!btn || btn.classList.contains('liked')) return;
-
-        const svg = btn.querySelector('svg');
-        const { error } = await supabaseClient
-            .from('article_likes')
-            .insert([{ article_id: articleId }]);
-
-        if (!error) {
-            btn.classList.add('liked');
-            svg.setAttribute('fill', '#e0245e');
-            svg.setAttribute('stroke', '#e0245e');
-            svg.classList.add('animate-like');
-            fetchLikes();
-        }
-    }
-
-    // --- COMMENTAIRES ---
-    async function postComment(event) {
-        if (event) {
-            event.preventDefault();
-            event.stopPropagation();
-        }
-
-        const name = document.getElementById('comm-name')?.value.trim();
-        const text = document.getElementById('comm-text')?.value.trim();
+    // --- FONCTION PUBLIER (CORRIGÉE) ---
+    async function postComment() {
+        const nameEl = document.getElementById('comm-name');
+        const textEl = document.getElementById('comm-text');
+        
+        const name = nameEl?.value.trim();
+        const text = textEl?.value.trim();
 
         if (!name || !text) {
-            alert("Nom et commentaire requis");
+            alert("Merci de remplir votre nom et votre message.");
             return;
         }
 
@@ -430,13 +414,11 @@
             .insert([{ article_id: articleId, nom: name, message: text }]);
 
         if (error) {
-            console.error(error);
-            alert("Erreur lors de l'envoi du commentaire");
-            return;
+            alert("Erreur : " + error.message);
+        } else {
+            textEl.value = ''; // On vide le texte
+            fetchComments();   // On rafraîchit la liste
         }
-
-        document.getElementById('comm-text').value = '';
-        fetchComments();
     }
 
     async function fetchComments() {
@@ -447,31 +429,92 @@
             .order('created_at', { ascending: false });
 
         const list = document.getElementById('comments-list');
-        const count = document.getElementById('nb-comm');
+        const count = document.querySelector('.comment-count'); // Corrigé pour cibler ta classe NYT
 
-        if (count) count.innerText = data?.length || 0;
+        if (count) count.innerText = `(${data?.length || 0})`;
         if (list && data) {
             list.innerHTML = data.map(c => `
-                <div style="border-bottom:1px solid #eee; padding:15px 0;">
-                    <b>${c.nom}</b>
-                    <p style="margin:5px 0;">${c.message}</p>
+                <div class="comment-item">
+                    <div class="comment-author">${c.nom}</div>
+                    <div class="comment-text">${c.message}</div>
                 </div>
             `).join('');
         }
     }
 
-    // --- MODALS ---
-    function openShare() { document.getElementById('shareModal').style.display = 'block'; }
-    function closeShare() { document.getElementById('shareModal').style.display = 'none'; }
+    // --- CHARGEMENT DE L'ARTICLE (CORRIGÉ SANS RIEN ENLEVER) ---
+    async function loadArticle() {
+        if (!articleId) return;
+        const { data: art, error } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
+        
+        if (art) {
+            // AJOUT DE LA LOGIQUE D'AFFICHAGE (INDISPENSABLE)
+            document.title = art.titre + " — MAKMUS";
+            const container = document.getElementById('full-article');
+            
+            container.innerHTML = `
+                <div class="status-line no-print">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
+                <article style="max-width:800px; margin:auto; padding:20px;">
+                    <h1 style="font-family:'Libre Baskerville'; font-size:2.5rem; margin-bottom:10px;">${art.titre}</h1>
+                    <p style="color:#666; text-transform:uppercase; font-size:12px; margin-bottom:20px;">Publié le ${new Date(art.created_at).toLocaleDateString('fr-FR')}</p>
+                    
+                    ${art.image_url ? `<img src="${art.image_url}" style="width:100%; max-height:500px; object-fit:cover; margin-bottom:20px;">` : ''}
+
+                    <div class="share-tools-container no-print">
+                        <div class="share-tools-list">
+                            <button class="action-item" onclick="openComments()">
+                                 COMMENTER <span class="comment-count">(0)</span>
+                            </button>
+                            <button class="action-item" onclick="openShare()">
+                                PARTAGER
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="article-content" style="font-family:'Libre Baskerville'; line-height:1.8; font-size:1.1rem; text-align:justify;">
+                        ${art.contenu}
+                    </div>
+                </article>
+            `;
+            fetchComments();
+        } else {
+            document.getElementById('full-article').innerHTML = "<p style='text-align:center;padding:50px;'>Article introuvable.</p>";
+        }
+    }
+
+// --- LOGIQUE DE PARTAGE MODERNE ---
+function openShare() { document.getElementById('shareModal').style.display = 'block'; }
+function closeShare() { document.getElementById('shareModal').style.display = 'none'; }
+
+function socialShare(platform) {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(document.title);
+    let shareUrl = '';
+
+    switch (platform) {
+        case 'facebook': shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`; break;
+        case 'x': shareUrl = `https://x.com/intent/tweet?url=${url}&text=${title}`; break;
+        case 'whatsapp': shareUrl = `https://wa.me/?text=${title}%20${url}`; break;
+        case 'linkedin': shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${url}`; break;
+        case 'telegram': shareUrl = `https://t.me/share/url?url=${url}&text=${title}`; break;
+        case 'reddit': shareUrl = `https://reddit.com/submit?url=${url}&title=${title}`; break;
+        case 'insta': 
+            alert("Instagram ne gère pas les liens directs. Le lien de l'article a été copié, vous pouvez le coller dans votre Story !");
+            copyLink();
+            return;
+    }
+    if (shareUrl) window.open(shareUrl, '_blank', 'width=600,height=400');
+}
+
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href).then(() => {
+        alert("Lien copié !");
+    });
+}
     function openComments() { document.getElementById('commentModal').style.display = 'block'; fetchComments(); }
     function closeComments() { document.getElementById('commentModal').style.display = 'none'; }
-window.speechSynthesis.onvoiceschanged = () => {
-    window.speechSynthesis.getVoices();
-};
 
-document.addEventListener('DOMContentLoaded', () => {
-    loadArticle();
-});
+    document.addEventListener('DOMContentLoaded', loadArticle);
 </script>
 
 
