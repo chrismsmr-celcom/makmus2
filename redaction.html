@@ -173,87 +173,62 @@
         }
         /* --- IMPRESSION JOURNAL --- */
 @media print {
-    /* 1. Reset de base pour forcer l'affichage de tout le document */
-    html, body {
-        height: auto !important;
-        overflow: visible !important;
-        background: white !important;
-        margin: 0;
-        padding: 0;
-    }
-
-    /* 2. Cacher les éléments parasites */
-    .no-print, 
-    .main-header, 
-    .top-bar, 
-    .nav-compact, 
-    .share-tools-container, 
-    #shareModal, 
-    #commentModal,
-    .nyt-footer,
-    #status-line,
-    .audio-progress-container { 
-        display: none !important; 
-    }
-
-    /* 3. Ajustement du conteneur principal */
-    #full-article {
-        display: block !important;
+    /* 1. ON FORCE TOUT À DISPARAÎTRE PAR DÉFAUT */
+    html, body, div, header, nav, footer, aside, section {
+        display: none !important;
         position: static !important;
-        width: 100% !important;
+        height: auto !important;
         margin: 0 !important;
-        padding: 0.5cm !important;
+        padding: 0 !important;
     }
 
-    /* 4. LE STYLE JOURNAL (Colonnes) */
+    /* 2. ON NE RÉATIVE QUE LE CONTENEUR DE L'ARTICLE ET SES ENFANTS */
+    #full-article, 
+    #full-article div, 
+    #full-article h1, 
+    #full-article p, 
+    #full-article img, 
+    #full-article span,
+    .print-only-header,
+    .print-only-header * {
+        display: block !important;
+    }
+
+    /* 3. CONFIGURATION DE LA PAGE */
+    #full-article {
+        width: 100% !important;
+        overflow: visible !important;
+        padding: 1cm !important; /* Marge de sécurité pour l'imprimante */
+    }
+
+    /* 4. LE LOGO MAKMUS EN HAUT */
+    .print-only-header {
+        display: block !important;
+        border-bottom: 2px solid black !important;
+        margin-bottom: 30px !important;
+        text-align: center !important;
+    }
+
+    /* 5. LE TEXTE EN 2 COLONNES STYLE JOURNAL */
     .article-content {
         display: block !important;
-        column-count: 2; 
-        column-gap: 1.2cm;
-        column-fill: auto;
-        text-align: justify;
-        orphans: 3; 
-        widows: 3;
-        font-size: 11pt; /* Taille idéale pour la lecture papier */
+        column-count: 2 !important;
+        column-gap: 1.5cm !important;
+        text-align: justify !important;
+        font-size: 11pt !important;
+        line-height: 1.5 !important;
     }
 
-    /* Empêche les coupures bizarres */
-    h1, .article-header, img, .img-caption-style, .author-box, .print-only-header {
-        column-span: all;
-        break-inside: avoid;
-        break-after: avoid;
+    /* Empêche les images et titres de se couper */
+    h1, .article-header, img, .author-box {
+        column-span: all !important;
+        break-inside: avoid !important;
     }
 
-    h1 {
-        font-size: 32pt !important;
-        margin-top: 10pt !important;
-        margin-bottom: 20pt !important;
-        line-height: 1.1;
-        font-family: 'Libre Baskerville', serif;
-    }
-
+    /* On s'assure que les images sont visibles et pas grises */
     img {
         max-width: 100% !important;
-        height: auto !important;
-        margin-bottom: 5px;
-    }
-
-    /* 5. Affichage du Header Spécial Impression */
-    .print-only-header { 
-        display: block !important; 
-        text-align: center;
-        border-bottom: 2px solid black;
-        margin-bottom: 30px;
-        padding-bottom: 10px;
-    }
-    
-     .print-only-header { display: block !important; }
-    
-    /* 6. Forcer le texte noir sur blanc */
-    * {
-        color: black !important;
-        text-shadow: none !important;
-        box-shadow: none !important;
+        filter: none !important;
     }
 }
         
@@ -692,22 +667,25 @@
         }
     }
 
-    async function fetchComments() {
-        const { data } = await supabaseClient.from('article_comments').select('*').eq('article_id', articleId).order('created_at', {ascending: false});
-        if (data) {
-            document.getElementById('nb-comm-header').innerText = data.length;
-            document.getElementById('nb-comm').innerText = data.length;
-            const list = document.getElementById('comments-list');
-            list.innerHTML = data.map(c => `
-                <div class="comment-item">
-                    <div class="comment-author">${c.nom}</div>
-                    <div class="comment-text">${c.message}</div>
-                    <div class="comment-actions" style="display:flex; gap:15px; margin-top:8px;">
-                        <span class="action-link" style="color:#567b95; font-weight:bold; font-size:12px; cursor:pointer;">Reply</span>
-                        <span style="color:#727272; font-size:12px; cursor:pointer;">Recommend</span>
-                        <span style="color:#727272; font-size:12px; cursor:pointer;">Share</span>
-                    </div>
-                </div>
+async function loadArticle() {
+    if (!articleId) return;
+    const { data: art } = await supabaseClient.from('articles').select('*').eq('id', articleId).single();
+    if (art) {
+        document.getElementById('full-article').innerHTML = `
+            <div class="print-only-header" style="display:none;">
+                <h2 style="font-family:serif; font-size:40px; margin:0;">MAKMUS</h2>
+                <p>ÉDITION NUMÉRIQUE — ${new Date().toLocaleDateString()}</p>
+            </div>
+            
+            <div id="status-line" class="status-line no-print">ÉDITION NATIONALE...</div>
+            
+            <header class="article-header">
+                <h1>${art.titre}</h1>
+            </header>
+
+            <div class="article-content">
+                ${art.description}
+            </div>
             `).join('');
         }
     }
