@@ -173,58 +173,60 @@
         }
         /* --- IMPRESSION JOURNAL --- */
 @media print {
-    /* 1. Configuration de la page Magazine */
-    @page {
-        size: A4;
-        margin: 1.5cm; /* Marges plus serrées que le journal pour faire "Magazine" */
+    /* Cache les boutons d'actions et les éléments interactifs */
+    .no-print, 
+    .share-tools-container, 
+    .share-tools-list, 
+    .action-item, 
+    #speech-btn, 
+    #like-btn, 
+    .modal, 
+    #audio-progress-container,
+    #status-line { 
+        display: none !important; 
     }
 
-    /* 2. Nettoyage radical */
-    body * { visibility: hidden; }
-    #full-article, #full-article * { visibility: visible; }
-    #full-article { 
-        position: absolute; 
-        top: 0; 
-        left: 0; 
-        width: 100%;
-    }
+    /* Supprime les bordures et ombres des boutons qui pourraient laisser des traces */
+    button { display: none !important; }
 
-    /* 3. Look Magazine : 2 colonnes avec lignes de séparation */
+    /* Ajuste la zone de texte pour qu'elle utilise tout l'espace */
     .article-content {
-        display: block !important;
         column-count: 2;
-        column-gap: 1cm;
-        column-rule: 1px solid #eee; /* Petite ligne discrète entre les colonnes */
+        column-gap: 1.5cm;
         text-align: justify;
-        font-size: 10pt;
-        line-height: 1.4;
-        font-family: 'Georgia', serif;
+        color: black !important;
     }
 
-    /* 4. Gestion des visuels */
+    /* Force le titre à être bien imposant en haut */
     h1 {
-        column-span: all; /* Le titre traverse les colonnes */
-        font-size: 30pt !important;
-        margin-bottom: 0.5cm !important;
+        column-span: all;
+        font-weight: 900;
         text-transform: uppercase;
-        letter-spacing: -1px;
+        margin-bottom: 20px !important;
+    }
+}
+        @media print {
+    /* Cache le modal entier et son contenu */
+    #commentModal, 
+    .modal, 
+    .modal-content, 
+    .comment-evo { 
+        display: none !important; 
     }
 
-    img {
-        max-width: 100% !important;
-        break-inside: avoid; /* Évite de couper une image entre deux pages */
-        filter: contrast(1.1); /* Donne du peps aux photos à l'impression */
+    /* Cache spécifiquement le formulaire et la notice */
+    .comment-form-evo, 
+    .mod-notice, 
+    .close-btn,
+    .comment-title { 
+        display: none !important; 
     }
 
-    /* 5. Signature Magazine en bas de page */
-    .article-content::after {
-        content: "© MAKMUS MAGAZINE - 2026";
-        display: block;
-        text-align: center;
-        font-size: 8pt;
-        margin-top: 1cm;
-        border-top: 1px solid #000;
-        padding-top: 5px;
+    /* Optionnel : Si tu veux imprimer les commentaires à la fin de l'article 
+       (comme dans certains journaux), ne cache PAS #comments-list. 
+       Mais pour un look "Magazine" pur, cache tout : */
+    #comments-list { 
+        display: none !important; 
     }
 }
         
@@ -492,7 +494,7 @@
     </div>
 </div>
 
-<div id="commentModal" class="modal">
+<div id="commentModal" class="modal no-print">
     <div class="modal-content comment-evo">
         <span class="close-btn" onclick="closeComments()">×</span>
         
