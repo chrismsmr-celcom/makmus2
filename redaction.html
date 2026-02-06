@@ -40,105 +40,123 @@
         .modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); }
         .modal-content { background: #fff; margin: 10% auto; padding: 25px; width: 90%; max-width: 450px; border-radius: 2px; position: relative; }
         .close-modal { position: absolute; right: 15px; top: 10px; font-size: 28px; cursor: pointer; color: #000; }
-        /* === ÉVOLUTION MODAL COMMENTAIRES === */
+        /* === ÉVOLUTION MODAL COMMENTAIRES MODERNE === */
+        .comment-evo {
+            max-width: 520px;
+            border-radius: 0; /* Look journal : angles droits pour plus de sérieux */
+            padding: 40px;
+            animation: commentFadeUp 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
+            border-top: 6px solid #121212; /* Ligne de tête forte */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
 
-.comment-evo {
-    max-width: 520px;
-    border-radius: 14px;
-    padding: 22px;
-    animation: commentFadeUp 0.35s ease;
-}
+        @keyframes commentFadeUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to   { transform: translateY(0); opacity: 1; }
+        }
 
-@keyframes commentFadeUp {
-    from { transform: translateY(40px); opacity: 0; }
-    to   { transform: translateY(0); opacity: 1; }
-}
+        .comment-title {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1.6rem;
+            font-weight: 700;
+            margin-bottom: 25px;
+            color: #121212;
+            letter-spacing: -0.5px;
+        }
 
-.comment-title {
-    font-family: Arial, sans-serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 15px;
-}
+        .comment-count {
+            color: #c00; /* Touche de rouge pour le dynamisme */
+            font-family: Arial, sans-serif;
+            font-weight: 800;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
 
-.comment-count {
-    color: #666;
-    font-weight: normal;
-    font-size: 0.95rem;
-}
+        .comment-list-evo {
+            max-height: 350px;
+            overflow-y: auto;
+            padding-right: 15px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid #eee;
+        }
 
-.comment-list-evo {
-    max-height: 280px;
-    overflow-y: auto;
-    padding-right: 5px;
-    margin-bottom: 18px;
-}
+        /* Scrollbar élégante */
+        .comment-list-evo::-webkit-scrollbar { width: 4px; }
+        .comment-list-evo::-webkit-scrollbar-thumb { background: #121212; }
 
-.comment-list-evo::-webkit-scrollbar {
-    width: 6px;
-}
-.comment-list-evo::-webkit-scrollbar-thumb {
-    background: #ddd;
-    border-radius: 4px;
-}
+        .comment-item {
+            padding: 20px 0;
+            border-bottom: 1px dashed #ddd; /* Séparateur discret */
+        }
 
-.comment-item {
-    padding: 12px 0;
-    border-bottom: 1px solid #eee;
-}
+        .comment-item:last-child { border-bottom: none; }
 
-.comment-item:last-child {
-    border-bottom: none;
-}
+        .comment-author {
+            font-family: Arial, sans-serif;
+            font-size: 0.75rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+            color: #121212;
+        }
 
-.comment-author {
-    font-size: 0.9rem;
-    font-weight: 700;
-    margin-bottom: 4px;
-}
+        .comment-text {
+            font-family: 'Libre Baskerville', serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #333;
+        }
 
-.comment-text {
-    font-size: 0.95rem;
-    line-height: 1.5;
-    color: #222;
-}
+        /* FORMULAIRE ÉPURÉ */
+        .comment-form-evo {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
 
-/* FORM */
-.comment-form-evo input,
-.comment-form-evo textarea {
-    width: 100%;
-    font-family: Arial, sans-serif;
-    font-size: 0.95rem;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-}
+        .comment-form-evo input,
+        .comment-form-evo textarea {
+            width: 100%;
+            font-family: Arial, sans-serif;
+            font-size: 0.9rem;
+            padding: 12px 0;
+            border: none;
+            border-bottom: 1px solid #ccc; /* Champ souligné uniquement */
+            border-radius: 0;
+            background: transparent;
+            transition: border-color 0.3s ease;
+            outline: none;
+        }
 
-.comment-form-evo textarea {
-    resize: none;
-    height: 80px;
-}
+        .comment-form-evo input:focus,
+        .comment-form-evo textarea:focus {
+            border-bottom: 2px solid #121212;
+        }
 
-.comment-form-evo {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
+        .comment-form-evo textarea {
+            resize: none;
+            height: 60px;
+        }
 
-.comment-form-evo button {
-    background: #121212;
-    color: #fff;
-    border: none;
-    padding: 12px;
-    border-radius: 8px;
-    font-weight: 700;
-    cursor: pointer;
-    transition: background 0.2s ease;
-}
+        .comment-form-evo button {
+            background: #121212;
+            color: #fff;
+            border: none;
+            padding: 15px;
+            font-family: Arial, sans-serif;
+            font-size: 0.8rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-.comment-form-evo button:hover {
-    background: #000;
-}
+        .comment-form-evo button:hover {
+            background: #c00;
+            transform: translateY(-2px);
+        }
         /* --- IMPRESSION JOURNAL --- */
 @media print {
             .no-print, .main-header, .top-bar, .nav-compact, .share-tools-container, .nyt-footer, .full-menu, .status-line, .related-section { display: none !important; }
