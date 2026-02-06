@@ -648,6 +648,62 @@
     function closeComments() { document.getElementById('commentModal').style.display = 'none'; }
     function openShare() { document.getElementById('shareModal').style.display = 'block'; }
     function closeShare() { document.getElementById('shareModal').style.display = 'none'; }
+
+    /* ---------------------------------------------------------
+       FONCTION : ENVOYER UN COMMENTAIRE
+    --------------------------------------------------------- */
+    async function postComment() {
+        // 1. Récupération des champs
+        const nomInput = document.getElementById('comm-name');
+        const msgInput = document.getElementById('comm-text');
+        const postBtn = document.querySelector('.comment-form-evo button');
+
+        const nom = nomInput.value.trim();
+        const msg = msgInput.value.trim();
+
+        // 2. Vérification simple
+        if (!nom || !msg) {
+            alert("Veuillez entrer votre nom et votre message avant de publier.");
+            return;
+        }
+
+        // 3. Interface : On désactive le bouton pendant l'envoi
+        const originalBtnText = postBtn.innerText;
+        postBtn.innerText = "ENVOI...";
+        postBtn.disabled = true;
+
+        try {
+            // 4. Insertion dans Supabase
+            const { error } = await supabaseClient
+                .from('article_comments')
+                .insert([
+                    { 
+                        article_id: articleId, 
+                        nom: nom, 
+                        message: msg,
+                        created_at: new Date().toISOString()
+                    }
+                ]);
+
+            if (error) throw error;
+
+            // 5. Succès : On vide le champ message (on garde le nom pour le confort)
+            msgInput.value = '';
+            
+            // 6. Rafraîchir la liste des commentaires immédiatement
+            await fetchComments();
+            
+            alert("Merci ! Votre commentaire a été publié.");
+
+        } catch (error) {
+            console.error("Erreur lors de l'envoi :", error.message);
+            alert("Désolé, une erreur est survenue lors de la publication.");
+        } finally {
+            // 7. Rétablir le bouton
+            postBtn.innerText = originalBtnText;
+            postBtn.disabled = false;
+        }
+    }
     
     /* ---------------------------------------------------------
        4. LOGIQUE DE PARTAGE COMPLÈTE
