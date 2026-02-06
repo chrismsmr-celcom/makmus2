@@ -175,7 +175,7 @@
         </div>
     </div>
 </footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
     // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
     const BASE_URL = window.location.origin; 
@@ -244,7 +244,7 @@
     }
     updateDate();
 
-    // --- LOGIQUE DE RÉCUPÉRATION (UNIQUEMENT PAR DATE) ---
+    // --- LOGIQUE DE RÉCUPÉRATION ---
     async function fetchAllContent(category = 'top', query = '') {
         window.scrollTo({ top: 0, behavior: 'smooth' });
         closeMenuUI();
@@ -255,11 +255,8 @@
             if(status) status.textContent = "CHARGEMENT...";
             tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
 
-            // On revient au tri simple par date de création uniquement
-            let sbQuery = supabaseClient.from('articles')
-                .select('*')
-                .order('created_at', { ascending: false });
-
+            // Tri par date uniquement (le plus récent en premier)
+            let sbQuery = supabaseClient.from('articles').select('*').order('created_at', { ascending: false });
             if (category !== 'top') sbQuery = sbQuery.eq('category', category);
             if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
 
@@ -282,7 +279,7 @@
                     worldNews = newsData.results || [];
                     localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
                     localStorage.setItem(`${newsCacheKey}_time`, now.toString());
-                } catch(e) { console.warn("API Monde indisponible"); }
+                } catch (e) { console.warn("API News Indisponible"); }
             }
 
             renderAll({ myArticles: myArticles || [], worldNews, category }, query);
@@ -293,7 +290,7 @@
         }
     }
 
-    // --- FONCTION D'AFFICHAGE ---
+    // --- FONCTION D'AFFICHAGE (ÉPURÉE) ---
     function renderAll(data, query) {
         const hero = document.getElementById('hero-zone');
         const grid = document.getElementById('news-grid');
@@ -313,22 +310,20 @@
             return;
         }
 
-        // 1. RENDER HERO (Le plus récent devient le Hero automatiquement)
+        // 1. RENDER HERO
         const h = uniqueArticles[0];
         const hTitle = h.titre || h.title;
         const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
-        const hCatLabel = (h.category || 'INFO').toUpperCase();
         
         if(hero) {
             hero.innerHTML = `
                 <div class="hero-container">
                     <div class="hero-text">
-                        <span class="tag-category">${hCatLabel}</span>
-                        <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')">${hTitle}</h1>
+                        <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
                         <p>${(h.description || "").replace(/<[^>]*>/g, "").substring(0, 250)}...</p>
-                        <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')">LIRE LA SUITE →</button>
+                        <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
                     </div>
-                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${hCatLabel}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
+                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
                 </div>`;
         }
 
@@ -338,13 +333,11 @@
                 const title = art.titre || art.title;
                 const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
                 const img = art.image_url || art.image || "";
-                const cat = (art.category || "News").toUpperCase();
                 
                 return `
-                    <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${cat}', '${link}')">
+                    <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
                         ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
                         <div class="card-text">
-                            <span class="tag-mini">${cat}</span>
                             <h3>${title}</h3>
                             <p class="card-desc">${(art.description || "").replace(/<[^>]*>/g, "").substring(0, 90)}...</p>
                         </div>
@@ -363,34 +356,21 @@
 
     window.onload = () => fetchAllContent('top');
 
-    // --- FONCTIONS BOUTONS HEADER & MODAL ---
+    // --- FONCTIONS HEADER & MODAL ---
     function handleSubscribe() {
-        tracker.log('click_subscribe', { title: 'Bouton Header Abonnement' });
-        alert("Merci de votre intérêt pour MAKMUS ! La page de paiement sécurisée est en cours de déploiement.");
+        tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement Header' });
+        alert("Bientôt disponible ! MAKMUS prépare une offre exclusive pour ses lecteurs fidèles.");
     }
 
     function toggleLoginModal() {
-        const modal = document.getElementById('loginModal'); 
+        tracker.log('click_account_login', { title: 'Bouton Mon Compte' });
+        const modal = document.getElementById('modalAccount'); 
         if (modal) {
-            const isVisible = modal.style.display === 'flex';
-            modal.style.display = isVisible ? 'none' : 'flex';
-            if (!isVisible) tracker.log('open_account', { title: 'Tentative de connexion' });
+            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
+        } else {
+            alert("L'espace membre sera disponible lors de la prochaine mise à jour.");
         }
-    }
-
-    const closeBtn = document.querySelector('.close-btn');
-    if(closeBtn) {
-        closeBtn.onclick = () => {
-            const modal = document.getElementById('loginModal');
-            if(modal) modal.style.display = 'none';
-        };
     }
 </script>
 </body>
 </html>
-
-
-
-
-
-
