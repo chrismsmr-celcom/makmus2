@@ -162,12 +162,21 @@
         border-right: 1px solid #eee;
     }
 </style>
-    <main class="newspaper-body">
-        <div id="status-line" class="status-line">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
-        <section id="hero-zone"></section>
-        <hr class="double-hr">
-        <div class="news-grid" id="news-grid"></div>
-    </main>
+<div class="newspaper-body">
+    <div class="status-line" id="status-line">ÉDITION DU JOUR</div>
+    
+    <div id="hero-zone"></div>
+
+    <div class="newspaper-layout">
+        <div class="main-news-column">
+            <div id="news-grid" class="news-grid"></div>
+        </div>
+
+        <aside class="sidebar-column">
+            <div class="sidebar-heading">DERNIÈRES NOUVELLES</div>
+            <div id="sidebar-list"></div> </aside>
+    </div>
+</div>
 
     <div class="modal" id="modalAccount">
         <div class="modal-box">
@@ -395,70 +404,86 @@
     }
 
 // --- FONCTION D'AFFICHAGE (MISE À JOUR : 1 HERO + 24 GRILLE) ---
+// --- FONCTION D'AFFICHAGE JOURNAL (1 HERO + 6 GRILLE + 8 SIDEBAR) ---
 function renderAll(data, query) {
-        const hero = document.getElementById('hero-zone');
-        const grid = document.getElementById('news-grid');
-        const status = document.getElementById('status-line');
-        
-        const allPossible = [...data.myArticles, ...data.worldNews];
-        const seenTitles = new Set();
-        const uniqueArticles = allPossible.filter(art => {
-            const t = (art.titre || art.title || "").trim().toLowerCase();
-            if(!t || seenTitles.has(t)) return false;
-            seenTitles.add(t);
-            return true;
-        });
+    const hero = document.getElementById('hero-zone');
+    const grid = document.getElementById('news-grid');
+    const sidebar = document.getElementById('sidebar-list'); // <--- AJOUTE CET ID DANS TON HTML
+    const status = document.getElementById('status-line');
+    
+    // 1. FILTRAGE DES DOUBLONS (Ta logique intacte)
+    const allPossible = [...data.myArticles, ...data.worldNews];
+    const seenTitles = new Set();
+    const uniqueArticles = allPossible.filter(art => {
+        const t = (art.titre || art.title || "").trim().toLowerCase();
+        if(!t || seenTitles.has(t)) return false;
+        seenTitles.add(t);
+        return true;
+    });
 
-        if (uniqueArticles.length === 0) {
-            if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
-            return;
-        }
+    if (uniqueArticles.length === 0) {
+        if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
+        return;
+    }
 
-        // 1. GESTION DU HERO
-        const h = uniqueArticles[0];
+    // 2. RÉPARTITION DES ARTICLES
+    const h = uniqueArticles[0]; // La Une
+    const gridArticles = uniqueArticles.slice(1, 7); // La grille principale
+    const sideArticles = uniqueArticles.slice(7, 15); // Les brèves sidebar
+
+    // --- RENDU DU HERO ---
+    if(hero) {
         const hTitle = h.titre || h.title;
         const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
-        
-        // Badge pour le Hero
         const heroBadge = h.is_priority ? `<span style="color:#c00; font-weight:bold; font-size:0.9rem; text-transform:uppercase; display:block; margin-bottom:10px;">● À LA UNE</span>` : '';
 
-        if(hero) {
-            hero.innerHTML = `
-                <div class="hero-container">
-                    <div class="hero-text">
-                        ${heroBadge}
-                        <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
-                        <p>${(h.description || "").replace(/<[^>]*>/g, "").substring(0, 250)}...</p>
-                        <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
-                    </div>
-                    ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
-                </div>`;
-        }
-
-        // 2. GESTION DE LA GRILLE (24 ARTICLES)
-        if(grid) {
-            grid.innerHTML = uniqueArticles.slice(1, 25).map(art => {
-                const title = art.titre || art.title;
-                const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
-                const img = art.image_url || art.image || "";
-                
-                // Badge pour les cartes de la grille
-                const cardBadge = art.is_priority ? `<span style="color:#c00; font-weight:bold; font-size:0.7rem; text-transform:uppercase; margin-bottom:5px; display:block;">À LA UNE</span>` : '';
-
-                return `
-                    <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
-                        ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
-                        <div class="card-text">
-                            ${cardBadge}
-                            <h3>${title}</h3>
-                            <p class="card-desc">${(art.description || "").replace(/<[^>]*>/g, "").substring(0, 90)}...</p>
-                        </div>
-                    </div>`;
-            }).join('');
-        }
-
-        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
+        hero.innerHTML = `
+            <div class="hero-container">
+                <div class="hero-text">
+                    ${heroBadge}
+                    <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
+                    <p>${(h.description || "").replace(/<[^>]*>/g, "").substring(0, 250)}...</p>
+                    <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
+                </div>
+                ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
+            </div>`;
     }
+
+    // --- RENDU DE LA GRILLE (COLONNE GAUCHE) ---
+    if(grid) {
+        grid.innerHTML = gridArticles.map(art => {
+            const title = art.titre || art.title;
+            const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
+            const img = art.image_url || art.image || "";
+            const cardBadge = art.is_priority ? `<span style="color:#c00; font-weight:bold; font-size:0.7rem; text-transform:uppercase; margin-bottom:5px; display:block;">À LA UNE</span>` : '';
+
+            return `
+                <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
+                    ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
+                    <div class="card-text">
+                        ${cardBadge}
+                        <h3>${title}</h3>
+                        <p class="card-desc">${(art.description || "").replace(/<[^>]*>/g, "").substring(0, 90)}...</p>
+                    </div>
+                </div>`;
+        }).join('');
+    }
+
+    // --- RENDU DE LA SIDEBAR (NOUVEAU - COLONNE DROITE) ---
+    if(sidebar) {
+        sidebar.innerHTML = sideArticles.map(art => {
+            const title = art.titre || art.title;
+            const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
+            return `
+                <div class="sidebar-article" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')" style="cursor:pointer; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:12px;">
+                    <span style="color:var(--accent); font-size:10px; font-weight:bold; font-family:var(--font-ui); text-transform:uppercase;">${(art.category || 'INFO').toUpperCase()}</span>
+                    <h4 style="font-family:var(--font-title); font-size:15px; margin:5px 0 0 0; line-height:1.3;">${title}</h4>
+                </div>`;
+        }).join('');
+    }
+
+    if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
+}
 
     window.captureAction = function(title, category, link) {
         tracker.log('click', { title, category });
@@ -713,6 +738,7 @@ window.addEventListener('load', initAdSlider);
 </script>
 </body>
 </html>
+
 
 
 
