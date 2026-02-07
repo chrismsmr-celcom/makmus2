@@ -702,7 +702,6 @@ function showNextAd() {
 
 // AJOUTE CETTE FONCTION JUSTE EN DESSOUS
 async function trackAdClick(adId, redirectUrl) {
-    // 1. Enregistrer le clic dans Supabase
     try {
         const { data: currentAd } = await supabaseClient
             .from('publicites')
@@ -720,24 +719,20 @@ async function trackAdClick(adId, redirectUrl) {
         console.warn("Erreur tracking clic:", e);
     }
     
-    // 2. Ouvrir le lien dans un nouvel onglet
     if(redirectUrl) window.open(redirectUrl, '_blank');
 }
-    
-    // Passer à la suivante (boucle)
-    currentAdIndex = (currentAdIndex + 1) % activeAds.length;
-}
-// --- 3. INITIALISATION UNIQUE (REMPLACE TES ANCIENS WINDOW.ONLOAD) ---
+
+// --- 3. INITIALISATION UNIQUE ---
 window.onload = () => {
     fetchAllContent('top');      // Charge les articles
     fetchVideosVerticaux();      // Charge les vidéos
     loadAutoTrendingTags();      // Charge tes tags NYT
+    initAdSlider();              // Lance le slider de pub
 };
-    // Lancer au démarrage
-window.addEventListener('load', initAdSlider);
 </script>
 </body>
 </html>
+
 
 
 
