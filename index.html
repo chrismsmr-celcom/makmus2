@@ -17,6 +17,14 @@
 <meta name="theme-color" content="#a30000">
 </head>
 <body>
+    <div class="top-ad-container no-print">
+    <div class="ad-content">
+        <span class="ad-label">PUBLICITÉ</span>
+        <div class="ad-placeholder">
+            <p>VOTRE PUBLICITÉ ICI — CONTACTEZ MAKMUS STUDIO</p>
+        </div>
+    </div>
+</div>
 <div class="full-menu" id="fullMenu">
         <div class="menu-header">
             <div class="menu-logo">MAKMUS</div>
@@ -101,33 +109,44 @@
             <li><a href="jeux.html" class="nav-red">JEUX</a></li>
         </ul>
     </nav>
-<div id="trending-tags" class="no-print" style="border-bottom: 1px solid #eee; padding: 10px 0; background: #fff;">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 15px; overflow-x: auto; white-space: nowrap; -webkit-overflow-scrolling: touch;">
-        <span style="font-weight: 800; font-size: 0.7rem; color: #c00; text-transform: uppercase; letter-spacing: 1px;">En ce moment :</span>
-        <div id="tags-container" style="display: flex; gap: 10px;">
+<div id="trending-tags" style="border-top: 1px solid #000; border-bottom: 1px solid #eee; padding: 12px 0; background: #fff; margin-top: 10px;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 12px; overflow-x: auto; white-space: nowrap;">
+        
+        <span style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 0.7rem; color: #000; text-transform: uppercase; letter-spacing: 0.5px; border-right: 1px solid #ddd; padding-right: 12px; flex-shrink: 0;">
+            En ce moment
+        </span>
+
+        <div id="tags-container" style="display: flex; gap: 15px; align-items: center;">
             </div>
     </div>
 </div>
 
 <style>
-    /* Cache la barre de défilement pour les tags */
+    /* Suppression de la scrollbar pour esthétique */
     #trending-tags div::-webkit-scrollbar { display: none; }
-    
+
+    /* Style NYT : Pas de background, juste du texte et un hover souligné */
     .tag-item {
-        font-size: 0.8rem;
-        font-weight: 600;
-        color: #444;
+        font-family: 'Inter', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #333;
         text-decoration: none;
-        padding: 4px 12px;
-        background: #f3f4f6;
-        border-radius: 20px;
-        transition: all 0.2s;
         cursor: pointer;
+        transition: color 0.2s;
+        padding: 2px 0;
     }
-    
+
     .tag-item:hover {
-        background: #000;
-        color: #fff;
+        color: #a30000; /* Ta couleur primaire pour le rappel Makmus */
+        text-decoration: underline;
+    }
+
+    /* Séparateur entre les mots (comme sur le NYT) */
+    .tag-item:not(:last-child)::after {
+        content: "";
+        margin-left: 15px;
+        border-right: 1px solid #eee;
     }
 </style>
     <main class="newspaper-body">
@@ -537,29 +556,27 @@ function handleVideoClick(video) {
     }
 }
 // --- FONCTION 1 : CHARGER LES TAGS AUTOMATIQUEMENT ---
+// --- FONCTION 1 : CHARGER LES TAGS AUTOMATIQUEMENT ---
 async function loadAutoTrendingTags() {
     try {
-        // On récupère les tags des 15 derniers articles
         const { data, error } = await supabaseClient
             .from('articles')
             .select('tags')
-            .not('tags', 'is', null) // On ignore les articles sans tags
+            .not('tags', 'is', null)
             .order('created_at', { ascending: false })
             .limit(15);
 
         if (error || !data) return;
 
-        // On extrait tous les mots, on nettoie les espaces et on met tout en minuscule
         let allTags = [];
         data.forEach(item => {
-            const splitTags = item.tags.split(',').map(t => t.trim());
-            allTags = [...allTags, ...splitTags];
+            if(item.tags) {
+                const splitTags = item.tags.split(',').map(t => t.trim());
+                allTags = [...allTags, ...splitTags];
+            }
         });
 
-        // Supprimer les doublons et garder les 8 premiers tags uniques
-        // On garde la casse originale pour l'affichage (Set ne gère pas l'insensibilité à la casse seul)
         const uniqueTags = [...new Set(allTags)].filter(t => t.length > 1).slice(0, 8);
-
         const container = document.getElementById('tags-container');
         if (!container) return;
 
@@ -572,40 +589,41 @@ async function loadAutoTrendingTags() {
     }
 }
 
-// --- FONCTION 2 : FILTRER PAR TAG ---
+// --- FONCTION 2 : FILTRER PAR TAG (CORRIGÉE) ---
 async function filterByTag(tagName) {
     console.log("Recherche des articles pour : " + tagName);
-    
-    // On change un peu le style du bouton pour montrer qu'il est actif
-    // (Optionnel : tu peux ajouter une classe .active)
+    const status = document.getElementById('status-line');
+    if(status) status.textContent = "FILTRAGE...";
 
     const { data, error } = await supabaseClient
         .from('articles')
         .select('*')
-        .ilike('tags', `%${tagName}%`) // Filtre SQL : "contient ce mot"
+        .ilike('tags', `%${tagName}%`) 
         .order('created_at', { ascending: false });
 
     if (!error && data) {
-        // ATTENTION : Remplace 'displayArticles' par le nom de TA fonction 
-        // qui affiche les articles dans ta grille (ex: renderGrid)
-        if (typeof displayArticles === "function") {
-            displayArticles(data); 
-        }
+        // ICI : On utilise renderAll (ta fonction existante)
+        // On simule l'objet data attendu par renderAll
+        renderAll({ 
+            myArticles: data, 
+            worldNews: [], 
+            category: 'Filtrage' 
+        }, tagName);
         
-        // On scrolle doucement vers la zone des articles
-        const mainContent = document.getElementById('main-grid') || document.getElementById('articles-section');
-        if(mainContent) mainContent.scrollIntoView({ behavior: 'smooth' });
+        // Scroll vers la grille de news
+        const grid = document.getElementById('news-grid');
+        if(grid) grid.scrollIntoView({ behavior: 'smooth' });
     }
 }
 
-// Lancement au chargement de la page
-window.addEventListener('DOMContentLoaded', loadAutoTrendingTags);
-// 5. CHARGEMENT AU DÉMARRAGE
+// --- 3. INITIALISATION UNIQUE (REMPLACE TES ANCIENS WINDOW.ONLOAD) ---
 window.onload = () => {
-    fetchAllContent('top'); 
-    fetchVideosVerticaux(); 
+    fetchAllContent('top');      // Charge les articles
+    fetchVideosVerticaux();      // Charge les vidéos
+    loadAutoTrendingTags();      // Charge tes tags NYT
 };
 </script>
 </body>
 </html>
+
 
