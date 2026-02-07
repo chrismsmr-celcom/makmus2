@@ -463,4 +463,15 @@ body {
         padding: 0 15px;
     }
 }
+.sidebar-article h4 {
+    font-weight: 700;
+    transition: color 0.2s;
+}
+.sidebar-article:hover h4 {
+    color: #555; /* Petit effet au survol comme sur les grands sites */
+}
+.sidebar-article .meta {
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
 
