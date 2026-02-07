@@ -589,3 +589,86 @@ body {
     font-size: 15px;
     line-height: 1.4;
 }
+
+    /* Cache la barre de scroll pour un look plus propre */
+    #video-slider::-webkit-scrollbar { display: none; }
+    #video-slider { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .video-card {
+        flex: 0 0 280px; /* Largeur d'une vidéo portrait */
+        scroll-snap-align: start;
+        background: #111;
+        border-radius: 0px;
+        overflow: hidden;
+        position: relative;
+        aspect-ratio: 9/16;
+    }
+
+    @media (max-width: 768px) {
+        .video-card { flex: 0 0 75%; /* Sur mobile, on voit un bout de la vidéo suivante */ }
+    }
+
+.magazine-row-section {
+    border-top: 1px solid #111;
+    border-bottom: 1px solid #eee;
+    padding: 20px 0;
+    margin: 40px auto;
+    max-width: var(--max-width);
+}
+
+.magazine-heading {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+.magazine-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 articles côte à côte */
+    gap: 15px;
+}
+
+.mag-card {
+    cursor: pointer;
+}
+
+.mag-img-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Force l'image en carré parfait */
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.mag-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.mag-card:hover img {
+    transform: scale(1.05);
+}
+
+.mag-card h4 {
+    font-family: var(--font-title);
+    font-size: 14px;
+    line-height: 1.3;
+    font-weight: 700;
+}
+
+.mag-read-time {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Responsive : 2 colonnes sur mobile */
+@media (max-width: 768px) {
+    .magazine-grid { grid-template-columns: repeat(2, 1fr); }
+}
