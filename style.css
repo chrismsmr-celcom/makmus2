@@ -437,4 +437,30 @@ body {
         padding-right: 0;
     }
 }
+/* Le conteneur qui englobe TOUT le contenu sous le header */
+.container-magazine {
+    max-width: 1300px; /* Largeur du journal comme sur tes captures */
+    margin: 0 auto;    /* Centre le bloc et crée les marges blanches latérales */
+    padding: 0 20px;   /* Sécurité pour les petits écrans */
+    background-color: #fff;
+}
+
+/* On ajuste le layout asymétrique à l'intérieur */
+.newspaper-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px; /* Colonne principale + Sidebar fixe */
+    gap: 40px; /* Espace entre les deux colonnes */
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+/* Responsive : sur mobile on enlève les marges */
+@media (max-width: 1024px) {
+    .newspaper-layout {
+        grid-template-columns: 1fr;
+    }
+    .container-magazine {
+        padding: 0 15px;
+    }
+}
 
