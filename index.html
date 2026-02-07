@@ -17,14 +17,27 @@
 <meta name="theme-color" content="#a30000">
 </head>
 <body>
-    <div class="top-ad-container no-print">
-    <div class="ad-content">
-        <span class="ad-label">PUBLICITÉ</span>
-        <div class="ad-placeholder">
-            <p>VOTRE PUBLICITÉ ICI — CONTACTEZ MAKMUS STUDIO</p>
+  <div class="top-ad-container no-print">
+    <div id="ad-slider-wrapper">
+        <div id="ad-display-zone">
+             <div class="ad-placeholder">MAKMUS PUBLICITÉ — 728x90</div>
         </div>
     </div>
 </div>
+
+<style>
+    .top-ad-container { display: none; background: #f0f0f0; padding: 10px 0; text-align: center; border-bottom: 1px solid #ddd; }
+    #ad-slider-wrapper { max-width: 728px; height: 90px; margin: 0 auto; overflow: hidden; position: relative; background: #ccc; }
+    
+    /* Animation de transition douce */
+    .ad-fade { animation: fadeIn 0.8s; }
+    @keyframes fadeIn { from { opacity: 0.3; } to { opacity: 1; } }
+
+    @media (min-width: 1024px) { .top-ad-container { display: block; } }
+    
+    .ad-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #666; font-size: 12px; font-weight: bold; }
+    .ad-media { width: 728px; height: 90px; object-fit: cover; cursor: pointer; }
+</style>
 <div class="full-menu" id="fullMenu">
         <div class="menu-header">
             <div class="menu-logo">MAKMUS</div>
@@ -615,15 +628,63 @@ async function filterByTag(tagName) {
         if(grid) grid.scrollIntoView({ behavior: 'smooth' });
     }
 }
+let currentAdIndex = 0;
+let activeAds = [];
 
+async function initAdSlider() {
+    const { data, error } = await supabaseClient
+        .from('publicites') // Assure-toi d'avoir créé cette table
+        .select('*')
+        .eq('est_active', true);
+
+    if (error || !data || data.length === 0) {
+        console.log("Aucune publicité active.");
+        return;
+    }
+
+    activeAds = data;
+    showNextAd();
+    
+    // Rotation toutes les 15 secondes
+    setInterval(showNextAd, 15000);
+}
+
+function showNextAd() {
+    if (activeAds.length === 0) return;
+    
+    const ad = activeAds[currentAdIndex];
+    const displayZone = document.getElementById('ad-display-zone');
+    
+    let htmlContent = '';
+    
+    if (ad.type === 'video') {
+        htmlContent = `
+            <a href="${ad.lien_clic}" target="_blank">
+                <video class="ad-media ad-fade" src="${ad.media_url}" autoplay muted loop playsinline></video>
+            </a>`;
+    } else {
+        htmlContent = `
+            <a href="${ad.lien_clic}" target="_blank">
+                <img class="ad-media ad-fade" src="${ad.media_url}" alt="Publicité">
+            </a>`;
+    }
+
+    displayZone.innerHTML = htmlContent;
+    
+    // Passer à la suivante (boucle)
+    currentAdIndex = (currentAdIndex + 1) % activeAds.length;
+}
 // --- 3. INITIALISATION UNIQUE (REMPLACE TES ANCIENS WINDOW.ONLOAD) ---
 window.onload = () => {
     fetchAllContent('top');      // Charge les articles
     fetchVideosVerticaux();      // Charge les vidéos
     loadAutoTrendingTags();      // Charge tes tags NYT
 };
+    // Lancer au démarrage
+window.addEventListener('load', initAdSlider);
 </script>
 </body>
 </html>
+
 
 
