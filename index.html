@@ -177,7 +177,17 @@
 
         <aside class="sidebar-column">
             <div class="sidebar-heading">DERNIÈRES NOUVELLES</div>
-            <div id="sidebar-list"></div> </aside>
+            <div id="sidebar-list"></div> 
+            <div class="sidebar-section">
+        <h3 class="section-title">Lifestyle</h3>
+        <div id="lifestyle-list"></div>
+    </div>
+
+    <div class="sidebar-section">
+        <h3 class="section-title">Opinion</h3>
+        <div id="opinion-list"></div>
+    </div>
+        </aside>
     </div>
 </div>
 
@@ -351,164 +361,135 @@
     }
     updateDate();
 
-    // --- LOGIQUE DE RÉCUPÉRATION (PRIORITÉ + ARCHIVE + 24 ARTICLES) ---
-    async function fetchAllContent(category = 'top', query = '') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        closeMenuUI();
-        const status = document.getElementById('status-line');
-        const now = new Date().getTime();
+    // --- LOGIQUE DE RÉCUPÉRATION (TOP + OPINION SUPABASE + LIFESTYLE API) ---
+async function fetchAllContent(category = 'top', query = '') {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    closeMenuUI();
+    const status = document.getElementById('status-line');
+    const now = new Date().getTime();
 
-        try {
-            if(status) status.textContent = "CHARGEMENT...";
-            tracker.log('view', { title: query ? `Recherche: ${query}` : `Catégorie: ${category}` });
+    try {
+        if(status) status.textContent = "CHARGEMENT...";
 
-            // DOUBLE TRI : 
-            // 1. Les articles prioritaires d'abord (is_priority)
-            // 2. Les plus récents ensuite (created_at)
-            let sbQuery = supabaseClient
-                .from('articles')
-                .select('*')
-                .eq('is_published', true) 
-                .order('is_priority', { ascending: false }) // Priorité en haut
-                .order('created_at', { ascending: false }); // Puis chronologique
+        // 1. Articles Principaux (Supabase)
+        let sbQuery = supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('is_published', true)
+            .order('is_priority', { ascending: false })
+            .order('created_at', { ascending: false });
 
-            if (category !== 'top') sbQuery = sbQuery.eq('category', category);
-            if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
+        if (category !== 'top') sbQuery = sbQuery.eq('category', category);
+        if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
 
-            const { data: myArticles, error: sbError } = await sbQuery;
-            if (sbError) throw sbError;
+        const { data: myArticles } = await sbQuery;
 
-            const newsCacheKey = `news_api_${category}_${query}`;
-            const cachedNews = localStorage.getItem(newsCacheKey);
-            const newsTimestamp = localStorage.getItem(`${newsCacheKey}_time`);
-            
-            let worldNews = [];
-            if (cachedNews && newsTimestamp && (now - newsTimestamp < CACHE_DURATION)) {
-                worldNews = JSON.parse(cachedNews);
-            } else {
-                try {
-                    let newsUrl = `${NEWAPI_PROXY}?category=${category}`;
-                    if(query) newsUrl += `&q=${encodeURIComponent(query)}`;
-                    const newsRes = await fetch(newsUrl);
-                    const newsData = await newsRes.json();
-                    worldNews = newsData.results || [];
-                    localStorage.setItem(newsCacheKey, JSON.stringify(worldNews));
-                    localStorage.setItem(`${newsCacheKey}_time`, now.toString());
-                } catch (e) { console.warn("API News Indisponible"); }
-            }
+        // 2. RÉCUPÉRATION SPÉCIFIQUE : OPINION (Depuis Supabase)
+        const { data: opinionArticles } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('category', 'Opinion') // Assure-toi que le nom de la catégorie est exact
+            .eq('is_published', true)
+            .limit(5)
+            .order('created_at', { ascending: false });
 
-            // On envoie tout à la fonction d'affichage qui gère le 1 + 24
-            renderAll({ myArticles: myArticles || [], worldNews, category }, query);
-
-        } catch (e) { 
-            console.error("Erreur:", e);
-            if(status) status.textContent = "ERREUR DE CONNEXION.";
+        // 3. RÉCUPÉRATION SPÉCIFIQUE : LIFESTYLE (Depuis API)
+        let lifestyleNews = [];
+        const lifestyleCacheKey = `news_api_lifestyle`;
+        const cachedLife = localStorage.getItem(lifestyleCacheKey);
+        
+        if (cachedLife && (now - localStorage.getItem(`${lifestyleCacheKey}_time`) < CACHE_DURATION)) {
+            lifestyleNews = JSON.parse(cachedLife);
+        } else {
+            try {
+                const res = await fetch(`${NEWAPI_PROXY}?category=lifestyle`);
+                const newsData = await res.json();
+                lifestyleNews = newsData.results || [];
+                localStorage.setItem(lifestyleCacheKey, JSON.stringify(lifestyleNews));
+                localStorage.setItem(`${lifestyleCacheKey}_time`, now.toString());
+            } catch (e) { console.warn("Lifestyle API Off"); }
         }
-    }
 
-// --- FONCTION D'AFFICHAGE (MISE À JOUR : 1 HERO + 24 GRILLE) ---
-// --- FONCTION D'AFFICHAGE JOURNAL (1 HERO + 6 GRILLE + 8 SIDEBAR) ---
+        // On envoie tout à renderAll
+        renderAll({ 
+            myArticles: myArticles || [], 
+            opinionArticles: opinionArticles || [], 
+            lifestyleNews: lifestyleNews, 
+            category 
+        }, query);
+
+    } catch (e) { 
+        console.error("Erreur:", e);
+        if(status) status.textContent = "ERREUR DE CONNEXION.";
+    }
+}
 function renderAll(data, query) {
     const hero = document.getElementById('hero-zone');
     const grid = document.getElementById('news-grid');
-    const sidebar = document.getElementById('sidebar-list'); // <--- AJOUTE CET ID DANS TON HTML
+    const sidebar = document.getElementById('sidebar-list');
+    const lifestyleBox = document.getElementById('lifestyle-list');
+    const opinionBox = document.getElementById('opinion-list');
     const status = document.getElementById('status-line');
     
-    // 1. FILTRAGE DES DOUBLONS (Ta logique intacte)
-    const allPossible = [...data.myArticles, ...data.worldNews];
-    const seenTitles = new Set();
-    const uniqueArticles = allPossible.filter(art => {
-        const t = (art.titre || art.title || "").trim().toLowerCase();
-        if(!t || seenTitles.has(t)) return false;
-        seenTitles.add(t);
-        return true;
-    });
+    // Filtrage doublons sur le flux principal
+    const uniqueArticles = data.myArticles; 
 
-    if (uniqueArticles.length === 0) {
+    if (uniqueArticles.length === 0 && data.lifestyleNews.length === 0) {
         if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
         return;
     }
 
-    // 2. RÉPARTITION DES ARTICLES
-    const h = uniqueArticles[0]; // La Une
-    const gridArticles = uniqueArticles.slice(1, 7); // La grille principale
-    const sideArticles = uniqueArticles.slice(7, 15); // Les brèves sidebar
-
-    // --- RENDU DU HERO ---
-    if(hero) {
-        const hTitle = h.titre || h.title;
-        const hLink = h.id ? `redaction.html?id=${h.id}` : (h.link || "#");
-        const heroBadge = h.is_priority ? `<span style="color:#c00; font-weight:bold; font-size:0.9rem; text-transform:uppercase; display:block; margin-bottom:10px;">● À LA UNE</span>` : '';
-
+    // --- 1. RENDU HERO & GRILLE (Flux Supabase Standard) ---
+    if(hero && uniqueArticles[0]) {
+        const h = uniqueArticles[0];
+        const hLink = `redaction.html?id=${h.id}`;
         hero.innerHTML = `
             <div class="hero-container">
                 <div class="hero-text">
-                    ${heroBadge}
-                    <h1 onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">${hTitle}</h1>
-                    <p>${(h.description || "").replace(/<[^>]*>/g, "").substring(0, 250)}...</p>
-                    <button class="btn-read-more" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')">LIRE LA SUITE →</button>
+                    <h1 onclick="captureAction('${h.titre.replace(/'/g, "\\'")}', '${h.category}', '${hLink}')">${h.titre}</h1>
+                    <p>${(h.description || "").substring(0, 180)}...</p>
                 </div>
-                ${(h.image_url || h.image) ? `<div class="hero-img" onclick="captureAction('${hTitle.replace(/'/g, "\\'")}', '${data.category}', '${hLink}')"><img src="${h.image_url || h.image}"></div>` : ''}
+                <div class="hero-img"><img src="${h.image_url}"></div>
             </div>`;
     }
 
-    // --- RENDU DE LA GRILLE (COLONNE GAUCHE) ---
     if(grid) {
-        grid.innerHTML = gridArticles.map(art => {
-            const title = art.titre || art.title;
-            const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
-            const img = art.image_url || art.image || "";
-            const cardBadge = art.is_priority ? `<span style="color:#c00; font-weight:bold; font-size:0.7rem; text-transform:uppercase; margin-bottom:5px; display:block;">À LA UNE</span>` : '';
-
-            return `
-                <div class="article-card" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')">
-                    ${img ? `<div class="card-img"><img src="${img}"></div>` : ''}
-                    <div class="card-text">
-                        ${cardBadge}
-                        <h3>${title}</h3>
-                        <p class="card-desc">${(art.description || "").replace(/<[^>]*>/g, "").substring(0, 90)}...</p>
-                    </div>
-                </div>`;
-        }).join('');
+        grid.innerHTML = uniqueArticles.slice(1, 7).map(art => `
+            <div class="article-card" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', '${art.category}', 'redaction.html?id=${art.id}')">
+                <div class="card-img"><img src="${art.image_url}"></div>
+                <div class="card-text"><h3>${art.titre}</h3></div>
+            </div>`).join('');
     }
 
-    // --- RENDU DE LA SIDEBAR (NOUVEAU - COLONNE DROITE) ---
+    // --- 2. RENDU SIDEBAR (Flux Supabase Standard suite) ---
     if(sidebar) {
-        sidebar.innerHTML = sideArticles.map(art => {
-            const title = art.titre || art.title;
-            const link = art.id ? `redaction.html?id=${art.id}` : (art.link || "#");
-            return `
-                <div class="sidebar-article" onclick="captureAction('${title.replace(/'/g, "\\'")}', '${data.category}', '${link}')" style="cursor:pointer; border-bottom:1px solid #eee; padding-bottom:12px; margin-bottom:12px;">
-                    <span style="color:var(--accent); font-size:10px; font-weight:bold; font-family:var(--font-ui); text-transform:uppercase;">${(art.category || 'INFO').toUpperCase()}</span>
-                    <h4 style="font-family:var(--font-title); font-size:15px; margin:5px 0 0 0; line-height:1.3;">${title}</h4>
-                </div>`;
-        }).join('');
+        sidebar.innerHTML = uniqueArticles.slice(7, 12).map(art => `
+            <div class="sidebar-article" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', '${art.category}', 'redaction.html?id=${art.id}')">
+                <span class="category-tag">${art.category}</span>
+                <h4>${art.titre}</h4>
+            </div>`).join('');
+    }
+
+    // --- 3. RENDU LIFESTYLE (Flux API News) ---
+    if(lifestyleBox) {
+        lifestyleBox.innerHTML = data.lifestyleNews.slice(0, 3).map(art => `
+            <div class="lifestyle-item" onclick="window.open('${art.link}', '_blank')">
+                <img src="${art.image_url || 'https://via.placeholder.com/80'}" class="lifestyle-img">
+                <h4>${art.title}</h4>
+            </div>`).join('');
+    }
+
+    // --- 4. RENDU OPINION (Flux Supabase Catégorie Opinion) ---
+    if(opinionBox) {
+        opinionBox.innerHTML = data.opinionArticles.map(art => `
+            <div class="opinion-item" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', 'Opinion', 'redaction.html?id=${art.id}')">
+                <span class="opinion-author">🖋️ ${art.auteur || 'MAKMUS'}</span>
+                <h4>${art.titre}</h4>
+            </div>`).join('');
     }
 
     if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
 }
-
-    window.captureAction = function(title, category, link) {
-        tracker.log('click', { title, category });
-        setTimeout(() => { window.location.href = link; }, 150);
-    }
-
-    window.onload = () => fetchAllContent('top');
-
-    function handleSubscribe() {
-        tracker.log('click_interest_subscribe', { title: 'Bouton Abonnement Header' });
-        alert("Bientôt disponible ! MAKMUS prépare une offre exclusive pour ses lecteurs fidèles.");
-    }
-
-    function toggleLoginModal() {
-        tracker.log('click_account_login', { title: 'Bouton Mon Compte' });
-        const modal = document.getElementById('modalAccount'); 
-        if (modal) {
-            modal.style.display = (modal.style.display === 'flex') ? 'none' : 'flex';
-        } else {
-            alert("L'espace membre sera disponible lors de la prochaine mise à jour.");
-        }
-    }
 // 1. DÉFINITION DES ICÔNES (SVG minimalistes)
 const ICON_MUTE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
 const ICON_VOL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.08"></path></svg>`;
@@ -803,6 +784,7 @@ window.onload = async () => {
 </script>
 </body>
 </html>
+
 
 
 
