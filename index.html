@@ -133,7 +133,14 @@
             </div>
     </div>
 </div>
-
+<div class="market-ticker">
+    <div id="ticker-content" class="ticker-wrapper">
+        <div class="ticker-item">
+            <span class="ticker-label">CHARGEMENT...</span>
+        </div>
+    </div>
+</div>
+    
 <style>
     /* Suppression de la scrollbar pour esthétique */
     #trending-tags div::-webkit-scrollbar { display: none; }
@@ -721,7 +728,33 @@ async function trackAdClick(adId, redirectUrl) {
     
     if(redirectUrl) window.open(redirectUrl, '_blank');
 }
+.market-ticker {
+    height: 24px;
+    overflow: hidden;
+    background: #f8f9fa; /* Très léger gris pour démarquer */
+    padding: 0 10px;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 15px;
+    border: 1px solid #eee;
+}
 
+.ticker-label { color: #666; font-size: 10px; font-weight: bold; margin-right: 5px; }
+.ticker-value { font-size: 11px; font-weight: 800; color: #000; }
+.ticker-change { font-size: 9px; margin-left: 5px; padding: 2px 4px; border-radius: 3px; }
+.ticker-change.up { color: #008a00; background: #e6f4e6; }
+.ticker-change.down { color: #d00; background: #fdeaea; }
+
+/* Animation fluide vers le haut */
+.fade-in {
+    animation: tickerUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+}
+
+@keyframes tickerUp {
+    0% { opacity: 0; transform: translateY(10px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
 // --- 3. INITIALISATION UNIQUE ---
 window.onload = () => {
     fetchAllContent('top');      // Charge les articles
@@ -732,6 +765,7 @@ window.onload = () => {
 </script>
 </body>
 </html>
+
 
 
 
