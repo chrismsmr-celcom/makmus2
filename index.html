@@ -655,21 +655,49 @@ function showNextAd() {
     const ad = activeAds[currentAdIndex];
     const displayZone = document.getElementById('ad-display-zone');
     
-    let htmlContent = '';
+    // On enlève le <a> simple et on utilise trackAdClick
+    const action = `onclick="trackAdClick('${ad.id}', '${ad.lien_clic}')"`;
     
+    let htmlContent = '';
     if (ad.type === 'video') {
         htmlContent = `
-            <a href="${ad.lien_clic}" target="_blank">
+            <div style="cursor:pointer" ${action}>
                 <video class="ad-media ad-fade" src="${ad.media_url}" autoplay muted loop playsinline></video>
-            </a>`;
+            </div>`;
     } else {
         htmlContent = `
-            <a href="${ad.lien_clic}" target="_blank">
+            <div style="cursor:pointer" ${action}>
                 <img class="ad-media ad-fade" src="${ad.media_url}" alt="Publicité">
-            </a>`;
+            </div>`;
     }
 
     displayZone.innerHTML = htmlContent;
+    currentAdIndex = (currentAdIndex + 1) % activeAds.length;
+}
+
+// AJOUTE CETTE FONCTION JUSTE EN DESSOUS
+async function trackAdClick(adId, redirectUrl) {
+    // 1. Enregistrer le clic dans Supabase
+    try {
+        const { data: currentAd } = await supabaseClient
+            .from('publicites')
+            .select('nb_clics')
+            .eq('id', adId)
+            .single();
+
+        await supabaseClient
+            .from('publicites')
+            .update({ nb_clics: (currentAd.nb_clics || 0) + 1 })
+            .eq('id', adId);
+            
+        console.log("Clic enregistré pour:", adId);
+    } catch (e) {
+        console.warn("Erreur tracking clic:", e);
+    }
+    
+    // 2. Ouvrir le lien dans un nouvel onglet
+    if(redirectUrl) window.open(redirectUrl, '_blank');
+}
     
     // Passer à la suivante (boucle)
     currentAdIndex = (currentAdIndex + 1) % activeAds.length;
@@ -685,6 +713,7 @@ window.addEventListener('load', initAdSlider);
 </script>
 </body>
 </html>
+
 
 
 
