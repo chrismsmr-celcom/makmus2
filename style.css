@@ -10,7 +10,7 @@
     --font-title: 'Playfair Display', serif;
     --font-body: 'Source Serif 4', serif;
     --font-ui: 'Inter', system-ui, sans-serif;
-    --margin-side: 5%; /* Marge de sécurité pour le contenu */
+    --margin-side: 10%; /* Marge de sécurité pour le contenu */
 }
 
 body {
@@ -474,4 +474,5 @@ body {
     letter-spacing: 1px;
     margin-bottom: 4px;
 }
+
 
