@@ -474,6 +474,66 @@ body {
     letter-spacing: 1px;
     margin-bottom: 4px;
 }
+/* Alignement de la Top Bar */
+.top-bar-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Style du Ticker */
+.market-ticker-container {
+    display: inline-flex;
+    align-items: center;
+    border-left: 1px solid #ccc; /* Séparation fine après la date */
+    padding-left: 15px;
+    height: 16px; /* Très fin */
+}
+
+.ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Arial', sans-serif;
+}
+
+.ticker-label {
+    font-size: 10px;
+    color: #666;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.ticker-value {
+    font-size: 10px;
+    font-weight: bold;
+    color: #000;
+}
+
+.ticker-change {
+    font-size: 9px;
+    font-weight: bold;
+}
+
+.ticker-change.up { color: #008a00; }
+.ticker-change.down { color: #d00; }
+
+/* ANIMATION FONDU VERS LE HAUT */
+.fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(5px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* --- PROTECTION MOBILE --- */
+@media (max-width: 768px) {
+    .market-ticker-container {
+        display: none; /* Cache le ticker sur mobile pour éviter l'encombrement */
+    }
+}
 
 
 
