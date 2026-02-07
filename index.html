@@ -101,7 +101,6 @@
 
     <nav class="nav-compact" id="navMenu">
         <ul class="container-magazine">
-ul>
             <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
             <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
             <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
@@ -117,30 +116,25 @@ ul>
     <div id="trending-tags" class="trending-bar">
         <div class="container-magazine trending-content">
             <span class="trending-label">En ce moment</span>
-            <div id="tags-container" class="tags-wrapper">
-                </div>
+            <div id="tags-container" class="tags-wrapper"></div>
         </div>
     </div>
 
     <main class="container-magazine newspaper-body">
         <div class="status-line" id="status-line">ÉDITION DU JOUR</div>
-        
         <div id="hero-zone"></div>
 
         <div class="newspaper-layout">
             <div class="main-news-column">
                 <div id="news-grid" class="news-grid"></div>
             </div>
-
             <aside class="sidebar-column">
                 <div class="sidebar-heading">DERNIÈRES NOUVELLES</div>
                 <div id="sidebar-list"></div> 
-
                 <div class="sidebar-section">
                     <h3 class="section-title">Lifestyle</h3>
                     <div id="lifestyle-list"></div>
                 </div>
-
                 <div class="sidebar-section">
                     <h3 class="section-title">Opinion</h3>
                     <div id="opinion-list"></div>
@@ -164,19 +158,15 @@ ul>
 
     <section id="video-section" class="video-section-container no-print">
         <div class="container-magazine">
-            <div class="video-header">
-                <h2 class="section-title-white">Vidéos du jour</h2>
-            </div>
-            <div id="video-slider" class="video-slider">
-                </div>
+            <div class="video-header"><h2 class="section-title-white">Vidéos du jour</h2></div>
+            <div id="video-slider" class="video-slider"></div>
         </div>
     </section>
 
     <section class="magazine-row-section">
         <div class="container-magazine">
             <h2 class="magazine-heading">Bien-être & Environnement</h2>
-            <div id="lifestyle-env-grid" class="magazine-grid">
-                </div>
+            <div id="lifestyle-env-grid" class="magazine-grid"></div>
         </div>
     </section>
 
@@ -191,31 +181,29 @@ ul>
                     <div class="footer-col">
                         <h4>SECTIONS</h4>
                         <ul>
-        <ul>
-        <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
-        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-        </ul>
+                            <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+                            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+                            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+                            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+                            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+                            <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+                            <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+                            <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
+                            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+                        </ul>
                     </div>
                     <div class="footer-col">
                         <h4>AIDE & INFOS</h4>
-        <ul>
-            <li><a href="#">Abonnements</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Publicité</a></li>
-            <li><a href="#">Emploi</a></li>
-            <li><a href="#">Makmus magazine</a></li>
-            <li><a href="#">Makila Emmanuel Heritage </a></li>
-            <li><a href="#">Météo </a></li>
-            <li><a href="#">Makem screen Studio</a></li>
-        </ul>
-    </div>
+                        <ul>
+                            <li><a href="#">Abonnements</a></li>
+                            <li><a href="#">Contact</a></li>
+                            <li><a href="#">Publicité</a></li>
+                            <li><a href="#">Emploi</a></li>
+                            <li><a href="#">Makmus magazine</a></li>
+                            <li><a href="#">Makila Emmanuel Heritage</a></li>
+                            <li><a href="#">Météo</a></li>
+                            <li><a href="#">Makem screen Studio</a></li>
+                        </ul>
                     </div>
                     <div class="footer-col">
                         <h4>SUIVEZ-NOUS</h4>
@@ -234,248 +222,8 @@ ul>
             </div>
         </div>
     </footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-   // --- 1. CONFIGURATION & CLIENTS ---
-const BASE_URL = window.location.origin;
-const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'; // Ta clé complète
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const NEWAPI_PROXY = `${BASE_URL}/api/news`;
-const CACHE_DURATION = 60 * 60 * 1000; // 1 heure
-
-// --- 2. SYSTÈME ANALYTICS ---
-const tracker = {
-    getVisitorId: () => {
-        let id = sessionStorage.getItem('makmus_visitor_id');
-        if (!id) {
-            id = 'v-' + Math.random().toString(36).substr(2, 9);
-            sessionStorage.setItem('makmus_visitor_id', id);
-        }
-        return id;
-    },
-    log: async (type, data = {}) => {
-        try {
-            await supabaseClient.from('stats').insert([{
-                event_type: type,
-                article_title: data.title || 'Page Accueil',
-                category: data.category || 'Général',
-                path: window.location.pathname,
-                visitor_id: tracker.getVisitorId(),
-                created_at: new Date().toISOString()
-            }]);
-        } catch (e) { console.warn("Analytics error:", e); }
-    }
-};
-
-// --- 3. UI & NAVIGATION ---
-function updateDate() {
-    const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-    const liveDate = document.getElementById('live-date');
-    if (liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
-}
-
-function closeMenuUI() {
-    const fullMenu = document.getElementById('fullMenu');
-    if (fullMenu) {
-        fullMenu.classList.remove('open');
-        document.body.style.overflow = 'auto';
-    }
-}
-
-window.executeMenuSearch = function() {
-    const query = document.getElementById('menuSearchInput').value;
-    if (query) {
-        fetchAllContent('top', query);
-        closeMenuUI();
-    }
-};
-
-// --- 4. RÉCUPÉRATION DES DONNÉES (MAIN, OPINION, LIFESTYLE) ---
-async function fetchAllContent(category = 'top', query = '') {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    closeMenuUI();
-    const status = document.getElementById('status-line');
-    const now = new Date().getTime();
-
-    try {
-        if (status) status.textContent = "CHARGEMENT...";
-
-        // Requêtes Supabase en parallèle pour la performance
-        const pMain = supabaseClient.from('articles').select('*').eq('is_published', true)
-            .order('is_priority', { ascending: false }).order('created_at', { ascending: false });
-        
-        if (category !== 'top') pMain.eq('category', category);
-        if (query) pMain.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
-
-        const pOpinion = supabaseClient.from('articles').select('*')
-            .eq('category', 'Opinion').eq('is_published', true).limit(5).order('created_at', { ascending: false });
-
-        const [mainRes, opinionRes] = await Promise.all([pMain, pOpinion]);
-
-        // Gestion Lifestyle (Hybride API avec Cache)
-        let lifestyleNews = [];
-        const cachedLife = localStorage.getItem('news_api_lifestyle');
-        const cachedTime = localStorage.getItem('news_api_lifestyle_time');
-
-        if (cachedLife && (now - cachedTime < CACHE_DURATION)) {
-            lifestyleNews = JSON.parse(cachedLife);
-        } else {
-            try {
-                const res = await fetch(`${NEWAPI_PROXY}?category=lifestyle`);
-                const newsData = await res.json();
-                lifestyleNews = newsData.results || [];
-                localStorage.setItem('news_api_lifestyle', JSON.stringify(lifestyleNews));
-                localStorage.setItem('news_api_lifestyle_time', now.toString());
-            } catch (e) { console.warn("API Lifestyle indisponible"); }
-        }
-
-        renderAll({
-            myArticles: mainRes.data || [],
-            opinionArticles: opinionRes.data || [],
-            lifestyleNews: lifestyleNews,
-            category
-        }, query);
-
-    } catch (e) {
-        console.error("Fetch error:", e);
-        if (status) status.textContent = "ERREUR DE CONNEXION.";
-    }
-}
-
-// --- 5. RENDU DU CONTENU (GRID, SIDEBAR, OPINIONS) ---
-function renderAll(data, query) {
-    const hero = document.getElementById('hero-zone');
-    const grid = document.getElementById('news-grid');
-    const sidebar = document.getElementById('sidebar-list');
-    const lifestyleBox = document.getElementById('lifestyle-list');
-    const opinionBox = document.getElementById('opinion-list');
-    const status = document.getElementById('status-line');
-
-    const articles = data.myArticles;
-
-    // Hero & Grid
-    if (hero && articles[0]) {
-        const h = articles[0];
-        hero.innerHTML = `
-            <div class="hero-container" onclick="location.href='redaction.html?id=${h.id}'">
-                <div class="hero-text">
-                    <h1>${h.titre}</h1>
-                    <p>${(h.description || "").substring(0, 180)}...</p>
-                </div>
-                <div class="hero-img"><img src="${h.image_url}"></div>
-            </div>`;
-    }
-
-    if (grid) {
-        grid.innerHTML = articles.slice(1, 7).map(art => `
-            <div class="article-card" onclick="location.href='redaction.html?id=${art.id}'">
-                <img src="${art.image_url}">
-                <h3>${art.titre}</h3>
-            </div>`).join('');
-    }
-
-    // Sidebar Standard
-    if (sidebar) {
-        sidebar.innerHTML = articles.slice(7, 12).map(art => `
-            <div class="sidebar-article" onclick="location.href='redaction.html?id=${art.id}'">
-                <span class="category-tag">${art.category}</span>
-                <h4>${art.titre}</h4>
-            </div>`).join('');
-    }
-
-    // Lifestyle (API)
-    if (lifestyleBox) {
-        lifestyleBox.innerHTML = data.lifestyleNews.slice(0, 3).map(art => `
-            <div class="lifestyle-item" onclick="window.open('${art.link}', '_blank')">
-                <img src="${art.image_url || 'https://via.placeholder.com/80'}" class="lifestyle-img">
-                <h4>${art.title}</h4>
-            </div>`).join('');
-    }
-
-    // Opinions
-    if (opinionBox) {
-        opinionBox.innerHTML = data.opinionArticles.map(art => `
-            <div class="opinion-item" onclick="location.href='redaction.html?id=${art.id}'">
-                <span class="opinion-author">🖋️ ${art.auteur || 'MAKMUS'}</span>
-                <h4>${art.titre}</h4>
-            </div>`).join('');
-    }
-
-    if (status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
-}
-
-// --- 6. SECTIONS SPÉCIALES (MAGAZINE, VIDEOS, TAGS) ---
-async function fetchMagazineSection() {
-    const { data } = await supabaseClient.from('articles').select('*')
-        .in('category', ['Santé', 'Climat']).eq('is_published', true).limit(5).order('created_at', { ascending: false });
-    
-    const container = document.getElementById('lifestyle-env-grid');
-    if (container && data) {
-        container.innerHTML = data.map(art => `
-            <div class="mag-card" onclick="location.href='redaction.html?id=${art.id}'">
-                <div class="mag-img-wrapper"><img src="${art.image_url || ''}"></div>
-                <span class="mag-read-time">${art.category}</span>
-                <h4>${art.titre}</h4>
-            </div>`).join('');
-    }
-}
-
-// Vidéos & Publicités (Logique Mute/Play conservée)
-// ... [Garder ici tes fonctions fetchVideosVerticaux, toggleMute, handleVideoClick, initAdSlider, trackAdClick] ...
-
-// --- 7. TICKER BOURSIER ---
-let marketData = [
-    { label: "USD/CDF", value: "...", change: "LIVE", trend: "up" },
-    { label: "BTC/USD", value: "64,250", change: "+1.2%", trend: "up" }
-];
-
-async function initMarketTicker() {
-    try {
-        const res = await fetch(`https://v6.exchangerate-api.com/v6/4e4fee63bab6fce7ba7b39e8/latest/USD`);
-        const data = await res.json();
-        if (data.result === "success") {
-            marketData[0].value = Math.round(data.conversion_rates.CDF).toLocaleString() + " FC";
-        }
-    } catch (e) { console.warn("Market API Error"); }
-    
-    let idx = 0;
-    setInterval(() => {
-        const wrapper = document.getElementById('ticker-content');
-        if (!wrapper) return;
-        const d = marketData[idx];
-        wrapper.innerHTML = `<div class="ticker-item fade-in-up"><span class="ticker-label">${d.label}</span> <span class="ticker-value">${d.value}</span></div>`;
-        idx = (idx + 1) % marketData.length;
-    }, 5000);
-}
-
-// --- 8. INITIALISATION FINALE ---
-window.onload = () => {
-    updateDate();
-    initMarketTicker();
-    fetchAllContent('top');
-    fetchMagazineSection();
-    fetchVideosVerticaux();
-    loadAutoTrendingTags();
-    initAdSlider();
-    tracker.log('view', { title: 'Visite Home' });
-};
-</script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="script.js"></script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
