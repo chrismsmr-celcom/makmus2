@@ -212,26 +212,13 @@
             </div>
     </div>
 </section>
-
-<style>
-    /* Cache la barre de scroll pour un look plus propre */
-    #video-slider::-webkit-scrollbar { display: none; }
-    #video-slider { -ms-overflow-style: none; scrollbar-width: none; }
-    
-    .video-card {
-        flex: 0 0 280px; /* Largeur d'une vidéo portrait */
-        scroll-snap-align: start;
-        background: #111;
-        border-radius: 0px;
-        overflow: hidden;
-        position: relative;
-        aspect-ratio: 9/16;
-    }
-
-    @media (max-width: 768px) {
-        .video-card { flex: 0 0 75%; /* Sur mobile, on voit un bout de la vidéo suivante */ }
-    }
-</style>
+    <section class="magazine-row-section">
+    <div class="magazine-container">
+        <h2 class="magazine-heading">Bien-être & Environnement</h2>
+        <div id="lifestyle-env-grid" class="magazine-grid">
+            </div>
+    </div>
+</section>
     <footer class="nyt-footer">
     <div class="footer-container">
         <div class="footer-brand">
@@ -409,6 +396,30 @@ async function fetchAllContent(category = 'top', query = '') {
                 localStorage.setItem(`${lifestyleCacheKey}_time`, now.toString());
             } catch (e) { console.warn("Lifestyle API Off"); }
         }
+        async function fetchMagazineSection() {
+    const { data, error } = await supabaseClient
+        .from('articles')
+        .select('*')
+        .in('category', ['Santé', 'Climat']) // On récupère les deux
+        .eq('is_published', true)
+        .limit(5)
+        .order('created_at', { ascending: false });
+
+    if (error || !data) return;
+
+    const container = document.getElementById('lifestyle-env-grid');
+    if (container) {
+        container.innerHTML = data.map(art => `
+            <div class="mag-card" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', '${art.category}', 'redaction.html?id=${art.id}')">
+                <div class="mag-img-wrapper">
+                    <img src="${art.image_url || 'https://via.placeholder.com/200'}" alt="${art.titre}">
+                </div>
+                <span class="mag-read-time">${art.category}</span>
+                <h4>${art.titre}</h4>
+            </div>
+        `).join('');
+    }
+}
 
         // On envoie tout à renderAll
         renderAll({ 
@@ -777,6 +788,7 @@ window.onload = async () => {
     updateDate();
     initMarketTicker(); // <--- AJOUTE CETTE LIGNE
     fetchAllContent('top');
+    fetchMagazineSection(); 
     fetchVideosVerticaux();
     loadAutoTrendingTags();
     initAdSlider();
@@ -784,6 +796,7 @@ window.onload = async () => {
 </script>
 </body>
 </html>
+
 
 
 
