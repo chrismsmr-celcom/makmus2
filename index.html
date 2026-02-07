@@ -86,6 +86,9 @@
     <div class="top-bar">
         <div class="top-bar-content">
             <div id="live-date">---</div>
+<div class="market-ticker-container">
+    <div id="ticker-content"></div>
+</div>
             <button id="openModal" onclick="toggleLoginModal()">MON COMPTE</button>
         </div>
     </div>
@@ -131,13 +134,6 @@
 
         <div id="tags-container" style="display: flex; gap: 15px; align-items: center;">
             </div>
-    </div>
-</div>
-<div class="market-ticker">
-    <div id="ticker-content" class="ticker-wrapper">
-        <div class="ticker-item">
-            <span class="ticker-label">CHARGEMENT...</span>
-        </div>
     </div>
 </div>
     
@@ -728,43 +724,86 @@ async function trackAdClick(adId, redirectUrl) {
     
     if(redirectUrl) window.open(redirectUrl, '_blank');
 }
-.market-ticker {
-    height: 24px;
-    overflow: hidden;
-    background: #f8f9fa; /* Très léger gris pour démarquer */
-    padding: 0 10px;
-    border-radius: 4px;
-    display: inline-flex;
-    align-items: center;
-    margin-left: 15px;
-    border: 1px solid #eee;
+// --- CONFIGURATION MARCHÉS ---
+const EXCHANGE_API_KEY = '4e4fee63bab6fce7ba7b39e8';
+let marketData = [
+    { label: "USD/CDF", value: "Chargement...", change: "LIVE", trend: "up" },
+    { label: "BTC/USD", value: "64,250", change: "+1.2%", trend: "up" },
+    { label: "OR (oz)", value: "2,150", change: "-0.5%", trend: "down" }
+];
+
+// 1. Récupération des données avec Cache
+async function fetchMarketData() {
+    const cacheKey = 'makmus_market_cache';
+    const cacheTimeKey = 'makmus_market_time';
+    const now = new Date().getTime();
+    const oneHour = 60 * 60 * 1000;
+
+    const cachedData = localStorage.getItem(cacheKey);
+    const cachedTime = localStorage.getItem(cacheTimeKey);
+
+    // Si on a des données de moins d'une heure, on les utilise
+    if (cachedData && cachedTime && (now - cachedTime < oneHour)) {
+        marketData = JSON.parse(cachedData);
+        return;
+    }
+
+    try {
+        const response = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/latest/USD`);
+        const data = await response.json();
+        
+        if (data.result === "success") {
+            const cdfRate = data.conversion_rates.CDF;
+            // Mise à jour du Franc Congolais
+            marketData[0].value = Math.round(cdfRate).toLocaleString() + " FC";
+            
+            // Sauvegarde
+            localStorage.setItem(cacheKey, JSON.stringify(marketData));
+            localStorage.setItem(cacheTimeKey, now.toString());
+        }
+    } catch (e) {
+        console.warn("Erreur API Marchés");
+    }
 }
 
-.ticker-label { color: #666; font-size: 10px; font-weight: bold; margin-right: 5px; }
-.ticker-value { font-size: 11px; font-weight: 800; color: #000; }
-.ticker-change { font-size: 9px; margin-left: 5px; padding: 2px 4px; border-radius: 3px; }
-.ticker-change.up { color: #008a00; background: #e6f4e6; }
-.ticker-change.down { color: #d00; background: #fdeaea; }
+// 2. Animation du Ticker (Affichage successif)
+let currentTickerIndex = 0;
+function updateTickerUI() {
+    const wrapper = document.getElementById('ticker-content');
+    if (!wrapper) return;
 
-/* Animation fluide vers le haut */
-.fade-in {
-    animation: tickerUp 0.6s cubic-bezier(0.23, 1, 0.32, 1) forwards;
+    const data = marketData[currentTickerIndex];
+    
+    wrapper.innerHTML = `
+        <div class="ticker-item fade-in-up">
+            <span class="ticker-label">${data.label}</span> 
+            <span class="ticker-value">${data.value}</span>
+            <span class="ticker-change ${data.trend}">${data.change}</span>
+        </div>
+    `;
+
+    currentTickerIndex = (currentTickerIndex + 1) % marketData.length;
 }
 
-@keyframes tickerUp {
-    0% { opacity: 0; transform: translateY(10px); }
-    100% { opacity: 1; transform: translateY(0); }
+// 3. Initialisation (À appeler dans ton window.onload)
+async function initMarketTicker() {
+    await fetchMarketData();
+    updateTickerUI();
+    setInterval(updateTickerUI, 5000); // Change toutes les 5 secondes
 }
 // --- 3. INITIALISATION UNIQUE ---
-window.onload = () => {
-    fetchAllContent('top');      // Charge les articles
-    fetchVideosVerticaux();      // Charge les vidéos
-    loadAutoTrendingTags();      // Charge tes tags NYT
-    initAdSlider();              // Lance le slider de pub
+window.onload = async () => {
+    updateDate();
+    initMarketTicker(); // <--- AJOUTE CETTE LIGNE
+    fetchAllContent('top');
+    fetchVideosVerticaux();
+    loadAutoTrendingTags();
+    initAdSlider();
 };
 </script>
 </body>
 </html>
+
 
 
 
