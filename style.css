@@ -19,7 +19,43 @@ body {
     background: #fff; color: var(--black); overflow-x: hidden;
     font-size: 18px; line-height: 1.7;
 }
+/* Par défaut : on cache la pub (pour les mobiles) */
+.top-ad-container {
+    display: none;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+    text-align: center;
+}
 
+.ad-label {
+    display: block;
+    font-size: 10px;
+    color: #999;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.ad-placeholder {
+    width: 728px; /* Taille standard Leaderboard */
+    height: 90px;
+    background: #ebebeb;
+    border: 1px dashed #ccc;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+/* --- LE DÉCLENCHEUR : Uniquement pour écrans > 1024px --- */
+@media (min-width: 1024px) {
+    .top-ad-container {
+        display: block; /* La pub apparaît sur Desktop et Tablettes larges */
+    }
+}
 /* TOP BAR */
 .top-bar {
     border-bottom: 1px solid #ddd; padding: 10px var(--margin-side);
@@ -339,3 +375,4 @@ body {
     stroke: white;
     display: block;
 }
+
