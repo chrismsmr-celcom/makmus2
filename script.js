@@ -531,6 +531,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
 // Initialisation au chargement
 window.onload = () => {
     updateDate();
