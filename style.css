@@ -150,6 +150,17 @@ body {
 .footer-col h4 { font-family: var(--font-ui); font-size: 11px; letter-spacing: 1px; margin-bottom: 20px; font-weight: bold; }
 .footer-col ul { list-style: none; padding: 0; }
 .footer-col a { text-decoration: none; color: #666; font-size: 13px; font-family: var(--font-ui); }
+.footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 20px; font-size: 11px; color: #999; font-family: var(--font-ui);
+}
+.bottom-legal a { margin-left: 20px; text-decoration: none; color: #999; }
+
+@media (max-width: 768px) {
+    .footer-bottom { flex-direction: column; gap: 15px; text-align: center; }
+    .bottom-legal a { margin: 0 10px; }
+}
+
 
 /* --- RESPONSIVE MOBILE --- */
 @media (max-width: 1024px) {
@@ -165,4 +176,5 @@ body {
     .price-tag { display: none; }
     .video-card { flex: 0 0 75%; }
 }
+
 
