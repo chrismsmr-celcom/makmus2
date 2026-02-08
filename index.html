@@ -1,229 +1,284 @@
-<!DOCTYPE html>
+<!D<!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAKMUS — Mémoire & Vérité</title>
-    
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAKMUS — Mémoire & Vérité</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
 
-    <meta name="apple-mobile-web-app-title" content="MAKMUS">
-    <meta name="application-name" content="MAKMUS">
-    <meta name="theme-color" content="#a30000">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
+
+<meta name="apple-mobile-web-app-title" content="MAKMUS">
+<meta name="application-name" content="MAKMUS">
+
+<meta name="theme-color" content="#a30000">
 </head>
 <body>
+  <div class="top-ad-container no-print">
+    <div id="ad-slider-wrapper">
+        <div id="ad-display-zone">
+             <div class="ad-placeholder">MAKMUS PUBLICITÉ — 728x90</div>
+        </div>
+    </div>
+</div>
 
-    <div class="top-ad-container no-print">
-        <div id="ad-slider-wrapper">
-            <div id="ad-display-zone">
-                <div class="ad-placeholder">MAKMUS PUBLICITÉ — 728x90</div>
-            </div>
-        </div>
-    </div>
+<style>
+    .top-ad-container { display: none; background: #f0f0f0; padding: 10px 0; text-align: center; border-bottom: 1px solid #ddd; }
+    #ad-slider-wrapper { max-width: 728px; height: 90px; margin: 0 auto; overflow: hidden; position: relative; background: #ccc; }
+    
+    /* Animation de transition douce */
+    .ad-fade { animation: fadeIn 0.8s; }
+    @keyframes fadeIn { from { opacity: 0.3; } to { opacity: 1; } }
 
-    <div class="full-menu" id="fullMenu">
-        <div class="menu-header">
-            <div class="menu-logo">MAKMUS</div>
-            <span class="close-menu" id="closeMenu">&times; FERMER</span>
-        </div>
-        <div class="menu-content">
-            <div class="menu-search">
-                <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
-                <button onclick="executeMenuSearch()">OK</button>
-            </div>
-            <div class="menu-grid">
-                <div class="menu-section">
-                    <h3>ACTUALITÉS</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-                        <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
-                        <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
-                        <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
-                    </ul>
-                </div>
-                <div class="menu-section">
-                    <h3>ÉCONOMIE & TECH</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
-                        <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
-                        <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'crypto'); return false;">Crypto-monnaie</a></li>
-                    </ul>
-                </div>
-                <div class="menu-section">
-                    <h3>LOISIRS & SOCIÉTÉ</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
-                        <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
-                        <li><a href="#" onclick="fetchAllContent('health'); return false;">Santé</a></li>
-                        <li><a href="#" onclick="fetchAllContent('lifestyle'); return false;">Style de vie / Food</a></li>
-                        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">Voyages</a></li>
-                        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
+    @media (min-width: 1024px) { .top-ad-container { display: block; } }
+    
+    .ad-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #666; font-size: 12px; font-weight: bold; }
+    .ad-media { width: 728px; height: 90px; object-fit: cover; cursor: pointer; }
+</style>
+<div class="full-menu" id="fullMenu">
+        <div class="menu-header">
+            <div class="menu-logo">MAKMUS</div>
+            <span class="close-menu" id="closeMenu">&times; FERMER</span>
+        </div>
+        <div class="menu-content">
+            <div class="menu-search">
+                <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
+                <button onclick="executeMenuSearch()">OK</button>
+            </div>
+            <div class="menu-grid">
+                <div class="menu-section">
+                    <h3>ACTUALITÉS</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
+                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+                        <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
+                        <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
+                        <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
+                    </ul>
+                </div>
+                <div class="menu-section">
+                    <h3>ÉCONOMIE & TECH</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
+                        <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
+                        <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
+                        <li><a href="#" onclick="fetchAllContent('top', 'crypto'); return false;">Crypto-monnaie</a></li>
+                    </ul>
+                </div>
+                <div class="menu-section">
+                    <h3>LOISIRS & SOCIÉTÉ</h3>
+                    <ul>
+                        <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
+                        <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
+                        <li><a href="#" onclick="fetchAllContent('health'); return false;">Santé</a></li>
+                        <li><a href="#" onclick="fetchAllContent('lifestyle'); return false;">Style de vie / Food</a></li>
+                        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">Voyages</a></li>
+                        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 
-    <div class="top-bar">
-        <div class="container-magazine top-bar-content">
-            <div id="live-date">---</div>
-            <div class="market-ticker-container">
-                <div id="ticker-content"></div>
-            </div>
-            <button id="openModal" class="btn-ui-minimal" onclick="toggleLoginModal()">MON COMPTE</button>
-        </div>
-    </div>
+    <div class="top-bar">
+        <div class="top-bar-content">
+            <div id="live-date">---</div>
+<div class="market-ticker-container">
+    <div id="ticker-content"></div>
+</div>
+            <button id="openModal" onclick="toggleLoginModal()">MON COMPTE</button>
+        </div>
+    </div>
 
-    <header class="main-header container-magazine">
-        <div class="header-left">
-            <div class="menu-toggle" id="btnOpenMenu">
-                <span></span><span></span><span></span>
-                <span class="menu-label">SECTIONS</span>
-            </div>
-        </div>
-        <div class="logo-container">
-            <a href="index.html">
-                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-            </a>
-        </div>
-        <div class="header-right">
-            <button class="btn-subscribe" onclick="handleSubscribe()">
-                ABONNEZ-VOUS <span class="price-tag">POUR 1 $/SEMAINE</span>
-            </button>
-        </div>
-    </header>
+    <header class="main-header">
+        <div class="header-left">
+            <div class="menu-toggle" id="btnOpenMenu">
+                <span></span><span></span><span></span>
+                <span class="menu-label">SECTIONS</span>
+            </div>
+        </div>
+        <div class="logo-container">
+            <a href="index.html">
+                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            </a>
+        </div>
+<div class="header-right">
+    <button class="btn-subscribe" onclick="handleSubscribe()">
+        ABONNEZ-VOUS <span class="price-tag">POUR 1 $/SEMAINE</span>
+    </button>
+</div>
+    </header>
 
-    <nav class="nav-compact" id="navMenu">
-        <ul class="container-magazine">
-            <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-            <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-            <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
-            <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-        </ul>
-    </nav>
+    <nav class="nav-compact" id="navMenu">
+        <ul>
+            <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+            <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+            <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
+            <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+        </ul>
+    </nav>
+<div id="trending-tags" style="border-top: 1px solid #000; border-bottom: 1px solid #eee; padding: 12px 0; background: #fff; margin-top: 10px;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 12px; overflow-x: auto; white-space: nowrap;">
+        
+        <span style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 0.7rem; color: #000; text-transform: uppercase; letter-spacing: 0.5px; border-right: 1px solid #ddd; padding-right: 12px; flex-shrink: 0;">
+            En ce moment
+        </span>
 
-    <div id="trending-tags" class="trending-bar">
-        <div class="container-magazine trending-content">
-            <span class="trending-label">En ce moment</span>
-            <div id="tags-container" class="tags-wrapper"></div>
-        </div>
-    </div>
+        <div id="tags-container" style="display: flex; gap: 15px; align-items: center;">
+            </div>
+    </div>
+</div>
+    
+<style>
+    /* Suppression de la scrollbar pour esthétique */
+    #trending-tags div::-webkit-scrollbar { display: none; }
 
-    <main class="container-magazine newspaper-body">
-        <div class="status-line" id="status-line">ÉDITION DU JOUR</div>
-        <div id="hero-zone"></div>
+    /* Style NYT : Pas de background, juste du texte et un hover souligné */
+    .tag-item {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #333;
+        text-decoration: none;
+        cursor: pointer;
+        transition: color 0.2s;
+        padding: 2px 0;
+    }
 
-        <div class="newspaper-layout">
-            <div class="main-news-column">
-                <div id="news-grid" class="news-grid"></div>
-            </div>
-            <aside class="sidebar-column">
-                <div class="sidebar-heading">DERNIÈRES NOUVELLES</div>
-                <div id="sidebar-list"></div> 
-                <div class="sidebar-section">
-                    <h3 class="section-title">Lifestyle</h3>
-                    <div id="lifestyle-list"></div>
-                </div>
-                <div class="sidebar-section">
-                    <h3 class="section-title">Opinion</h3>
-                    <div id="opinion-list"></div>
-                </div>
-            </aside>
-        </div>
-    </main>
+    .tag-item:hover {
+        color: #a30000; /* Ta couleur primaire pour le rappel Makmus */
+        text-decoration: underline;
+    }
 
-    <div class="modal" id="modalAccount">
-        <div class="modal-box">
-            <span class="close-btn" id="closeModal" onclick="toggleLoginModal()">&times;</span>
-            <div class="modal-header">MAKMUS</div>
-            <p>Accès réservé aux abonnés.</p>
-            <input type="email" placeholder="Email">
-            <input type="password" placeholder="Mot de passe">
-            <button class="btn-submit">SE CONNECTER</button>
-        </div>
-    </div>
+    /* Séparateur entre les mots (comme sur le NYT) */
+    .tag-item:not(:last-child)::after {
+        content: "";
+        margin-left: 15px;
+        border-right: 1px solid #eee;
+    }
+</style>
+<div class="newspaper-body">
+    <div class="status-line" id="status-line">ÉDITION DU JOUR</div>
+    
+    <div id="hero-zone"></div>
 
-    <hr class="separator-editorial">
+    <div class="newspaper-layout">
+        <div class="main-news-column">
+            <div id="news-grid" class="news-grid"></div>
+        </div>
 
-    <section id="video-section" class="video-section-container no-print">
-        <div class="container-magazine">
-            <div class="video-header"><h2 class="section-title-white">Vidéos du jour</h2></div>
-            <div id="video-slider" class="video-slider"></div>
-        </div>
-    </section>
+        <aside class="sidebar-column">
+            <div class="sidebar-heading">DERNIÈRES NOUVELLES</div>
+            <div id="sidebar-list"></div> 
+            <div class="sidebar-section">
+        <h3 class="section-title">Lifestyle</h3>
+        <div id="lifestyle-list"></div>
+    </div>
 
-    <section class="magazine-row-section">
-        <div class="container-magazine">
-            <h2 class="magazine-heading">Bien-être & Environnement</h2>
-            <div id="lifestyle-env-grid" class="magazine-grid"></div>
-        </div>
-    </section>
+    <div class="sidebar-section">
+        <h3 class="section-title">Opinion</h3>
+        <div id="opinion-list"></div>
+    </div>
+        </aside>
+    </div>
+</div>
 
-    <footer class="nyt-footer">
-        <div class="container-magazine">
-            <div class="footer-top">
-                <div class="footer-brand">
-                    <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-                    <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
-                </div>
-                <div class="footer-links-grid">
-                    <div class="footer-col">
-                        <h4>SECTIONS</h4>
-                        <ul>
-                            <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-                            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-                            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-                            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-                            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-                            <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-                            <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-                            <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
-                            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-col">
-                        <h4>AIDE & INFOS</h4>
-                        <ul>
-                            <li><a href="#">Abonnements</a></li>
-                            <li><a href="#">Contact</a></li>
-                            <li><a href="#">Publicité</a></li>
-                            <li><a href="#">Emploi</a></li>
-                            <li><a href="#">Makmus magazine</a></li>
-                            <li><a href="#">Makila Emmanuel Heritage</a></li>
-                            <li><a href="#">Météo</a></li>
-                            <li><a href="#">Makem screen Studio</a></li>
-                        </ul>
-                    </div>
-                    <div class="footer-col">
-                        <h4>SUIVEZ-NOUS</h4>
-                        <div class="social-links">
-                            <a href="#">FB</a> <a href="#">X</a> <a href="#">IG</a> <a href="#">YT</a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
-                <div class="bottom-legal">
-                    <a href="#">Mentions Légales</a>
-                    <a href="#">Confidentialité</a>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <div class="modal" id="modalAccount">
+        <div class="modal-box">
+            <span class="close-btn" id="closeModal">&times;</span>
+            <div class="modal-header">MAKMUS</div>
+            <p>Accès réservé aux abonnés.</p>
+            <input type="email" placeholder="Email">
+            <input type="password" placeholder="Mot de passe">
+            <button class="btn-submit">SE CONNECTER</button>
+        </div>
+    </div>
+    <hr class="separator-editorial">
+    <section id="video-section" class="no-print" style="background: #fff; padding: 40px 0; margin: 40px 0; overflow: hidden;">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <span style="width: 10px; height: 10px; background: #fff; border-radius: 0%;"></span>
+            <h2 style="font-family: serif; color: #000; text-transform: uppercase; letter-spacing: 2px; font-size: 11px; margin: 0;">Video du jour</h2>
+        </div>
+
+        <div id="video-slider" style="display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 20px; -webkit-overflow-scrolling: touch;">
+            </div>
+    </div>
+</section>
+    <section class="magazine-row-section">
+    <div class="magazine-container">
+        <h2 class="magazine-heading">Bien-être & Environnement</h2>
+        <div id="lifestyle-env-grid" class="magazine-grid">
+            </div>
+    </div>
+</section>
+    <footer class="nyt-footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
+        </div>
+
+       <div class="footer-links-grid">
+    <div class="footer-col">
+        <h4>SECTIONS</h4>
+        <ul>
+        <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
+        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>AIDE</h4>
+        <ul>
+            <li><a href="#">Abonnements</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Publicité</a></li>
+            <li><a href="#">Emploi</a></li>
+            <li><a href="#">Makmus magazine</a></li>
+            <li><a href="#">Makila Emmanuel Heritage </a></li>
+            <li><a href="#">Météo </a></li>
+            <li><a href="#">Makem screen Studio</a></li>
+        </ul>
+    </div>
+    <div class="footer-col">
+        <h4>SUIVEZ-NOUS</h4>
+        <div class="social-links">
+            <a href="#">FB</a>
+            <a href="#">X</a>
+            <a href="#">IG</a>
+            <a href="#">YT</a>
+        </div>
+    </div>
+</div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
+            <div class="bottom-legal">
+                <a href="#">Mentions Légales</a>
+                <a href="#">Confidentialité</a>
+                <a href="#">CGU</a>
+            </div>
+        </div>
+    </div>
+</footer>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>
+
