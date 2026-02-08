@@ -1,5 +1,6 @@
 /* --- 1. CONFIGURATION & POLICES --- */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;700;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
 /* ==========================================================================
    1. VARIABLES & RESET
    ========================================================================== */
@@ -15,6 +16,7 @@
     --font-main: 'Inter', sans-serif;
     --font-serif: 'Source Serif 4', serif;
     --font-logo: 'Playfair Display', serif;
+    --font-title: 'Playfair Display', serif; /* Correction : Ajouté car utilisé plus bas */
 }
 
 * {
@@ -64,6 +66,21 @@ ul { list-style: none; }
     padding: 15px 0;
     text-align: center;
     border-bottom: 1px solid var(--nyt-border);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 90px;
+}
+
+#ad-display-zone {
+    width: 728px;
+    height: 90px;
+    background: #fff;
+    border: 1px dashed #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .ad-placeholder {
@@ -74,7 +91,7 @@ ul { list-style: none; }
 }
 
 /* ==========================================================================
-   3. HEADER & LOGO (OPTIMISÉ)
+   3. HEADER & LOGO
    ========================================================================== */
 .main-header {
     display: flex;
@@ -98,9 +115,7 @@ ul { list-style: none; }
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.logo-container img:hover {
-    transform: scale(1.05);
-}
+.logo-container img:hover { transform: scale(1.05); }
 
 .menu-toggle {
     display: flex;
@@ -130,6 +145,7 @@ ul { list-style: none; }
     font-size: 11px;
     cursor: pointer;
     transition: all 0.3s ease;
+    text-transform: uppercase;
 }
 
 .btn-subscribe:hover {
@@ -138,7 +154,7 @@ ul { list-style: none; }
 }
 
 /* ==========================================================================
-   4. NAVIGATION (STYLE NYT)
+   4. NAVIGATION & TRENDING
    ========================================================================== */
 .nav-compact {
     border-top: 1px solid var(--nyt-black);
@@ -158,24 +174,20 @@ ul { list-style: none; }
     font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.8px;
-    position: relative;
 }
 
-.nav-compact a::after {
-    content: '';
-    display: block;
-    width: 0;
-    height: 1px;
-    background: var(--nyt-black);
-    transition: width 0.3s ease;
-    margin-top: 2px;
+.trending-bar {
+    background: #f9f9f9;
+    border-bottom: 1px solid var(--nyt-border);
+    padding: 10px 0;
+    margin-bottom: 20px;
 }
-
-.nav-compact a:hover::after { width: 100%; }
-.nav-red { color: var(--makmus-red) !important; }
+.trending-content { display: flex; align-items: center; gap: 15px; }
+.trending-label { font-family: var(--font-main); font-weight: 800; font-size: 11px; color: var(--makmus-red); text-transform: uppercase; }
+.tags-wrapper { display: flex; gap: 15px; font-size: 12px; font-weight: 600; font-family: var(--font-main); }
 
 /* ==========================================================================
-   5. NEWSPAPER LAYOUT & ANIMATIONS
+   5. NEWSPAPER LAYOUT (FIXÉ)
    ========================================================================== */
 .status-line {
     text-align: center;
@@ -187,18 +199,23 @@ ul { list-style: none; }
     padding-bottom: 5px;
 }
 
-/* Grille principale */
 .newspaper-layout {
     display: grid;
-    grid-template-columns: 1fr 320px;
+    grid-template-columns: 1fr 320px; /* Colonne principale + Sidebar */
     gap: 40px;
 }
 
-/* Cartes d'articles & Effet Zoom */
-.article-card {
-    cursor: pointer;
-    margin-bottom: 30px;
+#hero-zone { margin-bottom: 40px; }
+.hero-img img { width: 100%; height: 450px; object-fit: cover; filter: grayscale(10%); transition: filter 0.5s; }
+.hero-img img:hover { filter: grayscale(0%); }
+
+.news-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 articles par ligne */
+    gap: 30px;
 }
+
+.article-card { cursor: pointer; margin-bottom: 20px; }
 
 .img-wrapper {
     overflow: hidden;
@@ -206,31 +223,28 @@ ul { list-style: none; }
     margin-bottom: 12px;
 }
 
-.article-card img, #hero-zone img {
+.article-card img {
     width: 100%;
-    height: auto;
+    height: 200px; /* Taille fixe pour l'uniformité de la grille */
+    object-fit: cover;
     display: block;
-    filter: grayscale(15%);
-    transition: transform 0.8s cubic-bezier(0.2, 1, 0.3, 1), filter 0.5s ease;
+    transition: transform 0.8s ease;
 }
 
-.article-card:hover img {
-    transform: scale(1.06);
-    filter: grayscale(0%);
-}
+.article-card:hover img { transform: scale(1.05); }
 
 .article-card h3 {
-    font-size: 20px;
+    font-family: var(--font-title);
+    font-size: 22px;
     line-height: 1.2;
-    transition: color 0.3s ease;
+    margin: 10px 0;
+    transition: color 0.3s;
 }
+.article-card:hover h3 { color: var(--makmus-red); }
 
-.article-card:hover h3 {
-    color: var(--makmus-red);
-    text-decoration: underline;
-}
-
-/* Sidebar */
+/* ==========================================================================
+   6. SIDEBAR & MENU OVERLAY
+   ========================================================================== */
 .sidebar-column {
     border-left: 1px solid var(--nyt-border);
     padding-left: 20px;
@@ -243,315 +257,61 @@ ul { list-style: none; }
     border-bottom: 2px solid var(--nyt-black);
     padding-bottom: 5px;
     margin-bottom: 15px;
+    text-transform: uppercase;
 }
 
-/* ==========================================================================
-   6. FULL MENU OVERLAY (EFFET TIROIR)
-   ========================================================================== */
+.section-title {
+    font-family: var(--font-main);
+    font-size: 14px;
+    font-weight: 900;
+    margin-top: 40px;
+    border-top: 1px solid #ddd;
+    padding-top: 10px;
+    text-transform: uppercase;
+}
+
+/* Overlay Menu Tiroir */
 .full-menu {
     position: fixed;
     top: 0;
     left: -100%;
     width: 100%;
     height: 100%;
-    background: rgba(255, 255, 255, 0.98);
+    background: rgba(255, 255, 255, 0.99);
     z-index: 10000;
     transition: transform 0.5s cubic-bezier(0.77, 0, 0.175, 1);
     overflow-y: auto;
-    backdrop-filter: blur(8px);
 }
-
-.full-menu.open {
-    transform: translateX(100%);
-}
-
-.menu-header {
-    padding: 30px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid var(--nyt-border);
-}
-
-.menu-logo {
-    font-family: var(--font-logo);
-    font-size: 32px;
-    font-weight: 900;
-}
-
-.close-menu {
-    cursor: pointer;
-    font-family: var(--font-main);
-    font-weight: 900;
-    transition: transform 0.3s ease;
-}
-
-.close-menu:hover { transform: rotate(90deg); color: var(--makmus-red); }
-
-.menu-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 40px;
-    padding: 50px 10%;
-}
-
-.menu-section h3 {
-    font-family: var(--font-main);
-    font-size: 14px;
-    border-bottom: 1px solid var(--nyt-black);
-    margin-bottom: 15px;
-    padding-bottom: 5px;
-}
-
-.menu-section li { margin-bottom: 10px; font-size: 16px; }
+.full-menu.open { transform: translateX(100%); }
 
 /* ==========================================================================
-   7. FOOTER
-   ========================================================================== */
-.nyt-footer {
-    border-top: 2px solid var(--nyt-black);
-    margin-top: 60px;
-    padding: 50px 0;
-    background: #fff;
-}
-
-.footer-brand img { height: 50px; margin-bottom: 15px; }
-
-.footer-links-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 30px;
-    margin-top: 40px;
-}
-
-.footer-col h4 {
-    font-family: var(--font-main);
-    font-size: 12px;
-    margin-bottom: 20px;
-    letter-spacing: 1px;
-}
-
-.footer-col ul li {
-    font-size: 13px;
-    color: var(--nyt-gray);
-    margin-bottom: 10px;
-}
-
-.footer-bottom {
-    margin-top: 50px;
-    padding-top: 20px;
-    border-top: 1px solid var(--nyt-border);
-    font-size: 11px;
-    display: flex;
-    justify-content: space-between;
-    color: var(--nyt-gray);
-}
-/* ==========================================================================
-   9. PUBLICITÉ PREMIUM (TOP)
-   ========================================================================== */
-.top-ad-container {
-    background: #f7f7f7;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--nyt-border);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    min-height: 90px;
-}
-
-#ad-display-zone {
-    width: 728px;
-    height: 90px;
-    background: #fff;
-    border: 1px dashed #ccc;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
-@media (max-width: 768px) {
-    #ad-display-zone { width: 320px; height: 50px; }
-    .top-ad-container { min-height: 60px; }
-}
-
-/* ==========================================================================
-   10. MARKET TICKER (BANDEAU BOURSIER)
+   7. MARKET TICKER
    ========================================================================== */
 .market-ticker-container {
     flex: 1;
-    margin: 0 30px;
     overflow: hidden;
     white-space: nowrap;
-    position: relative;
 }
-
 #ticker-content {
     display: inline-block;
     padding-left: 100%;
     animation: ticker-scroll 30s linear infinite;
     font-family: var(--font-main);
-    font-weight: 600;
-    letter-spacing: 0.5px;
+    font-size: 12px;
 }
-
-#ticker-content span {
-    margin-right: 40px;
-    color: var(--nyt-black);
-}
-
-.ticker-up { color: #008a00 !important; } /* Vert bourse */
-.ticker-down { color: var(--makmus-red) !important; } /* Rouge bourse */
-
 @keyframes ticker-scroll {
-    0% { transform: translate3d(0, 0, 0); }
-    100% { transform: translate3d(-100%, 0, 0); }
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
 }
 
 /* ==========================================================================
-   11. VIDÉOS VERTICALES (STYLE REELS/TIKTOK)
+   8. VIDÉOS VERTICALES
    ========================================================================== */
 .video-section-container {
     background: #000;
-    padding: 60px 0;
-    color: #fff;
-}
-
-.video-slider {
-    display: flex;
-    gap: 20px;
-    overflow-x: auto;
-    padding: 20px 0;
-    scroll-snap-type: x mandatory;
-    scrollbar-width: none; /* Cache la scrollbar sur Firefox */
-}
-
-.video-slider::-webkit-scrollbar { display: none; } /* Cache sur Chrome/Safari */
-
-.video-card {
-    flex: 0 0 280px; /* Format vertical 9:16 */
-    height: 480px;
-    background: #1a1a1a;
-    border-radius: 12px;
-    overflow: hidden;
-    position: relative;
-    scroll-snap-align: start;
-    transition: transform 0.3s ease;
-    cursor: pointer;
-    border: 1px solid #333;
-}
-
-.video-card:hover {
-    transform: translateY(-10px);
-    border-color: var(--makmus-red);
-}
-
-.video-card video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.video-overlay {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 20px;
-    background: linear-gradient(transparent, rgba(0,0,0,0.9));
-}
-
-.video-overlay h4 {
-    font-family: var(--font-main);
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 1.4;
-    color: #fff;
-}
-
-.play-icon {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 50px;
-    height: 50px;
-    background: rgba(255,255,255,0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(5px);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.video-card:hover .play-icon {
-    opacity: 1;
-}
-
-/* ==========================================================================
-   8. RESPONSIVE
-   ========================================================================== */
-@media (max-width: 992px) {
-    .newspaper-layout { grid-template-columns: 1fr; }
-    .sidebar-column { border-left: none; padding-left: 0; margin-top: 40px; }
-    .nav-compact ul { gap: 15px; }
-}
-
-@media (max-width: 600px) {
-    .logo-container img { height: 50px; }
-    .nav-compact { display: none; } /* On utilise le menu Sections sur mobile */
-    .header-right { display: none; }
-}
-
-.hero-img img { width: 100%; height: 450px; object-fit: cover; }
-
-/* --- 8. NEWSPAPER GRID --- */
-.newspaper-layout {
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 40px;
-    margin-top: 20px;
-}
-
-.news-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 30px;
-}
-
-.article-card h3 {
-    font-family: var(--font-title);
-    font-size: 22px;
-    line-height: 1.2;
-    margin: 10px 0;
-}
-
-/* --- 9. SIDEBAR --- */
-.sidebar-heading {
-    font-family: var(--font-ui);
-    font-size: 13px;
-    font-weight: 900;
-    border-bottom: 1px solid #000;
-    padding-bottom: 3px;
-    margin-bottom: 20px;
-}
-
-.section-title {
-    font-family: var(--font-ui);
-    font-size: 14px;
-    font-weight: 900;
-    margin-top: 40px;
-    border-top: 1px solid #ddd;
-    padding-top: 10px;
-}
-
-/* --- 10. VIDÉO SECTION --- */
-.video-section-container {
-    background: #000;
-    color: #fff;
     padding: 50px 0;
+    color: #fff;
+    margin-top: 50px;
 }
 
 .video-slider {
@@ -559,33 +319,69 @@ ul { list-style: none; }
     gap: 20px;
     overflow-x: auto;
     padding-bottom: 20px;
+    scrollbar-width: none;
 }
 
 .video-card {
     min-width: 260px;
     height: 460px;
-    position: relative;
+    background: #1a1a1a;
     border-radius: 8px;
     overflow: hidden;
+    position: relative;
+    flex-shrink: 0;
 }
 
-/* --- 11. BOUTONS --- */
-.btn-subscribe {
-    background: var(--accent);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 800;
-    text-transform: uppercase;
+.video-card video { width: 100%; height: 100%; object-fit: cover; }
+
+/* --- Animation des Tags Trending --- */
+.tags-wrapper a {
+    position: relative;
+    padding: 2px 0;
+    color: var(--nyt-black);
+    text-decoration: none;
+    transition: color 0.3s ease;
 }
 
-/* --- RESPONSIVE --- */
-@media (max-width: 900px) {
-    .main-header { grid-template-columns: 1fr 1fr; }
-    .header-right { display: none; } /* On cache l'abonnement sur petit mobile ou on le met ailleurs */
-    .hero-container { flex-direction: column; }
+.tags-wrapper a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 1px;
+    background-color: var(--makmus-red);
+    transition: width 0.3s ease, left 0.3s ease;
+}
+
+.tags-wrapper a:hover {
+    color: var(--makmus-red);
+}
+
+.tags-wrapper a:hover::after {
+    width: 100%;
+    left: 0;
+}
+
+/* Style spécifique pour le '#' des tags */
+.tag-hash {
+    color: var(--nyt-gray);
+    margin-right: 1px;
+    font-weight: 400;
+}
+
+/* ==========================================================================
+   9. RESPONSIVE
+   ========================================================================== */
+@media (max-width: 992px) {
     .newspaper-layout { grid-template-columns: 1fr; }
     .news-grid { grid-template-columns: 1fr; }
+    .sidebar-column { border-left: none; padding-left: 0; margin-top: 40px; }
+    .header-right { display: none; }
+    .logo-container img { height: 55px; }
 }
 
+@media (max-width: 600px) {
+    .nav-compact { display: none; }
+    .hero-img img { height: 300px; }
+}
