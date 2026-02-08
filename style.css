@@ -9,7 +9,7 @@
     --font-body: 'Source Serif 4', serif;
     --font-ui: 'Inter', system-ui, sans-serif;
     --max-width: 1300px;
-    --margin-side: 5%; /* Adapté pour ne pas compresser le texte */
+    --margin-side: 20%; /* Adapté pour ne pas compresser le texte */
 }
 
 body {
@@ -165,3 +165,4 @@ body {
     .price-tag { display: none; }
     .video-card { flex: 0 0 75%; }
 }
+
