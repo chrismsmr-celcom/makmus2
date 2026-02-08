@@ -1,648 +1,805 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAKMUS — Mémoire & Vérité</title>
-    
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    
-    <link rel="stylesheet" href="style.css">
-
-    <meta name="apple-mobile-web-app-title" content="MAKMUS">
-    <meta name="application-name" content="MAKMUS">
-    <meta name="theme-color" content="#a30000">
-</head>
-<body>
-
-<div class="top-ad-container no-print">
-    <div id="ad-slider-wrapper">
-        <div id="ad-display-zone">
-             <div class="ad-placeholder">MAKMUS PUBLICITÉ — 728x90</div>
-        </div>
-    </div>
-</div>
-
-<div class="full-menu" id="fullMenu">
-    <div class="menu-header">
-        <div class="menu-logo">MAKMUS</div>
-        <span class="close-menu" id="closeMenu">&times; FERMER</span>
-    </div>
-    <div class="menu-content">
-        <div class="menu-search">
-            <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
-            <button onclick="executeMenuSearch()">OK</button>
-        </div>
-        <div class="menu-grid">
-            <div class="menu-section">
-                <h3>ACTUALITÉS</h3>
-                <ul>
-                    <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
-                    <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-                    <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
-                    <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
-                    <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
-                </ul>
-            </div>
-            <div class="menu-section">
-                <h3>ÉCONOMIE & TECH</h3>
-                <ul>
-                    <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
-                    <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
-                    <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
-                    <li><a href="#" onclick="fetchAllContent('top', 'crypto'); return false;">Crypto-monnaie</a></li>
-                </ul>
-            </div>
-            <div class="menu-section">
-                <h3>LOISIRS & SOCIÉTÉ</h3>
-                <ul>
-                    <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
-                    <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
-                    <li><a href="#" onclick="fetchAllContent('health'); return false;">Santé</a></li>
-                    <li><a href="#" onclick="fetchAllContent('lifestyle'); return false;">Style de vie / Food</a></li>
-                    <li><a href="#" onclick="fetchAllContent('tourism'); return false;">Voyages</a></li>
-                    <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
-                </ul>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="top-bar">
-    <div class="top-bar-content">
-        <div id="live-date">---</div>
-        <div class="market-ticker-container">
-            <div id="ticker-content"></div>
-        </div>
-        <button id="openModal" onclick="toggleLoginModal()">MON COMPTE</button>
-    </div>
-</div>
-
-<header class="main-header">
-    <div class="header-left">
-        <div class="menu-toggle" id="btnOpenMenu">
-            <span></span><span></span><span></span>
-            <span class="menu-label">SECTIONS</span>
-        </div>
-    </div>
-    <div class="logo-container">
-        <a href="index.html">
-            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-        </a>
-    </div>
-    <div class="header-right">
-        <button class="btn-subscribe" onclick="handleSubscribe()">
-            ABONNEZ-VOUS <span class="price-tag">POUR 1 $/SEMAINE</span>
-        </button>
-    </div>
-</header>
-
-<nav class="nav-compact" id="navMenu">
-    <ul>
-        <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-        <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
-        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-    </ul>
-</nav>
-
-<div id="trending-tags">
-    <div class="tags-wrapper">
-        <span class="trending-label">En ce moment</span>
-        <div id="tags-container"></div>
-    </div>
-</div>
-
-<main class="newspaper-body">
-    <div class="status-line" id="status-line">ÉDITION DU JOUR</div>
-    
-    <div id="hero-zone"></div>
-
-    <div class="newspaper-layout">
-        <div class="main-news-column">
-            <div id="news-grid" class="news-grid"></div>
-        </div>
-
-        <aside class="sidebar-column">
-            <div class="sidebar-heading">DERNIÈRES NOUVELLES</div>
-            <div id="sidebar-list"></div> 
-            
-            <div class="sidebar-section">
-                <h3 class="section-title">Lifestyle</h3>
-                <div id="lifestyle-list"></div>
-            </div>
-
-            <div class="sidebar-section">
-                <h3 class="section-title">Opinion</h3>
-                <div id="opinion-list"></div>
-            </div>
-        </aside>
-    </div>
-</main>
-
-<div class="modal" id="modalAccount">
-    <div class="modal-box">
-        <span class="close-btn" id="closeModal">&times;</span>
-        <div class="modal-header">MAKMUS</div>
-        <p>Accès réservé aux abonnés.</p>
-        <input type="email" placeholder="Email">
-        <input type="password" placeholder="Mot de passe">
-        <button class="btn-submit">SE CONNECTER</button>
-    </div>
-</div>
-
-<hr class="separator-editorial">
-
-<section id="video-section" class="no-print">
-    <div class="video-section-container">
-        <div class="video-header">
-            <span class="video-dot"></span>
-            <h2>Video du jour</h2>
-        </div>
-        <div id="video-slider"></div>
-    </div>
-</section>
-
-<section class="magazine-row-section">
-    <div class="magazine-container">
-        <h2 class="magazine-heading">Bien-être & Environnement</h2>
-        <div id="lifestyle-env-grid" class="magazine-grid"></div>
-    </div>
-</section>
-
-<footer class="nyt-footer">
-    <div class="footer-container">
-        <div class="footer-brand">
-            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-            <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
-        </div>
-
-        <div class="footer-links-grid">
-            <div class="footer-col">
-                <h4>SECTIONS</h4>
-                <ul>
-                    <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-                    <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-                    <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-                    <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-                    <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-                    <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-                    <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-                    <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
-                    <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>AIDE</h4>
-                <ul>
-                    <li><a href="#">Abonnements</a></li>
-                    <li><a href="#">Contact</a></li>
-                    <li><a href="#">Publicité</a></li>
-                    <li><a href="#">Emploi</a></li>
-                    <li><a href="#">Makmus magazine</a></li>
-                    <li><a href="#">Makila Emmanuel Heritage </a></li>
-                    <li><a href="#">Météo </a></li>
-                    <li><a href="#">Makem screen Studio</a></li>
-                </ul>
-            </div>
-            <div class="footer-col">
-                <h4>SUIVEZ-NOUS</h4>
-                <div class="social-links">
-                    <a href="#">FB</a>
-                    <a href="#">X</a>
-                    <a href="#">IG</a>
-                    <a href="#">YT</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="footer-bottom">
-            <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
-            <div class="bottom-legal">
-                <a href="#">Mentions Légales</a>
-                <a href="#">Confidentialité</a>
-                <a href="#">CGU</a>
-            </div>
-        </div>
-    </div>
-</footer>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-    // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
-    const BASE_URL = window.location.origin; 
-    const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
-    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
-    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-    const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
-    const CACHE_DURATION = 60 * 60 * 1000; 
-
-    // --- SYSTÈME ANALYTICS MAKMUS ---
-    const tracker = {
-        getVisitorId: () => {
-            let id = sessionStorage.getItem('makmus_visitor_id');
-            if (!id) {
-                id = 'v-' + Math.random().toString(36).substr(2, 9);
-                sessionStorage.setItem('makmus_visitor_id', id);
-            }
-            return id;
-        },
-        log: async (type, data = {}) => {
-            try {
-                await supabaseClient.from('stats').insert([{
-                    event_type: type,
-                    article_title: data.title || 'Page Accueil',
-                    category: data.category || 'Général',
-                    path: window.location.pathname,
-                    visitor_id: tracker.getVisitorId(),
-                    created_at: new Date().toISOString()
-                }]);
-                console.log("Analytics sent:", type);
-            } catch (e) { console.warn("Analytics non configuré"); }
-        }
-    };
-
-    // Fonction de redirection et de log au clic (CORRECTION 1)
-    window.captureAction = function(title, category, url) {
-        tracker.log('click_article', { title: title, category: category });
-        window.location.href = url;
-    };
-
-    // --- GESTION DU MENU ---
-    const btnOpenMenu = document.getElementById('btnOpenMenu');
-    const btnCloseMenu = document.getElementById('closeMenu');
-    const fullMenu = document.getElementById('fullMenu');
-    
-    if(btnOpenMenu) btnOpenMenu.onclick = () => { 
-        if(fullMenu) fullMenu.classList.add('open'); 
-        document.body.style.overflow = 'hidden'; 
-    };
-    
-    if(btnCloseMenu) btnCloseMenu.onclick = () => closeMenuUI();
-
-    window.executeMenuSearch = function() {
-        const query = document.getElementById('menuSearchInput').value;
-        if(query) {
-            fetchAllContent('top', query);
-            closeMenuUI();
-        }
-    }
-
-    function closeMenuUI() {
-        if(fullMenu) {
-            fullMenu.classList.remove('open');
-            document.body.style.overflow = 'auto';
-        }
-    }
-
-    // --- GESTION DE LA DATE ---
-    function updateDate() {
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        const liveDate = document.getElementById('live-date');
-        if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
-    }
-
-    // --- LOGIQUE DE RÉCUPÉRATION (CORRECTION 2 : FONCTIONS BIEN SÉPARÉES) ---
-
-    async function fetchMagazineSection() {
-        try {
-            const { data, error } = await supabaseClient
-                .from('articles')
-                .select('*')
-                .in('category', ['Santé', 'Climat'])
-                .eq('is_published', true)
-                .limit(5)
-                .order('created_at', { ascending: false });
-
-            if (error || !data) return;
-
-            const container = document.getElementById('lifestyle-env-grid');
-            if (container) {
-                container.innerHTML = data.map(art => `
-                    <div class="mag-card" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', '${art.category}', 'redaction.html?id=${art.id}')">
-                        <div class="mag-img-wrapper">
-                            <img src="${art.image_url || 'https://via.placeholder.com/200'}" alt="${art.titre}">
-                        </div>
-                        <span class="mag-read-time">${art.category}</span>
-                        <h4>${art.titre}</h4>
-                    </div>
-                `).join('');
-            }
-        } catch (e) { console.warn("Erreur Mag Section:", e); }
-    }
-
-    async function fetchAllContent(category = 'top', query = '') {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        closeMenuUI();
-        const status = document.getElementById('status-line');
-        const now = new Date().getTime();
-
-        try {
-            if(status) status.textContent = "CHARGEMENT...";
-
-            // 1. Articles Principaux (Supabase)
-            let sbQuery = supabaseClient
-                .from('articles')
-                .select('*')
-                .eq('is_published', true)
-                .order('is_priority', { ascending: false })
-                .order('created_at', { ascending: false });
-
-            if (category !== 'top') sbQuery = sbQuery.eq('category', category);
-            if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
-
-            const { data: myArticles } = await sbQuery;
-
-            // 2. RÉCUPÉRATION SPÉCIFIQUE : OPINION
-            const { data: opinionArticles } = await supabaseClient
-                .from('articles')
-                .select('*')
-                .eq('category', 'Opinion')
-                .eq('is_published', true)
-                .limit(5)
-                .order('created_at', { ascending: false });
-
-            // 3. RÉCUPÉRATION SPÉCIFIQUE : LIFESTYLE (API)
-            let lifestyleNews = [];
-            const lifestyleCacheKey = `news_api_lifestyle`;
-            const cachedLife = localStorage.getItem(lifestyleCacheKey);
-            
-            if (cachedLife && (now - localStorage.getItem(`${lifestyleCacheKey}_time`) < CACHE_DURATION)) {
-                lifestyleNews = JSON.parse(cachedLife);
-            } else {
-                try {
-                    const res = await fetch(`${NEWAPI_PROXY}?category=lifestyle`);
-                    const newsData = await res.json();
-                    lifestyleNews = newsData.results || [];
-                    localStorage.setItem(lifestyleCacheKey, JSON.stringify(lifestyleNews));
-                    localStorage.setItem(`${lifestyleCacheKey}_time`, now.toString());
-                } catch (e) { console.warn("Lifestyle API Off"); }
-            }
-
-            renderAll({ 
-                myArticles: myArticles || [], 
-                opinionArticles: opinionArticles || [], 
-                lifestyleNews: lifestyleNews, 
-                category 
-            }, query);
-
-        } catch (e) { 
-            console.error("Erreur globale:", e);
-            if(status) status.textContent = "ERREUR DE CONNEXION.";
-        }
-    }
-
-    function renderAll(data, query) {
-        const hero = document.getElementById('hero-zone');
-        const grid = document.getElementById('news-grid');
-        const sidebar = document.getElementById('sidebar-list');
-        const lifestyleBox = document.getElementById('lifestyle-list');
-        const opinionBox = document.getElementById('opinion-list');
-        const status = document.getElementById('status-line');
-        
-        const uniqueArticles = data.myArticles; 
-
-        if (uniqueArticles.length === 0 && data.lifestyleNews.length === 0) {
-            if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
-            return;
-        }
-
-        if(hero && uniqueArticles[0]) {
-            const h = uniqueArticles[0];
-            const hLink = `redaction.html?id=${h.id}`;
-            hero.innerHTML = `
-                <div class="hero-container">
-                    <div class="hero-text">
-                        <h1 onclick="captureAction('${h.titre.replace(/'/g, "\\'")}', '${h.category}', '${hLink}')">${h.titre}</h1>
-                        <p>${(h.description || "").substring(0, 180)}...</p>
-                    </div>
-                    <div class="hero-img"><img src="${h.image_url}"></div>
-                </div>`;
-        }
-
-        if(grid) {
-            grid.innerHTML = uniqueArticles.slice(1, 7).map(art => `
-                <div class="article-card" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', '${art.category}', 'redaction.html?id=${art.id}')">
-                    <div class="card-img"><img src="${art.image_url}"></div>
-                    <div class="card-text"><h3>${art.titre}</h3></div>
-                </div>`).join('');
-        }
-
-        if(sidebar) {
-            sidebar.innerHTML = uniqueArticles.slice(7, 12).map(art => `
-                <div class="sidebar-article" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', '${art.category}', 'redaction.html?id=${art.id}')">
-                    <span class="category-tag">${art.category}</span>
-                    <h4>${art.titre}</h4>
-                </div>`).join('');
-        }
-
-        if(lifestyleBox) {
-            lifestyleBox.innerHTML = data.lifestyleNews.slice(0, 3).map(art => `
-                <div class="lifestyle-item" onclick="window.open('${art.link}', '_blank')">
-                    <img src="${art.image_url || 'https://via.placeholder.com/80'}" class="lifestyle-img">
-                    <h4>${art.title}</h4>
-                </div>`).join('');
-        }
-
-        if(opinionBox) {
-            opinionBox.innerHTML = data.opinionArticles.map(art => `
-                <div class="opinion-item" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', 'Opinion', 'redaction.html?id=${art.id}')">
-                    <span class="opinion-author">🖋️ ${art.auteur || 'MAKMUS'}</span>
-                    <h4>${art.titre}</h4>
-                </div>`).join('');
-        }
-
-        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
-    }
-
-    // --- VIDÉOS VERTICALES ---
-    const ICON_MUTE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
-    const ICON_VOL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.08"></path></svg>`;
-
-    async function fetchVideosVerticaux() {
-        try {
-            const { data, error } = await supabaseClient
-                .from('videos_du_jour')
-                .select('*')
-                .eq('is_published', true)
-                .order('created_at', { ascending: false });
-
-            if (error || !data || data.length === 0) {
-                const section = document.getElementById('video-section');
-                if(section) section.style.display = 'none';
-                return;
-            }
-
-            const slider = document.getElementById('video-slider');
-            if(!slider) return;
-
-            slider.innerHTML = data.map(vid => `
-                <div class="video-card" style="position:relative;">
-                    <div class="mute-control" onclick="toggleMute(event, this)">
-                        <span class="icon-vol-container">${ICON_MUTE}</span>
-                    </div>
-                    <video src="${vid.video_url}" poster="${vid.poster_url || ''}" loop muted playsinline style="width:100%; height:100%; object-fit: cover; cursor: pointer;" onclick="handleVideoClick(this)"></video>
-                    <div class="video-overlay" style="position:absolute; bottom:0; left:0; right:0; padding:20px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); pointer-events:none;">
-                        <h4 style="color:white; margin:0; font-family:Arial; font-size:0.9rem;">${vid.titre}</h4>
-                    </div>
-                </div>
-            `).join('');
-
-        } catch (e) { console.warn("Erreur vidéos:", e); }
-    }
-
-    function toggleMute(event, btn) {
-        event.stopPropagation();
-        const video = btn.parentNode.querySelector('video');
-        const container = btn.querySelector('.icon-vol-container');
-        if (video.muted) {
-            video.muted = false;
-            container.innerHTML = ICON_VOL;
-        } else {
-            video.muted = true;
-            container.innerHTML = ICON_MUTE;
-        }
-    }
-
-    function handleVideoClick(video) {
-        if (video.paused) {
-            document.querySelectorAll('.video-card video').forEach(v => { if(v !== video) v.pause(); });
-            video.play();
-        } else {
-            video.pause();
-        }
-    }
-
-    // --- TAGS AUTOMATIQUES ---
-    async function loadAutoTrendingTags() {
-        try {
-            const { data, error } = await supabaseClient
-                .from('articles')
-                .select('tags')
-                .not('tags', 'is', null)
-                .order('created_at', { ascending: false })
-                .limit(15);
-
-            if (error || !data) return;
-
-            let allTags = [];
-            data.forEach(item => {
-                if(item.tags) {
-                    const splitTags = item.tags.split(',').map(t => t.trim());
-                    allTags = [...allTags, ...splitTags];
-                }
-            });
-
-            const uniqueTags = [...new Set(allTags)].filter(t => t.length > 1).slice(0, 8);
-            const container = document.getElementById('tags-container');
-            if (container) {
-                container.innerHTML = uniqueTags.map(tag => `
-                    <span class="tag-item" onclick="filterByTag('${tag.replace(/'/g, "\\'")}')">${tag}</span>
-                `).join('');
-            }
-        } catch (e) { console.warn("Erreur tags:", e); }
-    }
-
-    async function filterByTag(tagName) {
-        const { data, error } = await supabaseClient
-            .from('articles')
-            .select('*')
-            .ilike('tags', `%${tagName}%`) 
-            .order('created_at', { ascending: false });
-
-        if (!error && data) {
-            renderAll({ myArticles: data, opinionArticles: [], lifestyleNews: [], category: 'Filtrage' }, tagName);
-            const grid = document.getElementById('news-grid');
-            if(grid) grid.scrollIntoView({ behavior: 'smooth' });
-        }
-    }
-
-    // --- PUBLICITÉS ---
-    let currentAdIndex = 0;
-    let activeAds = [];
-
-    async function initAdSlider() {
-        const { data, error } = await supabaseClient.from('publicites').select('*').eq('est_active', true);
-        if (error || !data || data.length === 0) return;
-        activeAds = data;
-        showNextAd();
-        setInterval(showNextAd, 15000);
-    }
-
-    function showNextAd() {
-        if (activeAds.length === 0) return;
-        const ad = activeAds[currentAdIndex];
-        const displayZone = document.getElementById('ad-display-zone');
-        if(!displayZone) return;
-
-        const action = `onclick="trackAdClick('${ad.id}', '${ad.lien_clic}')"`;
-        displayZone.innerHTML = ad.type === 'video' 
-            ? `<div style="cursor:pointer" ${action}><video class="ad-media ad-fade" src="${ad.media_url}" autoplay muted loop playsinline></video></div>`
-            : `<div style="cursor:pointer" ${action}><img class="ad-media ad-fade" src="${ad.media_url}" alt="Publicité"></div>`;
-        
-        currentAdIndex = (currentAdIndex + 1) % activeAds.length;
-    }
-
-    async function trackAdClick(adId, redirectUrl) {
-        try {
-            const { data: currentAd } = await supabaseClient.from('publicites').select('nb_clics').eq('id', adId).single();
-            await supabaseClient.from('publicites').update({ nb_clics: (currentAd.nb_clics || 0) + 1 }).eq('id', adId);
-        } catch (e) { console.warn("Erreur tracking pub:", e); }
-        if(redirectUrl) window.open(redirectUrl, '_blank');
-    }
-
-    // --- TICKER MARCHÉS ---
-    const EXCHANGE_API_KEY = '4e4fee63bab6fce7ba7b39e8';
-    let marketData = [
-        { label: "USD/CDF", value: "Chargement...", change: "LIVE", trend: "up" },
-        { label: "BTC/USD", value: "64,250", change: "+1.2%", trend: "up" },
-        { label: "OR (oz)", value: "2,150", change: "-0.5%", trend: "down" }
-    ];
-
-    async function fetchMarketData() {
-        try {
-            const response = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/latest/USD`);
-            const data = await response.json();
-            if (data.result === "success") {
-                marketData[0].value = Math.round(data.conversion_rates.CDF).toLocaleString() + " FC";
-            }
-        } catch (e) { console.warn("Erreur Marchés"); }
-    }
-
-    let currentTickerIndex = 0;
-    function updateTickerUI() {
-        const wrapper = document.getElementById('ticker-content');
-        if (!wrapper) return;
-        const data = marketData[currentTickerIndex];
-        wrapper.innerHTML = `<div class="ticker-item fade-in-up"><span class="ticker-label">${data.label}</span> <span class="ticker-value">${data.value}</span> <span class="ticker-change ${data.trend}">${data.change}</span></div>`;
-        currentTickerIndex = (currentTickerIndex + 1) % marketData.length;
-    }
-
-    async function initMarketTicker() {
-        await fetchMarketData();
-        updateTickerUI();
-        setInterval(updateTickerUI, 5000);
-    }
-
-    // --- INITIALISATION UNIQUE ---
-    window.onload = async () => {
-        updateDate();
-        initMarketTicker();
-        fetchAllContent('top');
-        fetchMagazineSection(); 
-        fetchVideosVerticaux();
-        loadAutoTrendingTags();
-        initAdSlider();
-        tracker.log('view', { title: 'Visite Page Accueil' });
-    };
-</script>
-</body>
-</html>
+/* --- POLICES & VARIABLES --- */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+    --black: #121212;
+    --gray: #666;
+    --light-gray: #f4f4f4;
+    --accent: #a30000;
+    --font-serif: 'Libre Baskerville', serif;
+    --font-title: 'Playfair Display', serif;
+    --font-body: 'Source Serif 4', serif;
+    --font-ui: 'Inter', system-ui, sans-serif;
+    --margin-side: 15%; 
+    --max-width: 1400px;
+}
+
+/* --- BASE & LAYOUT --- */
+body {
+    margin: 0; padding: 0; 
+    font-family: var(--font-body);
+    background: #fff; color: var(--black); 
+    overflow-x: hidden;
+    font-size: 18px; line-height: 1.7;
+}
+
+.newspaper-body { padding: 20px var(--margin-side); max-width: var(--max-width); margin: 0 auto; }
+.newspaper-layout { display: grid; grid-template-columns: 1fr 320px; gap: 40px; }
+
+/* --- HEADER & NAVIGATION --- */
+.top-bar { border-bottom: 1px solid #ddd; padding: 10px var(--margin-side); font-family: var(--font-ui); font-size: 11px; font-weight: bold; }
+.top-bar-content { display: flex; justify-content: space-between; align-items: center; }
+
+.main-header { display: flex; align-items: center; justify-content: space-between; padding: 20px var(--margin-side); border-bottom: 1px solid #000; }
+.logo-container img { height: 50px; width: auto; }
+
+.menu-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.menu-toggle span:not(.menu-label) { display: block; width: 18px; height: 2px; background: #000; margin: 3px 0; }
+.menu-label { font-size: 11px; font-weight: 900; font-family: var(--font-ui); }
+
+.nav-compact { border-bottom: 1px solid #ddd; padding: 0 var(--margin-side); }
+.nav-compact ul { list-style: none; display: flex; justify-content: center; padding: 10px 0; margin: 0; flex-wrap: wrap; }
+.nav-compact a { text-decoration: none; color: var(--black); font-size: 12px; margin: 0 12px; font-weight: bold; font-family: var(--font-ui); text-transform: uppercase; }
+
+/* --- TICKER MARCHÉS --- */
+.market-ticker-container { height: 20px; overflow: hidden; }
+.ticker-item { animation: fadeInUp 0.5s ease-out; }
+@keyframes fadeInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+/* --- ARTICLES (Générés par JS) --- */
+.news-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; }
+
+.article-card { cursor: pointer; border-bottom: 1px solid #eee; padding-bottom: 20px; transition: 0.2s; }
+.article-card:hover h3 { color: var(--accent); }
+.card-img { width: 100%; aspect-ratio: 16/9; overflow: hidden; margin-bottom: 12px; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; }
+.card-text h3 { font-family: var(--font-title); font-size: 22px; line-height: 1.2; margin: 10px 0; }
+
+.category-tag { 
+    font-family: var(--font-ui); font-size: 10px; font-weight: 900; 
+    color: var(--accent); text-transform: uppercase; letter-spacing: 1px; 
+}
+
+/* --- SIDEBAR & OPINION --- */
+.sidebar-section { margin-top: 30px; padding-top: 15px; border-top: 2px solid #111; }
+.section-title { font-family: var(--font-ui); font-size: 13px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; }
+
+.opinion-item { padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; }
+.opinion-author { font-weight: 700; font-size: 11px; color: var(--accent); text-transform: uppercase; display: block; }
+.opinion-item h4 { font-family: var(--font-serif); font-style: italic; font-size: 16px; line-height: 1.4; margin: 5px 0 0; }
+
+/* --- VIDÉOS VERTICALES --- */
+#video-slider { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+#video-slider::-webkit-scrollbar { display: none; }
+.video-card { 
+    flex: 0 0 260px; aspect-ratio: 9/16; background: #000; 
+    position: relative; scroll-snap-align: start; overflow: hidden; 
+}
+.video-card video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
+.video-overlay { 
+    position: absolute; bottom: 0; left: 0; right: 0; padding: 15px; 
+    background: linear-gradient(transparent, rgba(0,0,0,0.8)); pointer-events: none; 
+}
+.video-overlay h4 { color: #fff; font-family: var(--font-ui); font-size: 13px; margin: 0; }
+
+/* --- MODAL ACCOUNT --- */
+.modal { 
+    position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
+    display: none; align-items: center; justify-content: center; z-index: 4000; 
+}
+.modal.active { display: flex; }
+.modal-box { 
+    background: #fff; padding: 40px; width: 90%; max-width: 400px; 
+    position: relative; text-align: center; border-radius: 4px;
+}
+.modal-header { font-family: var(--font-title); font-size: 28px; font-weight: 800; margin-bottom: 20px; }
+.modal-box input { 
+    width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; 
+    box-sizing: border-box; font-family: var(--font-ui); 
+}
+.btn-submit { 
+    width: 100%; background: var(--black); color: #fff; padding: 12px; 
+    border: none; font-weight: 900; cursor: pointer; font-family: var(--font-ui);
+}
+
+/* --- FOOTER --- */
+.nyt-footer { background: #fff; border-top: 4px double #000; margin-top: 60px; padding: 50px var(--margin-side) 20px; }
+.footer-brand { text-align: center; margin-bottom: 40px; }
+.footer-links-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 30px; border-bottom: 1px solid #eee; padding-bottom: 40px; }
+.footer-col h4 { font-family: var(--font-ui); font-size: 11px; letter-spacing: 1px; margin-bottom: 20px; font-weight: bold; }
+.footer-col ul { list-style: none; padding: 0; }
+.footer-col a { text-decoration: none; color: #666; font-size: 13px; font-family: var(--font-ui); }
+.footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 20px; font-size: 11px; color: #999; font-family: var(--font-ui);
+}
+.bottom-legal a { margin-left: 20px; text-decoration: none; color: #999; }
+
+@media (max-width: 768px) {
+    .footer-bottom { flex-direction: column; gap: 15px; text-align: center; }
+    .bottom-legal a { margin: 0 10px; }
+}
+
+/* --- RESPONSIVE MOBILE --- */
+voici le style global vois si il y a a corrige, harmoniser: @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
+
+:root {
+    --black: #121212;
+    --gray: #666;
+    --light-gray: #f4f4f4;
+    --accent: #a30000;
+    --font-serif: 'Libre Baskerville', serif;
+    /* Nouvelles variables pour l'harmonie */
+    --font-title: 'Playfair Display', serif;
+    --font-body: 'Source Serif 4', serif;
+    --font-ui: 'Inter', system-ui, sans-serif;
+    --margin-side: 20%; /* Marge de sécurité pour le contenu */
+}
+
+body {
+    margin: 0; padding: 0; 
+    font-family: var(--font-body); /* Changé pour Source Serif 4 */
+    background: #fff; color: var(--black); overflow-x: hidden;
+    font-size: 18px; line-height: 1.7;
+}
+/* Par défaut : on cache la pub (pour les mobiles) */
+.top-ad-container {
+    display: none;
+    background-color: #f9f9f9;
+    border-bottom: 1px solid #eee;
+    padding: 15px 0;
+    text-align: center;
+}
+
+.ad-label {
+    display: block;
+    font-size: 10px;
+    color: #999;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.ad-placeholder {
+    width: 728px; /* Taille standard Leaderboard */
+    height: 90px;
+    background: #ebebeb;
+    border: 1px dashed #ccc;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+/* --- LE DÉCLENCHEUR : Uniquement pour écrans > 1024px --- */
+@media (min-width: 1024px) {
+    .top-ad-container {
+        display: block; /* La pub apparaît sur Desktop et Tablettes larges */
+    }
+}
+/* TOP BAR */
+.top-bar {
+    border-bottom: 1px solid #ddd; padding: 10px var(--margin-side);
+    font-size: 11px; font-weight: bold; letter-spacing: 1px;
+    font-family: var(--font-ui); /* Changé pour Inter */
+}
+.top-bar-content { display: flex; justify-content: space-between; align-items: center; }
+#openModal { background: none; border: 1px solid #000; padding: 5px 10px; cursor: pointer; font-size: 10px; font-family: var(--font-ui); }
+
+/* HEADER */
+.main-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px var(--margin-side);
+}
+.logo-container img { height: 45px; width: auto; }
+
+/* NAVIGATION */
+.nav-compact {
+    border-top: 1px solid #000; border-bottom: 1px solid #ddd;
+    padding: 0 var(--margin-side);
+    font-family: var(--font-ui); /* Changé pour Inter */
+}
+.nav-compact ul {
+    list-style: none; display: flex; justify-content: center; 
+    flex-wrap: wrap; margin: 0; padding: 10px 0;
+}
+.nav-compact a {
+    text-decoration: none; color: var(--black); font-size: 12px; 
+    margin: 5px 12px; font-weight: bold; transition: 0.2s;
+}
+.nav-compact a:hover { color: var(--accent); }
+.nav-red { color: var(--accent) !important; }
+
+/* MAIN CONTENT */
+.newspaper-body {
+    padding: 20px var(--margin-side);
+    max-width: 1400px; margin: 0 auto;
+}
+.status-line {
+    text-align: center; font-size: 11px; font-weight: bold;
+    border-bottom: 1px solid #000; padding-bottom: 5px; margin-bottom: 30px;
+    font-family: var(--font-ui);
+}
+
+/* HERO SECTION */
+.hero-container {
+    display: grid; grid-template-columns: 1fr 1.5fr; gap: 40px;
+    cursor: pointer; margin-bottom: 40px;
+}
+.hero-text h1 { 
+    font-family: var(--font-title); /* Changé pour Playfair Display */
+    font-size: 36px; line-height: 1.1; margin: 0 0 15px 0; 
+}
+.hero-text p { font-size: 16px; color: #444; line-height: 1.5; }
+.hero-img img { width: 100%; height: 400px; object-fit: cover; }
+.btn-read-more { 
+    background: #000; color: #fff; border: none; padding: 10px 20px; 
+    font-size: 11px; font-weight: bold; cursor: pointer; margin-top: 15px; 
+    font-family: var(--font-ui);
+}
+
+/* GRID SECTION */
+.news-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 35px;
+}
+.article-card { 
+    cursor: pointer; border-bottom: 1px solid #eee; padding-bottom: 15px; 
+    transition: transform 0.2s ease;
+}
+.article-card:hover { transform: translateY(-5px); }
+.article-card img { width: 100%; height: 180px; object-fit: cover; margin-bottom: 12px; }
+.article-card h3 { 
+    font-family: var(--font-title); /* Changé pour Playfair Display */
+    font-size: 18px; margin: 0; line-height: 1.3; 
+}
+.card-desc { font-size: 13px; color: #666; margin: 8px 0; font-family: var(--font-body); }
+.small-link { font-size: 11px; font-weight: bold; color: var(--accent); text-transform: uppercase; font-family: var(--font-ui); }
+
+/* MODAL */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.9); display: none; align-items: center; justify-content: center; z-index: 2000;
+}
+.modal-box { background: #fff; padding: 40px; width: 90%; max-width: 350px; text-align: center; position: relative; font-family: var(--font-ui); }
+.modal-header { font-family: var(--font-title); font-size: 28px; margin-bottom: 15px; }
+.modal-box input { width: 100%; padding: 12px; margin-bottom: 10px; border: 1px solid #ddd; box-sizing: border-box; }
+.btn-submit { background: #000; color: #fff; width: 100%; border: none; padding: 12px; font-weight: bold; cursor: pointer; }
+.close-btn { position: absolute; top: 10px; right: 15px; font-size: 24px; cursor: pointer; }
+
+/* MOBILE REFINEMENTS */
+@media (max-width: 768px) {
+    :root { --margin-side: 20px; }
+    .hero-container { grid-template-columns: 1fr; gap: 20px; }
+    .hero-text h1 { font-size: 28px; }
+    .menu-toggle { display: flex; flex-direction: column; gap: 4px; cursor: pointer; }
+    .menu-toggle span { width: 20px; height: 2px; background: #000; }
+    .nav-compact { display: none; }
+    .nav-compact.active { display: block; position: fixed; top: 100px; left: 0; width: 100%; background: #fff; z-index: 100; border-bottom: 2px solid #000; }
+    .nav-compact ul { flex-direction: column; align-items: center; }
+}
+
+/* --- NOUVEAU MENU OVERLAY --- */
+.full-menu {
+    position: fixed;
+    top: -100%;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    z-index: 3000;
+    transition: top 0.5s cubic-bezier(0.77, 0, 0.175, 1);
+    overflow-y: auto;
+    padding: 20px var(--margin-side);
+    box-sizing: border-box;
+}
+.full-menu.open { top: 0; }
+
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid #000;
+    padding-bottom: 15px;
+    margin-bottom: 30px;
+}
+.menu-logo { font-family: var(--font-title); font-size: 24px; font-weight: bold; }
+.close-menu { cursor: pointer; font-size: 14px; font-weight: bold; font-family: var(--font-ui); }
+
+.menu-search { display: flex; margin-bottom: 40px; border-bottom: 1px solid #ddd; }
+.menu-search input { flex: 1; border: none; padding: 15px 0; font-size: 20px; outline: none; font-family: var(--font-body); }
+.menu-search button { background: #000; color: #fff; border: none; padding: 0 20px; cursor: pointer; font-family: var(--font-ui); }
+
+.menu-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; }
+.menu-section h3 { font-family: var(--font-ui); font-size: 12px; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 15px; letter-spacing: 1px; }
+.menu-section ul { list-style: none; padding: 0; }
+.menu-section li { margin-bottom: 12px; }
+.menu-section a { text-decoration: none; color: #333; font-size: 16px; transition: 0.2s; font-family: var(--font-body); }
+.menu-section a:hover { color: var(--accent); }
+
+/* --- AJUSTEMENTS HEADER --- */
+.header-left { display: flex; align-items: center; }
+.menu-label { font-size: 10px; font-weight: bold; margin-left: 8px; cursor: pointer; font-family: var(--font-ui); }
+.btn-subscribe { background: #567b95; color: #fff; border: none; padding: 8px 15px; font-size: 10px; font-weight: bold; cursor: pointer; border-radius: 3px; font-family: var(--font-ui); }
+
+/* --- RESPONSIVE --- */
+@media (max-width: 768px) {
+    .nav-compact { display: none; } 
+    .menu-label { display: none; } 
+}
+
+/* --- FOOTER FINAL --- */
+.nyt-footer {
+    background: #fff;
+    border-top: 4px double #000;
+    margin-top: 60px;
+    padding: 50px var(--margin-side) 20px var(--margin-side);
+    color: var(--black);
+}
+.footer-container { max-width: 1400px; margin: 0 auto; }
+.footer-brand { text-align: center; margin-bottom: 40px; }
+.footer-brand img { height: 50px; margin-bottom: 10px; }
+.footer-brand p { font-family: var(--font-serif); font-style: italic; font-size: 14px; color: #555; }
+.footer-links-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 30px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 40px;
+}
+.footer-col h4 { font-family: var(--font-ui); font-size: 11px; letter-spacing: 1px; margin-bottom: 20px; font-weight: bold; }
+.footer-col ul { list-style: none; padding: 0; }
+.footer-col li { margin-bottom: 10px; }
+.footer-col a { text-decoration: none; color: #666; font-size: 13px; transition: 0.2s; font-family: var(--font-ui); }
+.footer-col a:hover { color: var(--accent); }
+
+.social-links { display: flex; gap: 15px; }
+.social-links a {
+    display: flex; align-items: center; justify-content: center;
+    width: 35px; height: 35px; border: 1px solid #000;
+    font-weight: bold; font-size: 12px; font-family: var(--font-ui);
+}
+.social-links a:hover { background: #000; color: #fff; }
+
+.footer-bottom {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 20px; font-size: 11px; color: #999; font-family: var(--font-ui);
+}
+.bottom-legal a { margin-left: 20px; text-decoration: none; color: #999; }
+
+@media (max-width: 768px) {
+    .footer-bottom { flex-direction: column; gap: 15px; text-align: center; }
+    .bottom-legal a { margin: 0 10px; }
+}
+
+/* Style pour le partage dans la grille */
+.share-box {
+    margin-top: 10px; display: flex; gap: 8px;
+    padding-top: 8px; border-top: 1px dotted #ccc;
+}
+.share-box a {
+    font-size: 10px; font-weight: bold; color: #333;
+    padding: 2px 5px; border: 1px solid #333;
+    text-decoration: none; font-family: var(--font-ui);
+}
+
+/* Style pour le partage dans le Hero */
+.hero-share { margin-top: 15px; font-size: 12px; font-family: var(--font-ui); }
+.hero-share a { margin-left: 10px; color: #000; text-decoration: underline; font-weight: bold; }
+/* --- BOUTONS HEADER --- */
+.btn-subscribe {
+    background: var(--accent); /* Rouge pour attirer l'attention */
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    font-size: 10px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 3px;
+    text-transform: uppercase;
+    transition: 0.3s;
+    font-family: var(--font-ui);
+    white-space: nowrap;
+}
+
+.btn-subscribe:hover { background: #000; }
+
+#openModal { 
+    background: none; 
+    border: 1px solid #000; 
+    padding: 5px 10px; 
+    cursor: pointer; 
+    font-size: 10px; 
+    font-weight: bold;
+    font-family: var(--font-ui);
+    text-transform: uppercase;
+}
+
+/* --- AJUSTEMENTS MOBILE --- */
+@media (max-width: 768px) {
+    .btn-subscribe {
+        padding: 5px 8px;
+        font-size: 9px;
+    }
+    
+    #openModal {
+        padding: 4px 6px;
+        font-size: 9px;
+    }
+
+    /* Optionnel: Masquer le texte "$/SEMAINE" sur très petit écran pour gagner de la place */
+    @media (max-width: 480px) {
+        .btn-subscribe span { display: none; }
+    }
+}
+/* --- BOUTONS HEADER CONSOLIDÉS --- */
+.header-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-subscribe {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 2px;
+    font-family: var(--font-ui);
+    transition: background 0.2s;
+}
+
+.btn-subscribe:hover { background: #000; }
+
+/* Masquage intelligent du prix sur mobile */
+@media (max-width: 600px) {
+    .price-tag { display: none; } /* Cache "POUR 1 $/SEMAINE" */
+    .btn-subscribe { padding: 6px 10px; font-size: 10px; }
+    #openModal { padding: 5px 8px; font-size: 10px; }
+    .header-right { gap: 5px; }
+}
+
+@media (max-width: 400px) {
+    .btn-subscribe { font-size: 9px; }
+    #openModal { font-size: 9px; }
+}
+@keyframes pulse-red {
+    0% { opacity: 1; }
+    50% { opacity: 0.6; }
+    100% { opacity: 1; }
+}
+
+/* Appliquer cette animation au badge */
+.hero-text span, .card-text span {
+    animation: pulse-red 2s infinite;
+}
+.mute-control {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(4px);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    cursor: pointer;
+}
+
+.icon-vol-container svg {
+    stroke: white;
+    display: block;
+}
+/* --- NOUVEAU LAYOUT JOURNAL ASYMÉTRIQUE --- */
+.newspaper-layout {
+    display: grid;
+    grid-template-columns: 2.8fr 1.2fr; /* Colonne principale large et sidebar étroite */
+    gap: 40px;
+    margin-top: 20px;
+}
+
+/* Bordure verticale de séparation */
+.main-news-column {
+    border-right: 1px solid #ddd;
+    padding-right: 40px;
+}
+
+/* Style de la Sidebar */
+.sidebar-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-heading {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    border-bottom: 2px solid #000;
+    padding-bottom: 5px;
+    margin-bottom: 20px;
+}
+
+/* Articles Sidebar : plus compacts, sans images ou avec petites images */
+.sidebar-article {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+
+.sidebar-article h4 {
+    font-family: var(--font-title);
+    font-size: 16px;
+    margin: 0 0 5px 0;
+    line-height: 1.3;
+}
+
+.sidebar-article .meta {
+    font-family: var(--font-ui);
+    font-size: 10px;
+    color: var(--accent);
+    font-weight: bold;
+}
+
+/* Responsive : On repasse en une colonne sur mobile */
+@media (max-width: 1024px) {
+    .newspaper-layout {
+        grid-template-columns: 1fr;
+    }
+    .main-news-column {
+        border-right: none;
+        padding-right: 0;
+    }
+}
+/* Le conteneur qui englobe TOUT le contenu sous le header */
+.container-magazine {
+    max-width: 1300px; /* Largeur du journal comme sur tes captures */
+    margin: 0 auto;    /* Centre le bloc et crée les marges blanches latérales */
+    padding: 0 20px;   /* Sécurité pour les petits écrans */
+    background-color: #fff;
+}
+
+/* On ajuste le layout asymétrique à l'intérieur */
+.newspaper-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px; /* Colonne principale + Sidebar fixe */
+    gap: 40px; /* Espace entre les deux colonnes */
+    border-top: 1px solid #eee;
+    padding-top: 20px;
+}
+
+/* Responsive : sur mobile on enlève les marges */
+@media (max-width: 1024px) {
+    .newspaper-layout {
+        grid-template-columns: 1fr;
+    }
+    .container-magazine {
+        padding: 0 15px;
+    }
+}
+.sidebar-article h4 {
+    font-weight: 700;
+    transition: color 0.2s;
+}
+.sidebar-article:hover h4 {
+    color: #555; /* Petit effet au survol comme sur les grands sites */
+}
+.sidebar-article .meta {
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+}
+/* Alignement de la Top Bar */
+.top-bar-content {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+/* Style du Ticker */
+.market-ticker-container {
+    display: inline-flex;
+    align-items: center;
+    border-left: 1px solid #ccc; /* Séparation fine après la date */
+    padding-left: 15px;
+    height: 16px; /* Très fin */
+}
+
+.ticker-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Arial', sans-serif;
+}
+
+.ticker-label {
+    font-size: 10px;
+    color: #666;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.ticker-value {
+    font-size: 10px;
+    font-weight: bold;
+    color: #000;
+}
+
+.ticker-change {
+    font-size: 9px;
+    font-weight: bold;
+}
+
+.ticker-change.up { color: #008a00; }
+.ticker-change.down { color: #d00; }
+
+/* ANIMATION FONDU VERS LE HAUT */
+.fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    0% { opacity: 0; transform: translateY(5px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+/* --- PROTECTION MOBILE --- */
+@media (max-width: 768px) {
+    .market-ticker-container {
+        display: none; /* Cache le ticker sur mobile pour éviter l'encombrement */
+    }
+}
+/* Conteneurs de la sidebar */
+.sidebar-section {
+    margin-top: 30px;
+    padding-top: 15px;
+    border-top: 2px solid #111; /* Ligne épaisse pour marquer le changement de section */
+}
+
+.section-title {
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    letter-spacing: 1px;
+}
+
+/* Style Lifestyle : Plus visuel (petite image + titre) */
+.lifestyle-item {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    cursor: pointer;
+}
+.lifestyle-img {
+    width: 80px;
+    height: 60px;
+    object-fit: cover;
+    border-radius: 2px;
+}
+.lifestyle-item h4 {
+    font-size: 13px;
+    line-height: 1.3;
+    margin: 0;
+}
+
+/* Style Opinion : Titres centrés ou élégants */
+.opinion-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+.opinion-author {
+    font-weight: 700;
+    font-size: 11px;
+    color: #c00;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 4px;
+}
+.opinion-item h4 {
+    font-family: 'Georgia', serif; /* Style éditorial */
+    font-style: italic;
+    font-size: 15px;
+    line-height: 1.4;
+}
+
+    /* Cache la barre de scroll pour un look plus propre */
+    #video-slider::-webkit-scrollbar { display: none; }
+    #video-slider { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    .video-card {
+        flex: 0 0 280px; /* Largeur d'une vidéo portrait */
+        scroll-snap-align: start;
+        background: #111;
+        border-radius: 0px;
+        overflow: hidden;
+        position: relative;
+        aspect-ratio: 9/16;
+    }
+
+    @media (max-width: 768px) {
+        .video-card { flex: 0 0 75%; /* Sur mobile, on voit un bout de la vidéo suivante */ }
+    }
+
+.magazine-row-section {
+    border-top: 1px solid #111;
+    border-bottom: 1px solid #eee;
+    padding: 20px 0;
+    margin: 40px auto;
+    max-width: var(--max-width);
+}
+
+.magazine-heading {
+    font-family: var(--font-ui);
+    font-size: 14px;
+    font-weight: 900;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+}
+
+.magazine-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 articles côte à côte */
+    gap: 15px;
+}
+
+.mag-card {
+    cursor: pointer;
+}
+
+.mag-img-wrapper {
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Force l'image en carré parfait */
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.mag-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s;
+}
+
+.mag-card:hover img {
+    transform: scale(1.05);
+}
+
+.mag-card h4 {
+    font-family: var(--font-title);
+    font-size: 14px;
+    line-height: 1.3;
+    font-weight: 700;
+}
+
+.mag-read-time {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Responsive : 2 colonnes sur mobile */
+@media (max-width: 768px) {
+    .magazine-grid { grid-template-columns: repeat(2, 1fr); }
+}
+/* Une bordure fine, centrée, avec un peu d'espace autour */
+.separator-editorial {
+    border: none;
+    border-top: 1px solid #ddd; /* Couleur grise discrète */
+    margin: 40px auto;          /* Espace de 40px en haut et en bas */
+    width: 95%;                 /* Ne touche pas tout à fait les bords pour plus d'élégance */
+    max-width: var(--max-width);
+}
