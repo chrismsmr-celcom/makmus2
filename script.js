@@ -531,15 +531,107 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+async function fetchSidebarContent() {
+    try {
+        // 1. Charger les Opinions
+        const { data: opinions } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('category', 'Opinion')
+            .eq('is_published', true) // Sécurité : seulement ce qui est publié
+            .order('created_at', { ascending: false })
+            .limit(3);
 
-// Initialisation au chargement
+        const opinionContainer = document.getElementById('opinion-container');
+        if (opinionContainer && opinions) {
+            opinionContainer.innerHTML = opinions.map(op => `
+                <article class="opinion-item" onclick="captureAction('${op.titre.replace(/'/g, "\\'")}', 'Opinion', 'article.html?id=${op.id}')">
+                    <span class="opinion-author">${op.auteur || 'Chroniqueur'}</span>
+                    <h4>${op.titre}</h4>
+                </article>
+            `).join('');
+        }
+
+        // 2. Charger le Lifestyle
+        const { data: lifestyle } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('category', 'Lifestyle')
+            .eq('is_published', true)
+            .order('created_at', { ascending: false })
+            .limit(3);
+
+        const lifestyleContainer = document.getElementById('lifestyle-container');
+        if (lifestyleContainer && lifestyle) {
+            lifestyleContainer.innerHTML = lifestyle.map(ls => `
+                <article class="lifestyle-item" onclick="captureAction('${ls.titre.replace(/'/g, "\\'")}', 'Lifestyle', 'article.html?id=${ls.id}')">
+                    <img src="${ls.image_url || 'https://via.placeholder.com/80x60'}" class="lifestyle-img">
+                    <div class="lifestyle-info">
+                        <h4>${ls.titre}</h4>
+                    </div>
+                </article>
+            `).join('');
+        }
+    } catch (e) {
+        console.error("Erreur Sidebar:", e);
+    }
+}
+
+async function fetchLatestNewsFeed() {
+    const container = document.getElementById('latest-news-container');
+    if (!container) return;
+
+    try {
+        const { data: latestNews, error } = await supabaseClient
+            .from('articles')
+            .select('id, titre, category, created_at')
+            .eq('is_published', true)
+            .order('created_at', { ascending: false })
+            .limit(6);
+
+        if (error) throw error;
+
+        if (latestNews && latestNews.length > 0) {
+            container.innerHTML = latestNews.map(news => {
+                const date = new Date(news.created_at);
+                const timeStr = date.toLocaleTimeString('fr-FR', { 
+                    hour: '2-digit', 
+                    minute: '2-digit' 
+                });
+
+                return `
+                    <article class="mini-news-item" onclick="captureAction('${news.titre.replace(/'/g, "\\'")}', '${news.category}', 'article.html?id=${news.id}')">
+                        <span class="time-stamp">${timeStr}</span>
+                        <p><strong>${news.category} :</strong> ${news.titre}</p>
+                    </article>
+                `;
+            }).join('');
+        } else {
+            container.innerHTML = "<p style='font-size:10px; color:#999;'>Aucune brève pour le moment.</p>";
+        }
+    } catch (e) {
+        console.warn("Erreur Fil Info:", e);
+    }
+}
+
+// Initialisation au chargement (Ordre de priorité respecté)
 window.onload = () => {
-    updateDate();
-    initMarketTicker();
+    // 1. Fonctions de tracking et UI de base
+    tracker.log('page_view', { title: 'Accueil Makmus', category: 'Navigation' });
+    if (typeof updateDate === 'function') updateDate();
+    if (typeof initMarketTicker === 'function') initMarketTicker();
+    
+    // 2. Chargement des contenus
     loadTrendingTags();
     initAdEngine();
     fetchAllContent('top');
+    
+    // 3. Sections spécifiques (Sidebar & Flux)
+    fetchLatestNewsFeed(); 
+    fetchSidebarContent();
+    
+    // 4. Médias et Lifestyle
     fetchVideosVerticaux();
     fetchSportResume();
-    fetchWellnessContent(); // <--- Nouvelle section
+    fetchWellnessContent(); 
 };
