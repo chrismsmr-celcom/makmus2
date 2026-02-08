@@ -1,116 +1,970 @@
-/* --- POLICES & VARIABLES --- */
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600;900&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap');
-
+/* --- VARIABLES & BASES --- */
 :root {
-    --black: #121212;
-    --gray: #666;
-    --light-gray: #f4f4f4;
-    --accent: #a30000;
-    --font-serif: 'Libre Baskerville', serif;
-    --font-title: 'Playfair Display', serif;
-    --font-body: 'Source Serif 4', serif;
-    --font-ui: 'Inter', system-ui, sans-serif;
-    --margin-side: 15%; 
-    --max-width: 1400px;
+    --nyt-black: #000000;
+    --nyt-gray: #666666;
+    --nyt-light-gray: #e2e2e2;
+    --nyt-border: #333333;
+    --makmus-red: #A81717;
+    --bg-white: #ffffff;
 }
 
-/* --- BASE & LAYOUT --- */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
-    margin: 0; padding: 0; 
-    font-family: var(--font-body);
-    background: #fff; color: var(--black); 
-    overflow-x: hidden;
-    font-size: 18px; line-height: 1.7;
+    font-family: 'Libre Franklin', sans-serif;
+    background-color: var(--bg-white);
+    color: var(--nyt-black);
+    -webkit-font-smoothing: antialiased;
 }
 
-.newspaper-body { padding: 20px var(--margin-side); max-width: var(--max-width); margin: 0 auto; }
-.newspaper-layout { display: grid; grid-template-columns: 1fr 320px; gap: 40px; }
-
-/* --- HEADER & NAVIGATION --- */
-.top-bar { border-bottom: 1px solid #ddd; padding: 10px var(--margin-side); font-family: var(--font-ui); font-size: 11px; font-weight: bold; }
-.top-bar-content { display: flex; justify-content: space-between; align-items: center; }
-
-.main-header { display: flex; align-items: center; justify-content: space-between; padding: 20px var(--margin-side); border-bottom: 1px solid #000; }
-.logo-container img { height: 50px; width: auto; }
-
-.menu-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; }
-.menu-toggle span:not(.menu-label) { display: block; width: 18px; height: 2px; background: #000; margin: 3px 0; }
-.menu-label { font-size: 11px; font-weight: 900; font-family: var(--font-ui); }
-
-.nav-compact { border-bottom: 1px solid #ddd; padding: 0 var(--margin-side); }
-.nav-compact ul { list-style: none; display: flex; justify-content: center; padding: 10px 0; margin: 0; flex-wrap: wrap; }
-.nav-compact a { text-decoration: none; color: var(--black); font-size: 12px; margin: 0 12px; font-weight: bold; font-family: var(--font-ui); text-transform: uppercase; }
-
-/* --- TICKER MARCHÉS --- */
-.market-ticker-container { height: 20px; overflow: hidden; }
-.ticker-item { animation: fadeInUp 0.5s ease-out; }
-@keyframes fadeInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-/* --- ARTICLES (Générés par JS) --- */
-.news-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 30px; }
-
-.article-card { cursor: pointer; border-bottom: 1px solid #eee; padding-bottom: 20px; transition: 0.2s; }
-.article-card:hover h3 { color: var(--accent); }
-.card-img { width: 100%; aspect-ratio: 16/9; overflow: hidden; margin-bottom: 12px; }
-.card-img img { width: 100%; height: 100%; object-fit: cover; }
-.card-text h3 { font-family: var(--font-title); font-size: 22px; line-height: 1.2; margin: 10px 0; }
-
-.category-tag { 
-    font-family: var(--font-ui); font-size: 10px; font-weight: 900; 
-    color: var(--accent); text-transform: uppercase; letter-spacing: 1px; 
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
 }
 
-/* --- SIDEBAR & OPINION --- */
-.sidebar-section { margin-top: 30px; padding-top: 15px; border-top: 2px solid #111; }
-.section-title { font-family: var(--font-ui); font-size: 13px; font-weight: 900; text-transform: uppercase; margin-bottom: 15px; }
-
-.opinion-item { padding: 12px 0; border-bottom: 1px solid #eee; cursor: pointer; }
-.opinion-author { font-weight: 700; font-size: 11px; color: var(--accent); text-transform: uppercase; display: block; }
-.opinion-item h4 { font-family: var(--font-serif); font-style: italic; font-size: 16px; line-height: 1.4; margin: 5px 0 0; }
-
-/* --- VIDÉOS VERTICALES --- */
-#video-slider { display: flex; gap: 15px; overflow-x: auto; padding-bottom: 10px; scroll-snap-type: x mandatory; scrollbar-width: none; }
-#video-slider::-webkit-scrollbar { display: none; }
-.video-card { 
-    flex: 0 0 260px; aspect-ratio: 9/16; background: #000; 
-    position: relative; scroll-snap-align: start; overflow: hidden; 
-}
-.video-card video { width: 100%; height: 100%; object-fit: cover; cursor: pointer; }
-.video-overlay { 
-    position: absolute; bottom: 0; left: 0; right: 0; padding: 15px; 
-    background: linear-gradient(transparent, rgba(0,0,0,0.8)); pointer-events: none; 
-}
-.video-overlay h4 { color: #fff; font-family: var(--font-ui); font-size: 13px; margin: 0; }
-
-/* --- MODAL ACCOUNT --- */
-.modal { 
-    position: fixed; inset: 0; background: rgba(0,0,0,0.5); 
-    display: none; align-items: center; justify-content: center; z-index: 4000; 
-}
-.modal.active { display: flex; }
-.modal-box { 
-    background: #fff; padding: 40px; width: 90%; max-width: 400px; 
-    position: relative; text-align: center; border-radius: 4px;
-}
-.modal-header { font-family: var(--font-title); font-size: 28px; font-weight: 800; margin-bottom: 20px; }
-.modal-box input { 
-    width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ddd; 
-    box-sizing: border-box; font-family: var(--font-ui); 
-}
-.btn-submit { 
-    width: 100%; background: var(--black); color: #fff; padding: 12px; 
-    border: none; font-weight: 900; cursor: pointer; font-family: var(--font-ui);
+/* --- TOP BAR & TICKER --- */
+.top-bar {
+    border-bottom: 1px solid var(--nyt-light-gray);
+    padding: 8px 0;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
 }
 
-/* --- RESPONSIVE --- */
+.top-bar-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.market-ticker-container {
+    flex: 1;
+    text-align: center;
+    overflow: hidden;
+}
+
+#ticker-content {
+    color: var(--makmus-red);
+    animation: fadeIn 0.5s ease;
+}
+
+#openModal {
+    background: none;
+    border: 1px solid var(--nyt-black);
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* --- HEADER & LOGO --- */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--nyt-black);
+}
+
+.logo-container img {
+    height: 60px; /* Ajuste selon ton logo */
+    display: block;
+}
+
+.menu-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.burger span {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background: #000;
+    margin: 3px 0;
+}
+
+.btn-subscribe {
+    background: var(--nyt-black);
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    font-weight: 800;
+    font-size: 11px;
+    cursor: pointer;
+}
+
+.price-tag { color: #ccc; font-weight: 400; margin-left: 5px; }
+
+/* --- NAVIGATION --- */
+.nav-compact {
+    border-bottom: 1px solid var(--nyt-light-gray);
+    padding: 12px 0;
+}
+
+.nav-compact ul {
+    display: flex;
+    justify-content: center;
+    list-style: none;
+    gap: 20px;
+}
+
+.nav-compact a {
+    text-decoration: none;
+    color: var(--nyt-black);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.nav-red { color: var(--makmus-red) !important; }
+
+/* --- FULL MENU OVERLAY --- */
+.full-menu {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.98);
+    z-index: 9999;
+    display: none; /* Activé via JS avec la classe .open */
+    padding: 50px;
+    overflow-y: auto;
+}
+
+.full-menu.open { display: block; animation: slideIn 0.3s ease-out; }
+
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #000;
+    padding-bottom: 20px;
+}
+
+.menu-logo { font-family: 'Playfair Display'; font-weight: 900; font-size: 30px; }
+.close-menu { cursor: pointer; font-weight: 800; }
+
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 40px;
+    margin-top: 40px;
+}
+
+.menu-section h3 {
+    font-size: 14px;
+    border-bottom: 1px solid var(--nyt-light-gray);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+
+.menu-section ul { list-style: none; }
+.menu-section li { margin-bottom: 8px; }
+.menu-section a { text-decoration: none; color: #333; font-size: 14px; }
+/* --- SECTION RECHERCHE DANS LE MENU --- */
+.menu-search {
+    max-width: 800px; /* Largeur confortable pour la recherche */
+    margin: 40px auto; /* Centré verticalement et horizontalement */
+    display: flex;
+    align-items: center;
+    border-bottom: 2px solid #000; /* Ligne sobre style NYT */
+    padding-bottom: 10px;
+}
+
+#menuSearchInput {
+    flex: 1;
+    border: none;
+    background: transparent;
+    font-family: 'Playfair Display', serif; /* Typographie plus élégante */
+    font-size: 24px; /* Grande taille pour la lisibilité */
+    font-weight: 700;
+    color: #000;
+    outline: none;
+    padding-right: 15px;
+}
+
+#menuSearchInput::placeholder {
+    color: #ccc;
+    font-style: italic;
+    font-weight: 400;
+}
+
+.menu-search button {
+    background: none;
+    border: 1px solid #000;
+    padding: 8px 20px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.menu-search button:hover {
+    background: #000;
+    color: #fff;
+}
+.menu-content {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding-top: 50px;
+}
+#status-line {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-align: center;
+    padding: 20px 0;
+    color: var(--makmus-red);
+    text-transform: uppercase;
+    border-bottom: 1px double #ccc;
+    margin-bottom: 30px;
+}
+.pub-wrapper {
+    margin: 20px auto;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f0f0f0; /* Gris clair si vide */
+    overflow: hidden;
+    border: 1px solid #eee;
+}
+
+/* Dimensions spécifiques */
+.banner-336 {
+    width: 336px;
+    height: 280px;
+}
+
+.box-300 {
+    width: 300px;
+    height: 300px;
+}
+
+.pub-placeholder {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: #999;
+}
+
+.pub-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+}
+.ad-fade {
+    animation: adFadeIn 0.8s ease-in-out;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+@keyframes adFadeIn {
+    from { opacity: 0.4; }
+    to { opacity: 1; }
+}
+
+/* Rappel des conteneurs pour garantir les dimensions */
+#pub-top-content { width: 336px; height: 280px; }
+#pub-footer-content { width: 300px; height: 300px; }
+/* Responsive mobile */
+@media (max-width: 768px) {
+    .menu-search {
+        margin: 20px 10px;
+    }
+    #menuSearchInput {
+        font-size: 18px;
+    }
+}
+/* --- CONTENU --- */
+.layout-grid {
+    display: grid;
+    grid-template-columns: 200px 1fr 300px;
+    gap: 30px;
+    margin-top: 30px;
+}
+
+.col-left { border-right: 1px solid var(--nyt-light-gray); padding-right: 15px; }
+.col-right { border-left: 1px solid var(--nyt-light-gray); padding-left: 15px; }
+
+.category-tag {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--makmus-red);
+    text-transform: uppercase;
+    margin-bottom: 5px;
+}
+
+h2 { font-family: 'Playfair Display'; font-size: 32px; line-height: 1.1; margin: 10px 0; }
+h3 { font-family: 'Playfair Display'; font-size: 18px; margin-bottom: 8px; }
+
+.news-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 30px;
+}
+/* Badge pour les articles exclusifs (Supabase) */
+.source-tag {
+    font-size: 9px;
+    font-weight: 800;
+    background: var(--makmus-red);
+    color: white;
+    padding: 2px 6px;
+    display: inline-block;
+    margin-top: 10px;
+    letter-spacing: 1px;
+}
+
+/* Style pour les articles API (un peu plus sobre) */
+.grid-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+}
+
+.mini-thumb {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin-left: 15px;
+    filter: grayscale(20%); /* Effet élégant pour les news API */
+}
+#trending-tags {
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #eee;
+    padding: 12px 0;
+    background: #fff;
+    margin-top: 10px;
+}
+
+#tags-container {
+    display: flex;
+    justify-content: center; /* Centré pour le prestige */
+    align-items: center;
+    gap: 30px; /* Plus d'espace pour un look aéré */
+}
+
+.tag-item {
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 700; /* Plus gras que le NYT pour plus de caractère */
+    color: #444;
+    text-transform: uppercase; /* Majuscules pour l'aspect "Actualité Brûlante" */
+    letter-spacing: 1px; /* Espacement des lettres pour la lisibilité */
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+/* Effet de soulignement moderne au survol */
+.tag-item::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: -4px;
+    left: 0;
+    background-color: var(--makmus-red); /* Ton rouge signature */
+    transition: width 0.3s;
+}
+
+.tag-item:hover {
+    color: var(--makmus-red);
+}
+
+.tag-item:hover::after {
+    width: 100%;
+}
+
+/* Adaptabilité mobile : on passe en défilement si c'est trop large */
+@media (max-width: 768px) {
+    #tags-container {
+        justify-content: flex-start;
+        overflow-x: auto;
+        padding: 0 20px;
+        gap: 20px;
+    }
+    .trending-label {
+        display: none; /* On cache le label sur mobile pour gagner de la place */
+    }
+}
+.video-du-jour-section {
+    padding: 40px 0;
+    background-color: #f9f9f9; /* Fond légèrement grisé pour détacher la section */
+    margin: 40px 0;
+}
+
+.section-header-line {
+    border-top: 2px solid #000;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.line-title {
+    background: #000;
+    color: #fff;
+    padding: 5px 15px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 12px;
+    text-transform: uppercase;
+    display: inline-block;
+    position: absolute;
+    top: -2px;
+}
+
+.video-container-horizontal {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 20px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none; /* Firefox */
+}
+
+.video-container-horizontal::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.video-card {
+    flex: 0 0 250px; /* Largeur de chaque vidéo */
+    height: 440px;   /* Ratio vertical */
+    background: #000;
+    border-radius: 4px;
+    position: relative;
+    overflow: hidden;
+    scroll-snap-align: start;
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.video-card video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    cursor: pointer;
+}
+
+.video-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 20px 15px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.9));
+    color: #fff;
+    pointer-events: none; /* Laisse passer le clic vers la vidéo */
+}
+
+.video-overlay h4 {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.3;
+    margin: 0;
+}
+
+.mute-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: rgba(0,0,0,0.5);
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+}
+.video-controls-top {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    flex-direction: column; /* Boutons l'un au-dessus de l'autre */
+    gap: 8px;
+    z-index: 10;
+}
+
+.vid-btn {
+    background: rgba(0, 0, 0, 0.4); /* Fond sombre discret */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(4px); /* Effet de flou moderne */
+    transition: all 0.2s ease;
+}
+
+.vid-btn:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+.vid-btn svg {
+    display: block;
+}
+
+/* Cacher les contrôles natifs du navigateur pour garder notre design */
+video::-webkit-media-controls {
+    display: none !important;
+}
+/* Style du Spinner */
+.pub-loader {
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #000; /* Couleur noire pour rester sobre */
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    animation: spin 1s linear infinite;
+    display: inline-block;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Ajustement du placeholder pendant le chargement */
+.pub-placeholder {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+.sport-digest {
+    padding: 40px 0;
+    background-color: #fff;
+}
+
+.sport-border {
+    border-top: 3px solid #000;
+    margin-bottom: 20px;
+}
+
+.sport-bg {
+    background: #000; /* Ou var(--makmus-red) pour rester cohérent */
+}
+
+.sport-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+.sport-card {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 15px;
+    transition: opacity 0.3s;
+}
+
+.sport-card:hover {
+    opacity: 0.8;
+}
+
+.sport-category {
+    font-family: 'Inter', sans-serif;
+    font-weight: 800;
+    font-size: 10px;
+    color: var(--makmus-red);
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.sport-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: #000;
+    text-decoration: none;
+    display: block;
+}
+
+.sport-summary {
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    color: #555;
+    margin-top: 8px;
+    line-height: 1.4;
+}
+.wellness-digest {
+    padding: 30px 0;
+    border-top: 1px solid #000;
+    margin-top: 20px;
+}
+
+.nyt-section-header {
+    margin-bottom: 20px;
+}
+
+.nyt-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: #000;
+}
+
+.wellness-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 colonnes comme sur ta capture */
+    gap: 15px;
+}
+
+.well-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.well-image-wrapper {
+    aspect-ratio: 1 / 1; /* Force le format carré */
+    overflow: hidden;
+    margin-bottom: 10px;
+}
+
+.well-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.well-card:hover img {
+    transform: scale(1.03);
+}
+
+.well-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.2;
+    color: #121212;
+    text-decoration: none;
+    margin-bottom: 5px;
+}
+
+.well-meta {
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    color: #727272;
+    text-transform: uppercase;
+    font-weight: 600;
+}
+
+/* Version Mobile : On passe en scroll horizontal pour garder les 5 items */
+@media (max-width: 900px) {
+    .wellness-grid {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 15px;
+        scrollbar-width: none;
+    }
+    .well-card {
+        flex: 0 0 200px;
+    }
+}
+/* --- FOOTER OPTIMISÉ --- */
+.nyt-footer {
+    background: var(--bg-white);
+    border-top: 2px solid var(--nyt-black);
+    margin-top: 60px;
+    padding: 60px 0 40px 0; /* Plus d'espace en haut */
+}
+
+.footer-brand { 
+    text-align: center; 
+    margin-bottom: 50px; 
+}
+
+.footer-brand img { 
+    height: 50px; 
+    margin-bottom: 15px; 
+}
+
+.footer-brand p {
+    font-family: 'Playfair Display';
+    font-style: italic;
+    font-size: 14px;
+    color: #333;
+}
+
+.footer-links-grid {
+    display: grid;
+    /* On passe à 3 colonnes pour correspondre à ton HTML */
+    grid-template-columns: repeat(3, 1fr); 
+    border-top: 1px solid var(--nyt-light-gray);
+    border-bottom: 1px solid var(--nyt-light-gray);
+    padding: 30px 0;
+    max-width: 1000px; /* On centre le contenu du footer */
+    margin: 0 auto;
+}
+
+.footer-col {
+    padding: 0 20px;
+}
+
+/* Ajout d'une ligne séparatrice entre les colonnes sauf la dernière */
+.footer-col:not(:last-child) {
+    border-right: 1px solid #f0f0f0;
+}
+
+.footer-col h4 { 
+    font-size: 11px; 
+    font-weight: 800;
+    margin-bottom: 20px; 
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.footer-col ul { 
+    list-style: none; 
+}
+
+.footer-col a { 
+    text-decoration: none; 
+    color: #555; 
+    font-size: 13px; 
+    line-height: 2.2; /* Plus d'espace entre les liens pour la lecture */
+    transition: color 0.2s;
+}
+
+.footer-col a:hover {
+    color: var(--makmus-red);
+    text-decoration: underline;
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.social-links a {
+    font-weight: 800;
+    font-size: 12px;
+}
+
+.footer-bottom {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 11px;
+    color: var(--nyt-gray);
+}
+
+.bottom-legal {
+    margin-top: 15px;
+}
+
+.bottom-legal a { 
+    margin: 0 10px; 
+    color: var(--nyt-gray); 
+    text-decoration: none; 
+}
+
+/* Ajustement Mobile */
+@media (max-width: 768px) {
+    .footer-links-grid {
+        grid-template-columns: 1fr; /* Une seule colonne sur mobile */
+        text-align: center;
+    }
+    .footer-col {
+        border-right: none !important;
+        border-bottom: 1px solid #f0f0f0;
+        padding: 20px 0;
+    }
+    .social-links {
+        justify-content: center;
+    }
+}
+/* --- ANIMATIONS --- */
+@keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* --- MOBILE --- */
+@media (max-width: 768px) {
+    .layout-grid { grid-template-columns: 1fr; }
+    .col-left, .col-right { border: none; padding: 0; }
+    .nav-compact { overflow-x: auto; }
+    .menu-grid { grid-template-columns: 1fr; }
+    .logo-container img { height: 40px; }
+    .header-right { display: none; }
+}
+/* Tags défilants sur Mobile */
+@media (max-width: 768px) {
+    #trending-tags {
+        padding: 5px 0;
+    }
+    
+    #tags-container {
+        justify-content: flex-start; /* Aligne à gauche pour le scroll */
+        overflow-x: auto;            /* Active le défilement horizontal */
+        white-space: nowrap;         /* Empêche le retour à la ligne */
+        padding: 10px;
+        -webkit-overflow-scrolling: touch; /* Scroll fluide sur iOS */
+    }
+
+    #tags-container::-webkit-scrollbar {
+        display: none; /* Cache la barre de scroll pour l'esthétique */
+    }
+
+    .tag-item {
+        padding: 5px 15px;
+        background: #f5f5f5;
+        border-radius: 20px; /* Look "pill" sur mobile */
+    }
+}
+/* --- ADAPTATION DES CONTENEURS (Breakpoints) --- */
+
 @media (max-width: 1024px) {
-    :root { --margin-side: 5%; }
-    .newspaper-layout { grid-template-columns: 1fr; }
-    .main-news-column { border-right: none; padding-right: 0; }
+    /* Le layout asymétrique passe en une seule colonne */
+    .newspaper-layout {
+        grid-template-columns: 1fr;
+    }
+
+    /* On retire la bordure de séparation latérale */
+    .main-news-column {
+        border-right: none;
+        padding-right: 0;
+    }
+
+    /* On réduit légèrement les marges du conteneur global */
+    .container-magazine {
+        padding: 0 15px;
+    }
 }
 
 @media (max-width: 768px) {
-    .nav-compact, .market-ticker-container, .top-ad-container { display: none; }
-    .news-grid { grid-template-columns: 1fr; }
-    .video-card { flex: 0 0 80%; }
+    /* TOP BAR : On cache le ticker financier pour libérer de l'espace */
+    .market-ticker-container {
+        display: none; 
+    }
+
+    /* GRILLE MAGAZINE (Santé/Wellness) : Passage de 5 à 2 colonnes */
+    .magazine-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    /* SECTION VIDÉO : Snap scroll ajusté */
+    .video-card {
+        flex: 0 0 75%; /* On laisse entrevoir la vidéo suivante à 25% */
+    }
+
+    /* TAGS : Transformation en ruban horizontal défilant */
+    #tags-container {
+        justify-content: flex-start;
+        overflow-x: auto;
+        white-space: nowrap;
+        padding: 10px 0;
+        -webkit-overflow-scrolling: touch;
+    }
+    #tags-container::-webkit-scrollbar {
+        display: none; /* Look propre sans barre de défilement */
+    }
+
+    /* PUBLICITÉS : Centrage forcé pour éviter les décalages */
+    .pub-wrapper {
+        margin: 15px auto;
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    /* MOBILE PORTRAIT : Titres plus compacts */
+    .mag-card h4 {
+        font-size: 13px;
+    }
+
+    .nyt-title {
+        font-size: 18px;
+    }
+
+    /* Les séparateurs éditoriaux s'ajustent */
+    .separator-editorial {
+        width: 100%;
+        margin: 25px 0;
+    }
+}
+.mag-img-wrapper img, .lifestyle-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* L'image remplit le cadre sans se déformer */
+}
+/* --- FOOTER DESKTOP (Inchangé ou presque) --- */
+.footer-links-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+
+.footer-toggle .chevron {
+    display: none; /* Cache la flèche sur PC */
+}
+
+/* --- FOOTER MOBILE (Accordéon) --- */
+@media (max-width: 768px) {
+    .footer-links-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .footer-col {
+        border-bottom: 1px solid #eee;
+    }
+
+    .footer-toggle {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        cursor: pointer;
+        margin: 5%; /* Aligne le titre sur mobile */
+    }
+
+    .footer-toggle .chevron {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-right: 1px solid #000;
+        border-bottom: 1px solid #000;
+        transform: rotate(45deg);
+        transition: transform 0.3s ease;
+    }
+
+    .footer-content {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.3s ease-out;
+        list-style: none;
+        padding-left: 0;
+    }
+
+    /* État quand on clique */
+    .footer-col.active .footer-content {
+        max-height: 500px; /* Valeur haute pour permettre le déploiement */
+        padding-bottom: 15px;
+    }
+
+    .footer-col.active .chevron {
+        transform: rotate(-135deg); /* Flèche vers le haut */
+    }
 }
