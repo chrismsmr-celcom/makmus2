@@ -6,11 +6,6 @@
     <title>MAKMUS | La vérité pour mémoire</title>
     <link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@300;700;800&family=Playfair+Display:wght@700;900&family=Inter:wght@400;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
-        <link rel="icon" type="image/png" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
-    <link rel="apple-touch-icon" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
-        <meta name="apple-mobile-web-app-title" content="MAKMUS">
-    <meta name="application-name" content="MAKMUS">
-    <meta name="theme-color" content="#a30000">
 </head>
 <body>
 
@@ -125,9 +120,68 @@
                 <div class="news-grid" id="news-grid"></div>
             </section>
             <aside class="col-right">
-                <div id="lifestyle-list"></div>
-                <hr>
-                <div id="opinion-list"></div>
+              <div class="sidebar-section">
+    <h3 class="section-title">Opinion</h3>
+    <div id="opinion-container">
+        <article class="opinion-item" onclick="captureAction('Titre Opinion', 'Opinion', 'lien.html')">
+            <span class="opinion-author">Par Jean Kabuye</span>
+            <h4>Le défi de la transformation numérique en RDC : un impératif.</h4>
+        </article>
+        
+        <article class="opinion-item">
+            <span class="opinion-author">Éditorial</span>
+            <h4>Pourquoi l'indépendance de la presse est notre socle.</h4>
+        </article>
+    </div>
+</div>
+
+<hr class="separator-editorial">
+
+<div class="sidebar-section">
+    <h3 class="section-title">Lifestyle</h3>
+    <div id="lifestyle-container">
+        <article class="lifestyle-item" onclick="captureAction('Titre Lifestyle', 'Lifestyle', 'lien.html')">
+            <img src="https://via.placeholder.com/80x60" alt="Lifestyle" class="lifestyle-img">
+            <div class="lifestyle-info">
+                <h4>5 destinations cachées à visiter au Katanga cet été.</h4>
+            </div>
+        </article>
+
+        <article class="lifestyle-item">
+            <img src="https://via.placeholder.com/80x60" alt="Lifestyle" class="lifestyle-img">
+            <div class="lifestyle-info">
+                <h4>Gastronomie : Le renouveau de la cuisine congolaise.</h4>
+            </div>
+        </article>
+    </div>
+</div>
+                <aside class="col-left">
+    <div class="section-title">En continu</div>
+    
+    <div id="latest-news-container">
+        <div class="mini-news-item">
+            <span class="time-stamp">14:20</span>
+            <h4 class="mini-news-title">Titre de l'actualité rapide qui vient de tomber</h4>
+        </div>
+
+        <div class="mini-news-item">
+            <span class="time-stamp">13:45</span>
+            <h4 class="mini-news-title">Analyse courte sur l'économie locale</h4>
+        </div>
+
+        <div class="mini-news-item">
+            <span class="time-stamp">13:10</span>
+            <h4 class="mini-news-title">Mise à jour sur le trafic ou la météo</h4>
+        </div>
+
+        <div class="mini-news-item">
+            <span class="time-stamp">12:30</span>
+            <h4 class="mini-news-title">Nouvelle brève concernant la tech</h4>
+        </div>
+    </div>
+
+    <a href="#" class="see-all-link">Toute l'actualité →</a>
+</aside>
             </aside>
         </div>
     </main>
@@ -165,6 +219,51 @@
         
         <div id="wellness-container" class="wellness-grid">
             <div class="pub-loader"></div>
+        </div>
+    </div>
+</section>
+    <section class="category-explorer">
+    <div class="container">
+        <div class="section-header-line">
+            <span class="line-title">Explorer par Rubrique</span>
+        </div>
+        
+        <div class="explorer-grid">
+            <div class="explorer-col">
+                <h4>Politique</h4>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('politics', 'Gouvernement')">Gouvernement</a></li>
+                    <li><a href="#" onclick="fetchAllContent('politics', 'Diplomatie')">Diplomatie</a></li>
+                    <li><a href="#" onclick="fetchAllContent('politics', 'Élections')">Élections</a></li>
+                </ul>
+            </div>
+
+            <div class="explorer-col">
+                <h4>Économie</h4>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('business', 'Mines')">Mines & Énergie</a></li>
+                    <li><a href="#" onclick="fetchAllContent('business', 'Finance')">Marchés Financiers</a></li>
+                    <li><a href="#" onclick="fetchAllContent('business', 'Agriculture')">Agribusiness</a></li>
+                </ul>
+            </div>
+
+            <div class="explorer-col">
+                <h4>Société</h4>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('health')">Santé publique</a></li>
+                    <li><a href="#" onclick="fetchAllContent('environment')">Climat & Forêts</a></li>
+                    <li><a href="#" onclick="fetchAllContent('education')">Éducation</a></li>
+                </ul>
+            </div>
+
+            <div class="explorer-col">
+                <h4>Art de Vivre</h4>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('tourism')">Voyage & Tourisme</a></li>
+                    <li><a href="#" onclick="fetchAllContent('sports')">Sport national</a></li>
+                    <li><a href="#" onclick="fetchAllContent('culture')">Culture & Musique</a></li>
+                </ul>
+            </div>
         </div>
     </div>
 </section>
