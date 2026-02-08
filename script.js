@@ -161,31 +161,36 @@ function renderAll(data, query) {
 
     const articles = data.myArticles || [];
 
-    /* -------- Hero -------- */
+    /* --- 1. HERO (Article à la Une) --- */
     if (hero && articles[0]) {
         const h = articles[0];
         hero.innerHTML = `
             <div class="hero-container" onclick="location.href='redaction.html?id=${h.id}'">
                 <div class="hero-text">
+                    <span class="category-tag">${h.category || 'À LA UNE'}</span>
                     <h1>${h.titre || ''}</h1>
                     <p>${(h.description || "").substring(0, 180)}...</p>
                 </div>
                 <div class="hero-img">
-                    <img src="${h.image_url || ''}">
+                    <img src="${h.image_url || ''}" alt="Hero Image">
                 </div>
             </div>`;
     }
 
-    /* -------- Grid -------- */
+    /* --- 2. GRID (Grille de 6 articles) --- */
     if (grid) {
+        // Ajout du wrapper img-wrapper pour que le CSS puisse gérer l'overflow et le zoom
         grid.innerHTML = articles.slice(1, 7).map(art => `
             <div class="article-card" onclick="location.href='redaction.html?id=${art.id}'">
-                <img src="${art.image_url || ''}">
+                <div class="img-wrapper">
+                    <img src="${art.image_url || ''}" alt="Article Image">
+                </div>
+                <span class="category-tag">${art.category || ''}</span>
                 <h3>${art.titre || ''}</h3>
             </div>`).join('');
     }
 
-    /* -------- Sidebar -------- */
+    /* --- 3. SIDEBAR (Dernières Nouvelles) --- */
     if (sidebar) {
         sidebar.innerHTML = articles.slice(7, 12).map(art => `
             <div class="sidebar-article" onclick="location.href='redaction.html?id=${art.id}'">
@@ -194,28 +199,31 @@ function renderAll(data, query) {
             </div>`).join('');
     }
 
-    /* -------- Lifestyle -------- */
+    /* --- 4. LIFESTYLE (API News) --- */
     if (lifestyleBox) {
-        lifestyleBox.innerHTML = data.lifestyleNews.slice(0, 3).map(art => `
-            <div class="lifestyle-item" onclick="window.open('${art.link}', '_blank')">
-                <img src="${art.image_url || 'https://via.placeholder.com/80'}" class="lifestyle-img">
-                <h4>${art.title || ''}</h4>
+        lifestyleBox.innerHTML = (data.lifestyleNews || []).slice(0, 3).map(art => `
+            <div class="sidebar-article" onclick="window.open('${art.link}', '_blank')">
+                <div class="img-wrapper" style="height: 60px; margin-bottom: 5px;">
+                    <img src="${art.image_url || 'https://via.placeholder.com/80'}" style="height: 100%; object-fit: cover;">
+                </div>
+                <h4 style="font-size: 13px;">${art.title || ''}</h4>
             </div>`).join('');
     }
 
-    /* -------- Opinions -------- */
+    /* --- 5. OPINIONS --- */
     if (opinionBox) {
-        opinionBox.innerHTML = data.opinionArticles.map(art => `
-            <div class="opinion-item" onclick="location.href='redaction.html?id=${art.id}'">
-                <span class="opinion-author">🖋️ ${art.auteur || 'MAKMUS'}</span>
-                <h4>${art.titre || ''}</h4>
+        opinionBox.innerHTML = (data.opinionArticles || []).map(art => `
+            <div class="sidebar-article" onclick="location.href='redaction.html?id=${art.id}'" style="border-left: 2px solid var(--makmus-red); padding-left: 10px;">
+                <span class="opinion-author" style="font-weight: bold; font-size: 11px; display: block;">🖋️ ${art.auteur || 'MAKMUS'}</span>
+                <h4 style="font-style: italic;">${art.titre || ''}</h4>
             </div>`).join('');
     }
 
+    /* --- 6. STATUS --- */
     if (status) {
         status.textContent = query 
-            ? `RÉSULTATS : ${query.toUpperCase()}`
-            : `ÉDITION ACTUALISÉE`;
+            ? `RÉSULTATS POUR : ${query.toUpperCase()}`
+            : `ÉDITION DU ${new Date().toLocaleDateString('fr-FR')}`;
     }
 }
 
