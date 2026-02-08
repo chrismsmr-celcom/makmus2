@@ -1,282 +1,648 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MAKMUS — Mémoire & Vérité</title>
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/png" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAKMUS — Mémoire & Vérité</title>
+    
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600;800&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="style.css">
 
-<link rel="apple-touch-icon" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
-
-<meta name="apple-mobile-web-app-title" content="MAKMUS">
-<meta name="application-name" content="MAKMUS">
-
-<meta name="theme-color" content="#a30000">
+    <meta name="apple-mobile-web-app-title" content="MAKMUS">
+    <meta name="application-name" content="MAKMUS">
+    <meta name="theme-color" content="#a30000">
 </head>
 <body>
-  <div class="top-ad-container no-print">
-    <div id="ad-slider-wrapper">
-        <div id="ad-display-zone">
-             <div class="ad-placeholder">MAKMUS PUBLICITÉ — 728x90</div>
-        </div>
-    </div>
+
+<div class="top-ad-container no-print">
+    <div id="ad-slider-wrapper">
+        <div id="ad-display-zone">
+             <div class="ad-placeholder">MAKMUS PUBLICITÉ — 728x90</div>
+        </div>
+    </div>
 </div>
 
-<style>
-    .top-ad-container { display: none; background: #f0f0f0; padding: 10px 0; text-align: center; border-bottom: 1px solid #ddd; }
-    #ad-slider-wrapper { max-width: 728px; height: 90px; margin: 0 auto; overflow: hidden; position: relative; background: #ccc; }
-    
-    /* Animation de transition douce */
-    .ad-fade { animation: fadeIn 0.8s; }
-    @keyframes fadeIn { from { opacity: 0.3; } to { opacity: 1; } }
-
-    @media (min-width: 1024px) { .top-ad-container { display: block; } }
-    
-    .ad-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #666; font-size: 12px; font-weight: bold; }
-    .ad-media { width: 728px; height: 90px; object-fit: cover; cursor: pointer; }
-</style>
 <div class="full-menu" id="fullMenu">
-        <div class="menu-header">
-            <div class="menu-logo">MAKMUS</div>
-            <span class="close-menu" id="closeMenu">&times; FERMER</span>
-        </div>
-        <div class="menu-content">
-            <div class="menu-search">
-                <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
-                <button onclick="executeMenuSearch()">OK</button>
-            </div>
-            <div class="menu-grid">
-                <div class="menu-section">
-                    <h3>ACTUALITÉS</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-                        <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
-                        <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
-                        <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
-                    </ul>
-                </div>
-                <div class="menu-section">
-                    <h3>ÉCONOMIE & TECH</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
-                        <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
-                        <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'crypto'); return false;">Crypto-monnaie</a></li>
-                    </ul>
-                </div>
-                <div class="menu-section">
-                    <h3>LOISIRS & SOCIÉTÉ</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
-                        <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
-                        <li><a href="#" onclick="fetchAllContent('health'); return false;">Santé</a></li>
-                        <li><a href="#" onclick="fetchAllContent('lifestyle'); return false;">Style de vie / Food</a></li>
-                        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">Voyages</a></li>
-                        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
-                    </ul>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="top-bar">
-        <div class="top-bar-content">
-            <div id="live-date">---</div>
-<div class="market-ticker-container">
-    <div id="ticker-content"></div>
-</div>
-            <button id="openModal" onclick="toggleLoginModal()">MON COMPTE</button>
-        </div>
-    </div>
-
-    <header class="main-header">
-        <div class="header-left">
-            <div class="menu-toggle" id="btnOpenMenu">
-                <span></span><span></span><span></span>
-                <span class="menu-label">SECTIONS</span>
-            </div>
-        </div>
-        <div class="logo-container">
-            <a href="index.html">
-                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-            </a>
-        </div>
-<div class="header-right">
-    <button class="btn-subscribe" onclick="handleSubscribe()">
-        ABONNEZ-VOUS <span class="price-tag">POUR 1 $/SEMAINE</span>
-    </button>
-</div>
-    </header>
-
-    <nav class="nav-compact" id="navMenu">
-        <ul>
-            <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-            <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-            <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
-            <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-        </ul>
-    </nav>
-<div id="trending-tags" style="border-top: 1px solid #000; border-bottom: 1px solid #eee; padding: 12px 0; background: #fff; margin-top: 10px;">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px; display: flex; align-items: center; gap: 12px; overflow-x: auto; white-space: nowrap;">
-        
-        <span style="font-family: 'Inter', sans-serif; font-weight: 800; font-size: 0.7rem; color: #000; text-transform: uppercase; letter-spacing: 0.5px; border-right: 1px solid #ddd; padding-right: 12px; flex-shrink: 0;">
-            En ce moment
-        </span>
-
-        <div id="tags-container" style="display: flex; gap: 15px; align-items: center;">
-            </div>
-    </div>
-</div>
-    
-<style>
-    /* Suppression de la scrollbar pour esthétique */
-    #trending-tags div::-webkit-scrollbar { display: none; }
-
-    /* Style NYT : Pas de background, juste du texte et un hover souligné */
-    .tag-item {
-        font-family: 'Inter', sans-serif;
-        font-size: 0.85rem;
-        font-weight: 500;
-        color: #333;
-        text-decoration: none;
-        cursor: pointer;
-        transition: color 0.2s;
-        padding: 2px 0;
-    }
-
-    .tag-item:hover {
-        color: #a30000; /* Ta couleur primaire pour le rappel Makmus */
-        text-decoration: underline;
-    }
-
-    /* Séparateur entre les mots (comme sur le NYT) */
-    .tag-item:not(:last-child)::after {
-        content: "";
-        margin-left: 15px;
-        border-right: 1px solid #eee;
-    }
-</style>
-<div class="newspaper-body">
-    <div class="status-line" id="status-line">ÉDITION DU JOUR</div>
-    
-    <div id="hero-zone"></div>
-
-    <div class="newspaper-layout">
-        <div class="main-news-column">
-            <div id="news-grid" class="news-grid"></div>
-        </div>
-
-        <aside class="sidebar-column">
-            <div class="sidebar-heading">DERNIÈRES NOUVELLES</div>
-            <div id="sidebar-list"></div> 
-            <div class="sidebar-section">
-        <h3 class="section-title">Lifestyle</h3>
-        <div id="lifestyle-list"></div>
-    </div>
-
-    <div class="sidebar-section">
-        <h3 class="section-title">Opinion</h3>
-        <div id="opinion-list"></div>
-    </div>
-        </aside>
-    </div>
+    <div class="menu-header">
+        <div class="menu-logo">MAKMUS</div>
+        <span class="close-menu" id="closeMenu">&times; FERMER</span>
+    </div>
+    <div class="menu-content">
+        <div class="menu-search">
+            <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
+            <button onclick="executeMenuSearch()">OK</button>
+        </div>
+        <div class="menu-grid">
+            <div class="menu-section">
+                <h3>ACTUALITÉS</h3>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('top'); return false;">À la une</a></li>
+                    <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+                    <li><a href="#" onclick="fetchAllContent('politics'); return false;">Politique</a></li>
+                    <li><a href="#" onclick="fetchAllContent('world'); return false;">International</a></li>
+                    <li><a href="#" onclick="fetchAllContent('environment'); return false;">Environnement</a></li>
+                </ul>
+            </div>
+            <div class="menu-section">
+                <h3>ÉCONOMIE & TECH</h3>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('business'); return false;">Business</a></li>
+                    <li><a href="#" onclick="fetchAllContent('technology'); return false;">Technologies</a></li>
+                    <li><a href="#" onclick="fetchAllContent('science'); return false;">Sciences</a></li>
+                    <li><a href="#" onclick="fetchAllContent('top', 'crypto'); return false;">Crypto-monnaie</a></li>
+                </ul>
+            </div>
+            <div class="menu-section">
+                <h3>LOISIRS & SOCIÉTÉ</h3>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('sports'); return false;">Sports</a></li>
+                    <li><a href="#" onclick="fetchAllContent('entertainment'); return false;">Culture & Musique</a></li>
+                    <li><a href="#" onclick="fetchAllContent('health'); return false;">Santé</a></li>
+                    <li><a href="#" onclick="fetchAllContent('lifestyle'); return false;">Style de vie / Food</a></li>
+                    <li><a href="#" onclick="fetchAllContent('tourism'); return false;">Voyages</a></li>
+                    <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
 </div>
 
-    <div class="modal" id="modalAccount">
-        <div class="modal-box">
-            <span class="close-btn" id="closeModal">&times;</span>
-            <div class="modal-header">MAKMUS</div>
-            <p>Accès réservé aux abonnés.</p>
-            <input type="email" placeholder="Email">
-            <input type="password" placeholder="Mot de passe">
-            <button class="btn-submit">SE CONNECTER</button>
-        </div>
-    </div>
-    <hr class="separator-editorial">
-    <section id="video-section" class="no-print" style="background: #fff; padding: 40px 0; margin: 40px 0; overflow: hidden;">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 0 20px;">
-        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 20px;">
-            <span style="width: 10px; height: 10px; background: #fff; border-radius: 0%;"></span>
-            <h2 style="font-family: serif; color: #000; text-transform: uppercase; letter-spacing: 2px; font-size: 11px; margin: 0;">Video du jour</h2>
-        </div>
+<div class="top-bar">
+    <div class="top-bar-content">
+        <div id="live-date">---</div>
+        <div class="market-ticker-container">
+            <div id="ticker-content"></div>
+        </div>
+        <button id="openModal" onclick="toggleLoginModal()">MON COMPTE</button>
+    </div>
+</div>
 
-        <div id="video-slider" style="display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 20px; -webkit-overflow-scrolling: touch;">
-            </div>
-    </div>
+<header class="main-header">
+    <div class="header-left">
+        <div class="menu-toggle" id="btnOpenMenu">
+            <span></span><span></span><span></span>
+            <span class="menu-label">SECTIONS</span>
+        </div>
+    </div>
+    <div class="logo-container">
+        <a href="index.html">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+        </a>
+    </div>
+    <div class="header-right">
+        <button class="btn-subscribe" onclick="handleSubscribe()">
+            ABONNEZ-VOUS <span class="price-tag">POUR 1 $/SEMAINE</span>
+        </button>
+    </div>
+</header>
+
+<nav class="nav-compact" id="navMenu">
+    <ul>
+        <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+        <li><a href="#" onclick="fetchAllContent('technology'); return false;">TECH</a></li>
+        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+    </ul>
+</nav>
+
+<div id="trending-tags">
+    <div class="tags-wrapper">
+        <span class="trending-label">En ce moment</span>
+        <div id="tags-container"></div>
+    </div>
+</div>
+
+<main class="newspaper-body">
+    <div class="status-line" id="status-line">ÉDITION DU JOUR</div>
+    
+    <div id="hero-zone"></div>
+
+    <div class="newspaper-layout">
+        <div class="main-news-column">
+            <div id="news-grid" class="news-grid"></div>
+        </div>
+
+        <aside class="sidebar-column">
+            <div class="sidebar-heading">DERNIÈRES NOUVELLES</div>
+            <div id="sidebar-list"></div> 
+            
+            <div class="sidebar-section">
+                <h3 class="section-title">Lifestyle</h3>
+                <div id="lifestyle-list"></div>
+            </div>
+
+            <div class="sidebar-section">
+                <h3 class="section-title">Opinion</h3>
+                <div id="opinion-list"></div>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<div class="modal" id="modalAccount">
+    <div class="modal-box">
+        <span class="close-btn" id="closeModal">&times;</span>
+        <div class="modal-header">MAKMUS</div>
+        <p>Accès réservé aux abonnés.</p>
+        <input type="email" placeholder="Email">
+        <input type="password" placeholder="Mot de passe">
+        <button class="btn-submit">SE CONNECTER</button>
+    </div>
+</div>
+
+<hr class="separator-editorial">
+
+<section id="video-section" class="no-print">
+    <div class="video-section-container">
+        <div class="video-header">
+            <span class="video-dot"></span>
+            <h2>Video du jour</h2>
+        </div>
+        <div id="video-slider"></div>
+    </div>
 </section>
-    <section class="magazine-row-section">
-    <div class="magazine-container">
-        <h2 class="magazine-heading">Bien-être & Environnement</h2>
-        <div id="lifestyle-env-grid" class="magazine-grid">
-            </div>
-    </div>
+
+<section class="magazine-row-section">
+    <div class="magazine-container">
+        <h2 class="magazine-heading">Bien-être & Environnement</h2>
+        <div id="lifestyle-env-grid" class="magazine-grid"></div>
+    </div>
 </section>
-    <footer class="nyt-footer">
-    <div class="footer-container">
-        <div class="footer-brand">
-            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-            <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
-        </div>
 
-       <div class="footer-links-grid">
-    <div class="footer-col">
-        <h4>SECTIONS</h4>
-        <ul>
-        <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
-        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-        </ul>
-    </div>
-    <div class="footer-col">
-        <h4>AIDE</h4>
-        <ul>
-            <li><a href="#">Abonnements</a></li>
-            <li><a href="#">Contact</a></li>
-            <li><a href="#">Publicité</a></li>
-            <li><a href="#">Emploi</a></li>
-            <li><a href="#">Makmus magazine</a></li>
-            <li><a href="#">Makila Emmanuel Heritage </a></li>
-            <li><a href="#">Météo </a></li>
-            <li><a href="#">Makem screen Studio</a></li>
-        </ul>
-    </div>
-    <div class="footer-col">
-        <h4>SUIVEZ-NOUS</h4>
-        <div class="social-links">
-            <a href="#">FB</a>
-            <a href="#">X</a>
-            <a href="#">IG</a>
-            <a href="#">YT</a>
-        </div>
-    </div>
-</div>
+<footer class="nyt-footer">
+    <div class="footer-container">
+        <div class="footer-brand">
+            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
+        </div>
 
-        <div class="footer-bottom">
-            <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
-            <div class="bottom-legal">
-                <a href="#">Mentions Légales</a>
-                <a href="#">Confidentialité</a>
-                <a href="#">CGU</a>
-            </div>
-        </div>
-    </div>
+        <div class="footer-links-grid">
+            <div class="footer-col">
+                <h4>SECTIONS</h4>
+                <ul>
+                    <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+                    <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+                    <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+                    <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+                    <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+                    <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+                    <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+                    <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
+                    <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>AIDE</h4>
+                <ul>
+                    <li><a href="#">Abonnements</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Publicité</a></li>
+                    <li><a href="#">Emploi</a></li>
+                    <li><a href="#">Makmus magazine</a></li>
+                    <li><a href="#">Makila Emmanuel Heritage </a></li>
+                    <li><a href="#">Météo </a></li>
+                    <li><a href="#">Makem screen Studio</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>SUIVEZ-NOUS</h4>
+                <div class="social-links">
+                    <a href="#">FB</a>
+                    <a href="#">X</a>
+                    <a href="#">IG</a>
+                    <a href="#">YT</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
+            <div class="bottom-legal">
+                <a href="#">Mentions Légales</a>
+                <a href="#">Confidentialité</a>
+                <a href="#">CGU</a>
+            </div>
+        </div>
+    </div>
 </footer>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    // --- CONFIGURATION DYNAMIQUE & SUPABASE ---
+    const BASE_URL = window.location.origin; 
+    const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    const NEWAPI_PROXY = `${BASE_URL}/api/news`; 
+    const CACHE_DURATION = 60 * 60 * 1000; 
+
+    // --- SYSTÈME ANALYTICS MAKMUS ---
+    const tracker = {
+        getVisitorId: () => {
+            let id = sessionStorage.getItem('makmus_visitor_id');
+            if (!id) {
+                id = 'v-' + Math.random().toString(36).substr(2, 9);
+                sessionStorage.setItem('makmus_visitor_id', id);
+            }
+            return id;
+        },
+        log: async (type, data = {}) => {
+            try {
+                await supabaseClient.from('stats').insert([{
+                    event_type: type,
+                    article_title: data.title || 'Page Accueil',
+                    category: data.category || 'Général',
+                    path: window.location.pathname,
+                    visitor_id: tracker.getVisitorId(),
+                    created_at: new Date().toISOString()
+                }]);
+                console.log("Analytics sent:", type);
+            } catch (e) { console.warn("Analytics non configuré"); }
+        }
+    };
+
+    // Fonction de redirection et de log au clic (CORRECTION 1)
+    window.captureAction = function(title, category, url) {
+        tracker.log('click_article', { title: title, category: category });
+        window.location.href = url;
+    };
+
+    // --- GESTION DU MENU ---
+    const btnOpenMenu = document.getElementById('btnOpenMenu');
+    const btnCloseMenu = document.getElementById('closeMenu');
+    const fullMenu = document.getElementById('fullMenu');
+    
+    if(btnOpenMenu) btnOpenMenu.onclick = () => { 
+        if(fullMenu) fullMenu.classList.add('open'); 
+        document.body.style.overflow = 'hidden'; 
+    };
+    
+    if(btnCloseMenu) btnCloseMenu.onclick = () => closeMenuUI();
+
+    window.executeMenuSearch = function() {
+        const query = document.getElementById('menuSearchInput').value;
+        if(query) {
+            fetchAllContent('top', query);
+            closeMenuUI();
+        }
+    }
+
+    function closeMenuUI() {
+        if(fullMenu) {
+            fullMenu.classList.remove('open');
+            document.body.style.overflow = 'auto';
+        }
+    }
+
+    // --- GESTION DE LA DATE ---
+    function updateDate() {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        const liveDate = document.getElementById('live-date');
+        if(liveDate) liveDate.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
+    }
+
+    // --- LOGIQUE DE RÉCUPÉRATION (CORRECTION 2 : FONCTIONS BIEN SÉPARÉES) ---
+
+    async function fetchMagazineSection() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('articles')
+                .select('*')
+                .in('category', ['Santé', 'Climat'])
+                .eq('is_published', true)
+                .limit(5)
+                .order('created_at', { ascending: false });
+
+            if (error || !data) return;
+
+            const container = document.getElementById('lifestyle-env-grid');
+            if (container) {
+                container.innerHTML = data.map(art => `
+                    <div class="mag-card" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', '${art.category}', 'redaction.html?id=${art.id}')">
+                        <div class="mag-img-wrapper">
+                            <img src="${art.image_url || 'https://via.placeholder.com/200'}" alt="${art.titre}">
+                        </div>
+                        <span class="mag-read-time">${art.category}</span>
+                        <h4>${art.titre}</h4>
+                    </div>
+                `).join('');
+            }
+        } catch (e) { console.warn("Erreur Mag Section:", e); }
+    }
+
+    async function fetchAllContent(category = 'top', query = '') {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        closeMenuUI();
+        const status = document.getElementById('status-line');
+        const now = new Date().getTime();
+
+        try {
+            if(status) status.textContent = "CHARGEMENT...";
+
+            // 1. Articles Principaux (Supabase)
+            let sbQuery = supabaseClient
+                .from('articles')
+                .select('*')
+                .eq('is_published', true)
+                .order('is_priority', { ascending: false })
+                .order('created_at', { ascending: false });
+
+            if (category !== 'top') sbQuery = sbQuery.eq('category', category);
+            if (query) sbQuery = sbQuery.or(`titre.ilike.%${query}%,description.ilike.%${query}%`);
+
+            const { data: myArticles } = await sbQuery;
+
+            // 2. RÉCUPÉRATION SPÉCIFIQUE : OPINION
+            const { data: opinionArticles } = await supabaseClient
+                .from('articles')
+                .select('*')
+                .eq('category', 'Opinion')
+                .eq('is_published', true)
+                .limit(5)
+                .order('created_at', { ascending: false });
+
+            // 3. RÉCUPÉRATION SPÉCIFIQUE : LIFESTYLE (API)
+            let lifestyleNews = [];
+            const lifestyleCacheKey = `news_api_lifestyle`;
+            const cachedLife = localStorage.getItem(lifestyleCacheKey);
+            
+            if (cachedLife && (now - localStorage.getItem(`${lifestyleCacheKey}_time`) < CACHE_DURATION)) {
+                lifestyleNews = JSON.parse(cachedLife);
+            } else {
+                try {
+                    const res = await fetch(`${NEWAPI_PROXY}?category=lifestyle`);
+                    const newsData = await res.json();
+                    lifestyleNews = newsData.results || [];
+                    localStorage.setItem(lifestyleCacheKey, JSON.stringify(lifestyleNews));
+                    localStorage.setItem(`${lifestyleCacheKey}_time`, now.toString());
+                } catch (e) { console.warn("Lifestyle API Off"); }
+            }
+
+            renderAll({ 
+                myArticles: myArticles || [], 
+                opinionArticles: opinionArticles || [], 
+                lifestyleNews: lifestyleNews, 
+                category 
+            }, query);
+
+        } catch (e) { 
+            console.error("Erreur globale:", e);
+            if(status) status.textContent = "ERREUR DE CONNEXION.";
+        }
+    }
+
+    function renderAll(data, query) {
+        const hero = document.getElementById('hero-zone');
+        const grid = document.getElementById('news-grid');
+        const sidebar = document.getElementById('sidebar-list');
+        const lifestyleBox = document.getElementById('lifestyle-list');
+        const opinionBox = document.getElementById('opinion-list');
+        const status = document.getElementById('status-line');
+        
+        const uniqueArticles = data.myArticles; 
+
+        if (uniqueArticles.length === 0 && data.lifestyleNews.length === 0) {
+            if(status) status.textContent = "AUCUNE INFO DISPONIBLE.";
+            return;
+        }
+
+        if(hero && uniqueArticles[0]) {
+            const h = uniqueArticles[0];
+            const hLink = `redaction.html?id=${h.id}`;
+            hero.innerHTML = `
+                <div class="hero-container">
+                    <div class="hero-text">
+                        <h1 onclick="captureAction('${h.titre.replace(/'/g, "\\'")}', '${h.category}', '${hLink}')">${h.titre}</h1>
+                        <p>${(h.description || "").substring(0, 180)}...</p>
+                    </div>
+                    <div class="hero-img"><img src="${h.image_url}"></div>
+                </div>`;
+        }
+
+        if(grid) {
+            grid.innerHTML = uniqueArticles.slice(1, 7).map(art => `
+                <div class="article-card" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', '${art.category}', 'redaction.html?id=${art.id}')">
+                    <div class="card-img"><img src="${art.image_url}"></div>
+                    <div class="card-text"><h3>${art.titre}</h3></div>
+                </div>`).join('');
+        }
+
+        if(sidebar) {
+            sidebar.innerHTML = uniqueArticles.slice(7, 12).map(art => `
+                <div class="sidebar-article" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', '${art.category}', 'redaction.html?id=${art.id}')">
+                    <span class="category-tag">${art.category}</span>
+                    <h4>${art.titre}</h4>
+                </div>`).join('');
+        }
+
+        if(lifestyleBox) {
+            lifestyleBox.innerHTML = data.lifestyleNews.slice(0, 3).map(art => `
+                <div class="lifestyle-item" onclick="window.open('${art.link}', '_blank')">
+                    <img src="${art.image_url || 'https://via.placeholder.com/80'}" class="lifestyle-img">
+                    <h4>${art.title}</h4>
+                </div>`).join('');
+        }
+
+        if(opinionBox) {
+            opinionBox.innerHTML = data.opinionArticles.map(art => `
+                <div class="opinion-item" onclick="captureAction('${art.titre.replace(/'/g, "\\'")}', 'Opinion', 'redaction.html?id=${art.id}')">
+                    <span class="opinion-author">🖋️ ${art.auteur || 'MAKMUS'}</span>
+                    <h4>${art.titre}</h4>
+                </div>`).join('');
+        }
+
+        if(status) status.textContent = query ? `RÉSULTATS : ${query.toUpperCase()}` : `ÉDITION ACTUALISÉE`;
+    }
+
+    // --- VIDÉOS VERTICALES ---
+    const ICON_MUTE = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>`;
+    const ICON_VOL = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H2v6h4l5 4V5z"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M15.54 8.46a5 5 0 0 1 0 7.08"></path></svg>`;
+
+    async function fetchVideosVerticaux() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('videos_du_jour')
+                .select('*')
+                .eq('is_published', true)
+                .order('created_at', { ascending: false });
+
+            if (error || !data || data.length === 0) {
+                const section = document.getElementById('video-section');
+                if(section) section.style.display = 'none';
+                return;
+            }
+
+            const slider = document.getElementById('video-slider');
+            if(!slider) return;
+
+            slider.innerHTML = data.map(vid => `
+                <div class="video-card" style="position:relative;">
+                    <div class="mute-control" onclick="toggleMute(event, this)">
+                        <span class="icon-vol-container">${ICON_MUTE}</span>
+                    </div>
+                    <video src="${vid.video_url}" poster="${vid.poster_url || ''}" loop muted playsinline style="width:100%; height:100%; object-fit: cover; cursor: pointer;" onclick="handleVideoClick(this)"></video>
+                    <div class="video-overlay" style="position:absolute; bottom:0; left:0; right:0; padding:20px; background: linear-gradient(transparent, rgba(0,0,0,0.8)); pointer-events:none;">
+                        <h4 style="color:white; margin:0; font-family:Arial; font-size:0.9rem;">${vid.titre}</h4>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (e) { console.warn("Erreur vidéos:", e); }
+    }
+
+    function toggleMute(event, btn) {
+        event.stopPropagation();
+        const video = btn.parentNode.querySelector('video');
+        const container = btn.querySelector('.icon-vol-container');
+        if (video.muted) {
+            video.muted = false;
+            container.innerHTML = ICON_VOL;
+        } else {
+            video.muted = true;
+            container.innerHTML = ICON_MUTE;
+        }
+    }
+
+    function handleVideoClick(video) {
+        if (video.paused) {
+            document.querySelectorAll('.video-card video').forEach(v => { if(v !== video) v.pause(); });
+            video.play();
+        } else {
+            video.pause();
+        }
+    }
+
+    // --- TAGS AUTOMATIQUES ---
+    async function loadAutoTrendingTags() {
+        try {
+            const { data, error } = await supabaseClient
+                .from('articles')
+                .select('tags')
+                .not('tags', 'is', null)
+                .order('created_at', { ascending: false })
+                .limit(15);
+
+            if (error || !data) return;
+
+            let allTags = [];
+            data.forEach(item => {
+                if(item.tags) {
+                    const splitTags = item.tags.split(',').map(t => t.trim());
+                    allTags = [...allTags, ...splitTags];
+                }
+            });
+
+            const uniqueTags = [...new Set(allTags)].filter(t => t.length > 1).slice(0, 8);
+            const container = document.getElementById('tags-container');
+            if (container) {
+                container.innerHTML = uniqueTags.map(tag => `
+                    <span class="tag-item" onclick="filterByTag('${tag.replace(/'/g, "\\'")}')">${tag}</span>
+                `).join('');
+            }
+        } catch (e) { console.warn("Erreur tags:", e); }
+    }
+
+    async function filterByTag(tagName) {
+        const { data, error } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .ilike('tags', `%${tagName}%`) 
+            .order('created_at', { ascending: false });
+
+        if (!error && data) {
+            renderAll({ myArticles: data, opinionArticles: [], lifestyleNews: [], category: 'Filtrage' }, tagName);
+            const grid = document.getElementById('news-grid');
+            if(grid) grid.scrollIntoView({ behavior: 'smooth' });
+        }
+    }
+
+    // --- PUBLICITÉS ---
+    let currentAdIndex = 0;
+    let activeAds = [];
+
+    async function initAdSlider() {
+        const { data, error } = await supabaseClient.from('publicites').select('*').eq('est_active', true);
+        if (error || !data || data.length === 0) return;
+        activeAds = data;
+        showNextAd();
+        setInterval(showNextAd, 15000);
+    }
+
+    function showNextAd() {
+        if (activeAds.length === 0) return;
+        const ad = activeAds[currentAdIndex];
+        const displayZone = document.getElementById('ad-display-zone');
+        if(!displayZone) return;
+
+        const action = `onclick="trackAdClick('${ad.id}', '${ad.lien_clic}')"`;
+        displayZone.innerHTML = ad.type === 'video' 
+            ? `<div style="cursor:pointer" ${action}><video class="ad-media ad-fade" src="${ad.media_url}" autoplay muted loop playsinline></video></div>`
+            : `<div style="cursor:pointer" ${action}><img class="ad-media ad-fade" src="${ad.media_url}" alt="Publicité"></div>`;
+        
+        currentAdIndex = (currentAdIndex + 1) % activeAds.length;
+    }
+
+    async function trackAdClick(adId, redirectUrl) {
+        try {
+            const { data: currentAd } = await supabaseClient.from('publicites').select('nb_clics').eq('id', adId).single();
+            await supabaseClient.from('publicites').update({ nb_clics: (currentAd.nb_clics || 0) + 1 }).eq('id', adId);
+        } catch (e) { console.warn("Erreur tracking pub:", e); }
+        if(redirectUrl) window.open(redirectUrl, '_blank');
+    }
+
+    // --- TICKER MARCHÉS ---
+    const EXCHANGE_API_KEY = '4e4fee63bab6fce7ba7b39e8';
+    let marketData = [
+        { label: "USD/CDF", value: "Chargement...", change: "LIVE", trend: "up" },
+        { label: "BTC/USD", value: "64,250", change: "+1.2%", trend: "up" },
+        { label: "OR (oz)", value: "2,150", change: "-0.5%", trend: "down" }
+    ];
+
+    async function fetchMarketData() {
+        try {
+            const response = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/latest/USD`);
+            const data = await response.json();
+            if (data.result === "success") {
+                marketData[0].value = Math.round(data.conversion_rates.CDF).toLocaleString() + " FC";
+            }
+        } catch (e) { console.warn("Erreur Marchés"); }
+    }
+
+    let currentTickerIndex = 0;
+    function updateTickerUI() {
+        const wrapper = document.getElementById('ticker-content');
+        if (!wrapper) return;
+        const data = marketData[currentTickerIndex];
+        wrapper.innerHTML = `<div class="ticker-item fade-in-up"><span class="ticker-label">${data.label}</span> <span class="ticker-value">${data.value}</span> <span class="ticker-change ${data.trend}">${data.change}</span></div>`;
+        currentTickerIndex = (currentTickerIndex + 1) % marketData.length;
+    }
+
+    async function initMarketTicker() {
+        await fetchMarketData();
+        updateTickerUI();
+        setInterval(updateTickerUI, 5000);
+    }
+
+    // --- INITIALISATION UNIQUE ---
+    window.onload = async () => {
+        updateDate();
+        initMarketTicker();
+        fetchAllContent('top');
+        fetchMagazineSection(); 
+        fetchVideosVerticaux();
+        loadAutoTrendingTags();
+        initAdSlider();
+        tracker.log('view', { title: 'Visite Page Accueil' });
+    };
+</script>
 </body>
 </html>
-
-
