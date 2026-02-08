@@ -511,6 +511,33 @@ video::-webkit-media-controls { display: none !important; }
 .lifestyle-item { display: flex; gap: 12px; margin-bottom: 18px; align-items: center; cursor: pointer; }
 .lifestyle-img { width: 80px; height: 60px; object-fit: cover; border-radius: 2px; }
 
+.mini-news-item {
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.mini-news-title {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-top: 5px;
+    cursor: pointer;
+}
+
+.mini-news-title:hover {
+    color: var(--nyt-gray);
+    text-decoration: underline;
+}
+
+.see-all-link {
+    display: block;
+    margin-top: 15px;
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    text-decoration: none;
+    color: var(--nyt-black);
+}
 /* --- EXPLORER --- */
 .category-explorer { padding: 60px 0; background-color: #fff; border-top: 1px solid var(--nyt-light-gray); }
 .explorer-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px; margin-top: 30px; }
