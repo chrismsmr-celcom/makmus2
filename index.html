@@ -40,7 +40,8 @@
 
     <div class="full-menu" id="fullMenu">
         <div class="menu-header">
-            <div class="menu-logo">MAKMUS</div>
+            <div class="menu-logo"><img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png
+" alt="MakMus"></div>
             <span class="close-menu" id="closeMenu" onclick="toggleMenu(false)">&times; FERMER</span>
         </div>
         <div class="menu-content">
@@ -49,24 +50,36 @@
                 <button onclick="fetchAllContent('top', document.getElementById('menuSearchInput').value); toggleMenu(false);">OK</button>
             </div>
             <div class="menu-grid">
-                <div class="menu-section">
-                    <h3>ACTUALITÉS</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('top'); toggleMenu(false); return false;">À la une</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); toggleMenu(false); return false;">RDC</a></li>
-                        <li><a href="#" onclick="fetchAllContent('politics'); toggleMenu(false); return false;">Politique</a></li>
-                        <li><a href="#" onclick="fetchAllContent('world'); toggleMenu(false); return false;">International</a></li>
-                    </ul>
-                </div>
-                <div class="menu-section">
-                    <h3>LOISIRS & SOCIÉTÉ</h3>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('sports'); toggleMenu(false); return false;">Sports</a></li>
-                        <li><a href="#" onclick="fetchAllContent('health'); toggleMenu(false); return false;">Santé</a></li>
-                        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
-                    </ul>
-                </div>
-            </div>
+     <div class="menu-section">
+    <h3>ACTUALITÉS</h3>
+    <ul>
+        <li><a href="#" onclick="fetchHybridNews('top'); toggleMenu(false); return false;">À la une</a></li>
+        <li><a href="#" onclick="fetchHybridNews('top', 'RDC Congo'); toggleMenu(false); return false;">RDC</a></li>
+        <li><a href="#" onclick="fetchHybridNews('politics'); toggleMenu(false); return false;">Politique</a></li>
+        <li><a href="#" onclick="fetchHybridNews('world'); toggleMenu(false); return false;">International</a></li>
+        <li><a href="#" onclick="fetchHybridNews('environment'); toggleMenu(false); return false;">Environnement</a></li>
+    </ul>
+</div>
+<div class="menu-section">
+    <h3>ÉCONOMIE & TECH</h3>
+    <ul>
+        <li><a href="#" onclick="fetchHybridNews('business'); toggleMenu(false); return false;">Business</a></li>
+        <li><a href="#" onclick="fetchHybridNews('technology'); toggleMenu(false); return false;">Technologies</a></li>
+        <li><a href="#" onclick="fetchHybridNews('science'); toggleMenu(false); return false;">Sciences</a></li>
+        <li><a href="#" onclick="fetchHybridNews('top', 'crypto'); toggleMenu(false); return false;">Crypto-monnaie</a></li>
+    </ul>
+</div>
+<div class="menu-section">
+    <h3>LOISIRS & SOCIÉTÉ</h3>
+    <ul>
+        <li><a href="#" onclick="fetchHybridNews('sports'); toggleMenu(false); return false;">Sports</a></li>
+        <li><a href="#" onclick="fetchHybridNews('entertainment'); toggleMenu(false); return false;">Culture & Musique</a></li>
+        <li><a href="#" onclick="fetchHybridNews('health'); toggleMenu(false); return false;">Santé</a></li>
+        <li><a href="#" onclick="fetchHybridNews('lifestyle'); toggleMenu(false); return false;">Style de vie / Food</a></li>
+        <li><a href="#" onclick="fetchHybridNews('tourism'); toggleMenu(false); return false;">Voyages</a></li>
+        <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
+    </ul>
+</div>            </div>
         </div>
     </div>
 
@@ -76,27 +89,27 @@
             <div class="market-ticker-container">
                 <div id="ticker-content"></div>
             </div>
-            <button id="openModal" onclick="toggleModal(true)">MON COMPTE</button>
+            <button id="openModal" onclick="toggleModal('modalAccount', true)">
+    <img src="https://img.icons8.com/material-outlined/24/user-male-circle.png" alt="Compte">
+    <span class="account-text">MON COMPTE</span>
+</button>
         </div>
     </div>
 
-    <header class="main-header">
-        <div class="header-left">
-            <div class="menu-toggle" onclick="toggleMenu(true)">
-                <span></span><span></span><span></span>
-                <span class="menu-label">SECTIONS</span>
-            </div>
-        </div>
-        <div class="logo-container">
-            <a href="index.html">
-                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
-            </a>
-        </div>
-        <div class="header-right">
-            <button class="btn-subscribe">ABONNEZ-VOUS <span class="price-tag">POUR 1 $/SEMAINE</span></button>
-        </div>
-    </header>
+<header class="main-header">
+<div class="menu-toggle" onclick="toggleMenu(true)" style="cursor:pointer;">
+    <img src="https://img.icons8.com/material-rounded/24/menu--v1.png" alt="Menu" class="menu-icon">
+    <span class="menu-label">SECTIONS</span>
+</div>
+    <div class="logo-container">
+        <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png
+" alt="MakMus">
+    </div>
 
+    <div class="header-right">
+        <button class="btn-subscribe">S'ABONNER</button>
+    </div>
+</header>
     <nav class="nav-compact">
         <ul>
             <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
@@ -173,27 +186,30 @@
             <div class="footer-links-grid">
                 <div class="footer-col">
                     <h4>SECTIONS</h4>
-                    <ul>
-                        <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-                        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-                        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-                        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-                        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-                        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
-                        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
-                        <li><a href="jeux.html">JEUX</a></li>
-                    </ul>
+        <ul>
+        <li><a href="#" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
+        <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
+        <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
+        <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
+        <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
+        <li><a href="#" onclick="fetchAllContent('health'); return false;">SANTÉ</a></li>
+        <li><a href="#" onclick="fetchAllContent('environment'); return false;">CLIMAT</a></li>
+        <li><a href="#" onclick="fetchAllContent('tourism'); return false;">VOYAGES</a></li>
+        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+        </ul>
                 </div>
                 <div class="footer-col">
                     <h4>AIDE</h4>
-                    <ul>
-                        <li><a href="#">Abonnements</a></li>
-                        <li><a href="#">Contact</a></li>
-                        <li><a href="#">Publicité</a></li>
-                        <li><a href="#">Emploi</a></li>
-                        <li><a href="#">Makila Emmanuel Heritage</a></li>
-                        <li><a href="#">Météo</a></li>
-                    </ul>
+         <ul>
+            <li><a href="#">Abonnements</a></li>
+            <li><a href="#">Contact</a></li>
+            <li><a href="#">Publicité</a></li>
+            <li><a href="#">Emploi</a></li>
+            <li><a href="#">Makmus magazine</a></li>
+            <li><a href="#">Makila Emmanuel Heritage </a></li>
+            <li><a href="#">Météo </a></li>
+            <li><a href="#">Makem screen Studio</a></li>
+        </ul>
                 </div>
                 <div class="footer-col">
                     <h4>SUIVEZ-NOUS</h4>
@@ -225,6 +241,7 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script.js"></script>
 </body>
 </html>
