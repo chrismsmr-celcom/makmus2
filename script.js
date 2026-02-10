@@ -100,17 +100,21 @@ async function fetchHybridNews(category = 'top', querySearch = '') {
 
     try {
         let query = supabaseClient.from('articles').select('*').eq('is_published', true);
+        
+        // --- MODIFICATION ICI : On exclut les résumés sportifs du flux principal (Hero + Grille) ---
+        query = query.neq('author_name', 'MAKMUS_SPORT_RESUME'); 
+        
         if (category !== 'top') query = query.eq('category', category);
         if (querySearch) query = query.or(`titre.ilike.%${querySearch}%,description.ilike.%${querySearch}%`);
 
         const { data: myArticles, error } = await query.order('created_at', { ascending: false });
         if (error) throw error;
 
+        // ... reste du code (worldNews, etc.) inchangé ...
         let worldNews = [];
         if (category === 'top' && !querySearch) {
             const cached = localStorage.getItem('news_api_cache');
             const cacheTime = localStorage.getItem('news_api_timestamp');
-            
             if (cached && cacheTime && (Date.now() - cacheTime < 3600000)) {
                 worldNews = JSON.parse(cached);
             } else {
@@ -137,7 +141,6 @@ async function fetchHybridNews(category = 'top', querySearch = '') {
         if (status) status.textContent = "ERREUR DE RÉSEAU";
     }
 }
-
 function renderUI(myArticles, worldNews = []) {
     const all = [...myArticles, ...worldNews]; 
     if (all.length === 0) return;
@@ -258,28 +261,81 @@ async function trackAdClick(id, url) {
         await supabaseClient.from('publicites').update({ nb_clics: (ad.nb_clics || 0) + 1 }).eq('id', id);
     } catch (e) { console.error("Ad track error"); }
 }
+async function loadSportsResumes() {
+    const track = document.getElementById('sports-resume-track');
+    if (!track) return; // Sécurité si l'élément n'existe pas sur la page
+    
+    const { data, error } = await supabaseClient // Utilise supabaseClient qui est déjà défini en haut
+        .from('articles')
+        .select('*')
+        .eq('author_name', 'MAKMUS_SPORT_RESUME')
+        .order('created_at', { ascending: false });
+
+    if (data && data.length > 0) {
+        track.innerHTML = data.map(match => `
+            <div class="match-card">
+                <img src="${match.image_url}" alt="match" style="width:100%; height:180px; object-fit:cover;">
+                <div style="padding:15px;">
+                    <small style="color:#a30000; font-weight:800; text-transform:uppercase;">${match.image_caption}</small>
+                    <h3 style="margin:10px 0; font-family:'Inter'; font-weight:900; color:#fff;">${match.titre}</h3>
+                    <a href="redaction.html?id=${match.id}" style="text-decoration:none; font-size:0.8rem; font-weight:700; color:#a30000;">VOIR LE RÉSUMÉ →</a>
+                </div>
+            </div>
+        `).join('');
+    } else {
+        track.innerHTML = "<p style='color:white; padding:20px;'>Aucun résultat disponible pour le moment.</p>";
+    }
+}
+// Fonction pour faire bouger ton slider avec tes boutons
+let slideIndex = 0;
+function moveSlide(direction) {
+    const track = document.getElementById('sports-resume-track');
+    const cards = document.querySelectorAll('.match-card');
+    if(cards.length === 0) return;
+    
+    const cardWidth = cards[0].offsetWidth + 20; // Largeur + gap
+    slideIndex += direction;
+    
+    // Limites pour ne pas défiler dans le vide
+    if (slideIndex < 0) slideIndex = 0;
+    if (slideIndex > cards.length - 1) slideIndex = cards.length - 1;
+
+    track.style.transform = `translateX(${-slideIndex * cardWidth}px)`;
+}
+
 
 /* ==========================================================================
    7. INITIALISATION FINALE
    ========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-    // Mise à jour de la date
+    // 1. Mise à jour de la date en haut de page
     const dateEl = document.getElementById('live-date');
-    if (dateEl) dateEl.textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
+    if (dateEl) {
+        dateEl.textContent = new Date().toLocaleDateString('fr-FR', { 
+            weekday: 'long', 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+        }).toUpperCase();
+    }
 
-    // Lancements
-    fetchMarketData();
+    // 2. Lancement des flux de données
+    fetchMarketData();       // Bourse
+    fetchHybridNews('top');  // News principales (Exclut les résumés sportifs automatiquement)
+    fetchVideosVerticaux();  // Shorts / Vidéos
+    initAdSlider();          // Publicités
+    loadSportsResumes();     // TON SLIDER SPORT (Chargement des scores)
+
+    // 3. Mise à jour automatique du Ticker (Bourse) toutes les 5 secondes
     setInterval(updateTickerUI, 5000);
-    fetchHybridNews('top');
-    fetchVideosVerticaux();
-    initAdSlider();
     
-    // Vérifications de sécurité pour les fonctions optionnelles
+    // 4. Vérifications de sécurité pour les fonctions optionnelles (Lifestyle, etc.)
     if(typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
     if(typeof fetchLifestyleNews === 'function') fetchLifestyleNews();
-    if(typeof fetchSportsResume === 'function') fetchSportsResume();
 
+    // 5. Analytics
     tracker.log('view_home');
-    // Fonction de compatibilité pour le menu
-window.fetchAllContent = (cat, query) => fetchHybridNews(cat, query);
+
+    // 6. Fonction de compatibilité pour la recherche et le menu
+    window.fetchAllContent = (cat, query) => fetchHybridNews(cat, query);
 });
