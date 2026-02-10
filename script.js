@@ -11,12 +11,15 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 /* ==========================================================================
    2. INTERFACE : MENU & MODALES
    ========================================================================== */
+/* ==========================================================================
+   2. INTERFACE : MENU & MODALES
+   ========================================================================== */
 window.toggleMenu = (show) => {
     const menu = document.getElementById('fullMenu');
     if (!menu) return;
     if (show) {
         menu.classList.add('active');
-        document.body.style.overflow = 'hidden'; // Empêche le scroll derrière
+        document.body.style.overflow = 'hidden';
     } else {
         menu.classList.remove('active');
         document.body.style.overflow = 'auto';
@@ -25,9 +28,32 @@ window.toggleMenu = (show) => {
 
 window.toggleModal = (id, show) => {
     const modal = document.getElementById(id);
-    if (modal) modal.style.display = show ? 'flex' : 'none';
+    if (!modal) return;
+
+    if (show) {
+        modal.style.display = 'flex';
+        modal.classList.add('active'); 
+        document.body.style.overflow = 'hidden';
+    } else {
+        modal.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+    
+    // Fermeture si clic sur le fond (modal-overlay)
+    modal.onclick = function(event) {
+        if (event.target === modal) {
+            window.toggleModal(id, false);
+        }
+    };
 };
 
+// Sécurité Globale (doublon supprimé pour éviter les conflits)
+window.addEventListener('click', function(event) {
+    if (event.target.classList.contains('modal-overlay')) {
+        event.target.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+});
 /* ==========================================================================
    3. ANALYTICS & TRACKING
    ========================================================================== */
@@ -101,7 +127,7 @@ async function fetchHybridNews(category = 'top', querySearch = '') {
     try {
         let query = supabaseClient.from('articles').select('*').eq('is_published', true);
         
-        // --- MODIFICATION ICI : On exclut les résumés sportifs du flux principal (Hero + Grille) ---
+        // Exclure les résumés sportifs (qui vont dans le slider dédié)
         query = query.neq('author_name', 'MAKMUS_SPORT_RESUME'); 
         
         if (category !== 'top') query = query.eq('category', category);
@@ -110,26 +136,32 @@ async function fetchHybridNews(category = 'top', querySearch = '') {
         const { data: myArticles, error } = await query.order('created_at', { ascending: false });
         if (error) throw error;
 
-        // ... reste du code (worldNews, etc.) inchangé ...
         let worldNews = [];
+        // Charger les news mondiales uniquement sur l'accueil sans recherche
         if (category === 'top' && !querySearch) {
             const cached = localStorage.getItem('news_api_cache');
             const cacheTime = localStorage.getItem('news_api_timestamp');
+
             if (cached && cacheTime && (Date.now() - cacheTime < 3600000)) {
                 worldNews = JSON.parse(cached);
             } else {
-                const res = await fetch(BACKEND_URL);
-                if (res.ok) {
-                    const apiData = await res.json();
-                    worldNews = (apiData.articles || []).filter(a => a.urlToImage && a.title !== "[Removed]");
-                    localStorage.setItem('news_api_cache', JSON.stringify(worldNews));
-                    localStorage.setItem('news_api_timestamp', Date.now());
+                try {
+                    const res = await fetch(BACKEND_URL);
+                    if (res.ok) {
+                        const apiData = await res.json();
+                        worldNews = (apiData.articles || []).filter(a => a.urlToImage && a.title && a.title !== "[Removed]");
+                        localStorage.setItem('news_api_cache', JSON.stringify(worldNews));
+                        localStorage.setItem('news_api_timestamp', Date.now());
+                    }
+                } catch (apiErr) {
+                    console.warn("News API indisponible, utilisation des données locales uniquement.");
                 }
             }
         }
 
-        const existingTitles = new Set(myArticles.map(a => a.titre.toLowerCase().trim()));
-        const filteredWorld = worldNews.filter(a => !existingTitles.has(a.title?.toLowerCase().trim()));
+        // Filtrer les doublons : on ne garde les news mondiales que si le titre n'est pas déjà dans nos articles Supabase
+        const existingTitles = new Set(myArticles.map(a => (a.titre || "").toLowerCase().trim()));
+        const filteredWorld = worldNews.filter(a => !existingTitles.has((a.title || "").toLowerCase().trim()));
 
         renderUI(myArticles, filteredWorld);
 
@@ -138,60 +170,79 @@ async function fetchHybridNews(category = 'top', querySearch = '') {
                                  (category === 'top' ? "ÉDITION DU JOUR — KINSHASA" : `RUBRIQUE : ${category.toUpperCase()}`);
         }
     } catch (e) {
+        console.error(e);
         if (status) status.textContent = "ERREUR DE RÉSEAU";
     }
 }
 function renderUI(myArticles, worldNews = []) {
     const all = [...myArticles, ...worldNews]; 
-    if (all.length === 0) return;
-
     const hero = document.getElementById('hero-zone');
+    const grid = document.getElementById('news-grid');
+
+    if (all.length === 0) {
+        if (grid) grid.innerHTML = "<p>Aucun article trouvé.</p>";
+        return;
+    }
+
+    // --- Rendu du HERO (Le premier article) ---
     if (hero && all[0]) {
         const h = all[0];
         const displayTitle = h.titre || h.title;
         const displayImg = h.image_url || h.urlToImage || 'https://via.placeholder.com/800x500';
         const displayLink = h.id ? `redaction.html?id=${h.id}` : h.url;
+        const cleanTitle = displayTitle.replace(/'/g, "\\'");
 
         hero.innerHTML = `
-            <div class="main-article" onclick="captureAction('${displayTitle.replace(/'/g, "\\'")}', '${h.category || 'Monde'}', '${displayLink}')" style="cursor:pointer;">
+            <div class="main-article" onclick="captureAction('${cleanTitle}', '${h.category || 'Monde'}', '${displayLink}')" style="cursor:pointer;">
                 <h1>${displayTitle}</h1>
                 <div class="hero-content">
                     <div class="hero-text">
-                        <p style="font-size:1.25rem; color:#333; margin-bottom:15px;">${(h.description || "").substring(0, 300)}...</p>
-                        <span style="font-weight:bold; color:var(--primary-red); text-transform:uppercase; font-size:0.8rem;">Lire la suite →</span>
+                        <p style="font-size:1.1rem; color:#333; margin-bottom:15px;">
+                            ${(h.description || "").substring(0, 220)}...
+                        </p>
+                        <span style="font-weight:bold; color:#a30000; text-transform:uppercase; font-size:0.8rem;">Lire la suite →</span>
                     </div>
-                    <div class="hero-image"><img src="${displayImg}" alt="Focus"></div>
+                    <div class="hero-image">
+                        <img src="${displayImg}" alt="Focus News" onerror="this.src='https://via.placeholder.com/800x500'">
+                    </div>
                 </div>
             </div>`;
     }
 
-    const grid = document.getElementById('news-grid');
+    // --- Rendu de la GRILLE (Les articles suivants, de 1 à 5) ---
     if (grid) {
-        grid.innerHTML = all.slice(1, 5).map(art => {
+        const gridItems = all.slice(1, 7); // J'ai augmenté à 6 articles pour une grille plus remplie
+        grid.innerHTML = gridItems.map(art => {
             const t = art.titre || art.title;
-            const img = art.image_url || art.urlToImage;
+            const img = art.image_url || art.urlToImage || 'https://via.placeholder.com/400x250';
             const link = art.id ? `redaction.html?id=${art.id}` : art.url;
+            const cleanT = t.replace(/'/g, "\\'");
+            
             return `
-                <div class="article-card" onclick="captureAction('${t.replace(/'/g, "\\'")}', '${art.category || 'Infos'}', '${link}')" style="cursor:pointer;">
-                    <img src="${img}" style="width:100%; height:200px; object-fit:cover;">
-                    <h3>${t}</h3>
-                    <p>${(art.description || "").substring(0, 100)}...</p>
+                <div class="article-card" onclick="captureAction('${cleanT}', '${art.category || 'Infos'}', '${link}')" style="cursor:pointer;">
+                    <div class="card-img-wrapper" style="height:180px; overflow:hidden;">
+                        <img src="${img}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://via.placeholder.com/400x250'">
+                    </div>
+                    <div style="padding:12px;">
+                        <h3 style="font-size:1rem; margin-bottom:8px; line-height:1.3;">${t}</h3>
+                        <p style="font-size:0.85rem; color:#666;">${(art.description || "").substring(0, 85)}...</p>
+                    </div>
                 </div>`;
         }).join('');
     }
 }
-
 /* ==========================================================================
    6. VIDÉOS & PUBS
    ========================================================================== */
 const ICONS = {
     LIKE: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
+    LIKE_FILLED: `<svg width="22" height="22" viewBox="0 0 24 24" fill="#ff4757"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>`,
     MUTE: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"></path></svg>`,
     VOL: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.08"></path></svg>`,
     FULL: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>`
 };
 
-// Fonctions vidéo manquantes
+// --- Fonctions de contrôle ---
 window.toggleMute = (e, btn) => {
     e.stopPropagation();
     const video = btn.closest('.video-card').querySelector('video');
@@ -208,30 +259,83 @@ window.toggleFullscreen = (e, btn) => {
 
 window.handleLike = async (e, btn, id) => {
     e.stopPropagation();
-    const countSpan = btn.nextElementSibling;
-    let current = parseInt(countSpan.textContent);
-    countSpan.textContent = current + 1;
-    btn.style.color = "var(--primary-red)";
-    await supabaseClient.rpc('increment_likes', { row_id: id }); // Requiert une fonction RPC sur Supabase
+    const likedVideos = JSON.parse(localStorage.getItem('makmus_liked_videos') || '[]');
+    if (likedVideos.includes(id)) return;
+
+    btn.innerHTML = ICONS.LIKE_FILLED;
+    btn.style.color = "#ff4757";
+    likedVideos.push(id);
+    localStorage.setItem('makmus_liked_videos', JSON.stringify(likedVideos));
+    
+    try {
+        await supabaseClient.rpc('increment_likes', { row_id: id });
+    } catch(err) { console.error("Like Error:", err); }
 };
 
+// --- CORRECTION : Ajout des fonctions de progression ---
+window.updateProgress = (video, index) => {
+    const bar = document.getElementById(`bar-${index}`);
+    if (bar && video.duration) {
+        const percentage = (video.currentTime / video.duration) * 100;
+        bar.style.width = percentage + "%";
+    }
+};
+
+window.autoScrollNext = (currentIndex) => {
+    const nextCard = document.getElementById(`vcard-${currentIndex + 1}`);
+    if (nextCard) {
+        nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        const nextVideo = nextCard.querySelector('video');
+        if (nextVideo) {
+            nextVideo.play().catch(err => console.log("Autoplay bloqué par le navigateur"));
+        }
+    } else {
+        const slider = document.getElementById('video-slider');
+        if (slider) slider.scrollTo({ left: 0, behavior: 'smooth' });
+    }
+};
+
+// --- Récupération des données ---
 async function fetchVideosVerticaux() {
     const { data } = await supabaseClient.from('videos_du_jour').select('*').eq('is_published', true);
     const slider = document.getElementById('video-slider');
     if (!slider || !data) return;
 
-    slider.innerHTML = data.map(vid => `
-        <div class="video-card">
-            <div class="video-controls-top">
-                <div class="control-group"><button class="control-btn" onclick="handleLike(event, this, '${vid.id}')">${ICONS.LIKE}</button><span class="like-count">${vid.likes || 0}</span></div>
-                <button class="control-btn" onclick="toggleMute(event, this)">${ICONS.MUTE}</button>
-                <button class="control-btn" onclick="toggleFullscreen(event, this)">${ICONS.FULL}</button>
-            </div>
-            <video src="${vid.video_url}" loop muted playsinline onclick="this.paused ? this.play() : this.pause()"></video>
-            <div class="video-overlay-bottom"><h4>${vid.titre}</h4></div>
-        </div>`).join('');
-}
+    const likedVideos = JSON.parse(localStorage.getItem('makmus_liked_videos') || '[]');
 
+    slider.innerHTML = data.map((vid, index) => {
+        const isLiked = likedVideos.includes(vid.id);
+        return `
+        <div class="video-card" id="vcard-${index}">
+            <div class="video-controls-top">
+                <button class="control-btn" onclick="handleLike(event, this, '${vid.id}')" style="color: ${isLiked ? '#ff4757' : 'white'}">
+                    ${isLiked ? ICONS.LIKE_FILLED : ICONS.LIKE}
+                </button>
+                <button class="control-btn" onclick="toggleMute(event, this)">
+                    ${ICONS.MUTE}
+                </button>
+                <button class="control-btn" onclick="toggleFullscreen(event, this)">
+                    ${ICONS.FULL}
+                </button>
+            </div>
+            
+            <video src="${vid.video_url}" 
+                   playsinline 
+                   muted 
+                   autoplay
+                   onclick="this.paused ? this.play() : this.pause()"
+                   ontimeupdate="window.updateProgress(this, ${index})"
+                   onended="window.autoScrollNext(${index})">
+            </video>
+
+            <div class="progress-bar-container">
+                <div class="progress-fill" id="bar-${index}"></div>
+            </div>
+
+            <div class="video-overlay-bottom"><h4>${vid.titre}</h4></div>
+        </div>`;
+    }).join('');
+}
 // Publicité
 let activeAds = [], currentAdIndex = 0;
 async function initAdSlider() {
