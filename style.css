@@ -199,6 +199,28 @@ h1, h2, h3, .section-title {
         background: #f9f9f9;
     }
 }
+.modal-overlay {
+    z-index: 9999; /* Doit être le plus haut possible */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none; /* Changé par le JS */
+    align-items: center;
+    justify-content: center;
+}
+.close-modal {
+    cursor: pointer;          /* Force la main (curseur de clic) */
+    user-select: none;        /* Empêche de surligner le X comme du texte */
+    -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.close-modal:hover {
+    transform: scale(1.1);    /* Petit effet visuel au survol */
+}
 /* ==========================================================================
    4. HEADER, LOGO & NAV
    ========================================================================== */
@@ -287,57 +309,129 @@ h1, h2, h3, .section-title {
 .article-card h3 { font-size: 1.2rem; margin: 10px 0; line-height: 1.3; }
 
 /* ==========================================================================
-   /* ==========================================================================
-   6. VIDÉOS VERTICALES (Correction Responsive)
+   6. VIDÉOS VERTICALES (Format Instagram Reels)
    ========================================================================== */
-#video-section { background: #fff; padding: 40px 0; }
-.video-container-main { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
-.video-heading { background: #000; color: #fff; padding: 5px 15px; font-size: 14px; text-transform: uppercase; margin-bottom: 15px; display: inline-block; }
+#video-section { 
+    background: #fff; 
+    padding: 30px 0; 
+}
 
-/* Slider Fluide */
+.video-heading { 
+    background: #000; 
+    color: #fff; 
+    padding: 6px 15px; 
+    font-size: 13px; 
+    font-weight: 800;
+    text-transform: uppercase; 
+    margin-bottom: 20px; 
+    display: inline-block; 
+}
+
 #video-slider { 
     display: flex; 
-    gap: 15px; 
+    gap: 10px; /* Espace plus serré comme sur Insta */
     overflow-x: auto; 
-    scrollbar-width: none; 
-    padding-bottom: 20px;
-    scroll-snap-type: x mandatory; /* Force l'arrêt pile sur une vidéo sur mobile */
+    scroll-snap-type: x mandatory; 
+    padding: 0 15px 20px;
+    scrollbar-width: none;
 }
+
 #video-slider::-webkit-scrollbar { display: none; }
 
-/* La Carte Vidéo Adaptative */
 .video-card { 
     position: relative; 
-    min-width: 280px; /* Taille bureau */
-    aspect-ratio: 9 / 16; /* Force les proportions verticales parfaites */
-    height: 500px; 
+    /* Largeur Réduite pour l'effet élancé */
+    flex: 0 0 250px; 
+    aspect-ratio: 9 / 16; 
+    height: 440px; 
     background: #000; 
-    flex-shrink: 0; 
+    border-radius: 18px; /* Bords très arrondis style smartphone */
     overflow: hidden; 
-    border-radius: 12px; /* Optionnel : plus moderne */
-    scroll-snap-align: start;
+    scroll-snap-align: center; /* Centre la vidéo au scroll */
+    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
 }
 
-/* Forcer la vidéo à remplir tout l'espace sans déformer */
 .video-card video { 
     width: 100% !important; 
     height: 100% !important; 
-    object-fit: cover !important; /* Découpe intelligemment pour remplir le cadre */
-    cursor: pointer; 
+    object-fit: cover !important; 
 }
 
-/* Ajustements pour MOBILE */
+/* --- AJUSTEMENT MOBILE REELS --- */
 @media (max-width: 768px) {
     .video-card { 
-        min-width: 75vw; /* Occupe 75% de la largeur de l'écran */
-        height: auto; /* Laisse l'aspect-ratio calculer la hauteur */
+        /* Sur mobile, on réduit à 65% pour voir nettement les voisines */
+        flex: 0 0 65vw; 
+        height: auto; 
+        border-radius: 15px;
     }
-    .video-container-main { padding: 0 10px; }
 }
 
-.video-controls-top { position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 12px; z-index: 10; }
-.control-btn { background: rgba(0,0,0,0.4); border-radius: 50%; color: white; width: 38px; height: 38px; border: 1px solid rgba(255,255,255,0.3); cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(5px); }
-.video-overlay-bottom { position: absolute; bottom: 0; left: 0; right: 0; padding: 40px 15px 15px; background: linear-gradient(transparent, rgba(0,0,0,0.9)); color: white; pointer-events: none; }/* ==========================================================================
+/* Style des icônes façon Insta */
+.video-controls-top { 
+    position: absolute; 
+    top: 15px; 
+    right: 12px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 15px; 
+    z-index: 10; 
+}
+
+.control-btn { 
+    background: transparent; 
+    color: white; 
+    width: 32px; 
+    height: 32px; 
+    border: none; 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); /* Ombre portée sur l'icône */
+}
+
+.video-overlay-bottom { 
+    position: absolute; 
+    bottom: 0; 
+    left: 0; 
+    right: 0; 
+    padding: 40px 15px 20px; 
+    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%); 
+    color: white; 
+    pointer-events: none; 
+}
+/* Barre de progression style Reels */
+.progress-bar-container {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px; /* Très fine */
+    background: rgba(255, 255, 255, 0.2);
+    display: none; /* Cachée par défaut */
+    z-index: 20;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--makmus-red);
+    width: 0%;
+    transition: width 0.1s linear;
+}
+
+/* Affichage uniquement sur Mobile */
+@media (max-width: 768px) {
+    .video-card:focus-within .progress-bar-container,
+    .video-card:active .progress-bar-container {
+        display: block;
+    }
+}
+.video-card {
+    /* ... tes propriétés actuelles ... */
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+/* ==========================================================================
    7. MAGAZINE (LIFESTYLE & SPORTS)
    ========================================================================== */
 .magazine-section { max-width: 1200px; margin: 40px auto; padding: 0 20px; border-top: 1px solid #000; }
