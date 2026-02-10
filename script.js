@@ -413,8 +413,49 @@ function moveSlide(direction) {
 
     track.style.transform = `translateX(${-slideIndex * cardWidth}px)`;
 }
+async function loadAutoTrendingTags() {
+    const container = document.getElementById('tags-container');
+    if (!container) return;
 
+    try {
+        // On récupère la colonne 'tags' des 30 derniers articles
+        const { data, error } = await supabaseClient
+            .from('articles')
+            .select('tags') 
+            .eq('is_published', true)
+            .not('tags', 'is', null) // On ignore les articles sans tags
+            .limit(30);
 
+        if (error) throw error;
+
+        // Analyse des tags
+        const counts = data.reduce((acc, art) => {
+            // Si tes tags sont séparés par des virgules (ex: "RDC, Économie")
+            // On les sépare pour les compter individuellement
+            const individualTags = art.tags.split(',').map(t => t.trim());
+            
+            individualTags.forEach(tag => {
+                if(tag) acc[tag] = (acc[tag] || 0) + 1;
+            });
+            return acc;
+        }, {});
+
+        // Tri par popularité
+        const topTags = Object.keys(counts)
+            .sort((a, b) => counts[b] - counts[a])
+            .slice(0, 6);
+
+        container.innerHTML = topTags.map((tag, index) => `
+            <span class="trending-link ${index === 0 ? 'is-live' : ''}" 
+                  onclick="fetchHybridNews('top', '${tag}')">
+                ${tag.toUpperCase()}
+            </span>
+        `).join('');
+
+    } catch (e) {
+        console.warn("Erreur tags:", e);
+    }
+}
 /* ==========================================================================
    7. INITIALISATION FINALE
    ========================================================================== */
