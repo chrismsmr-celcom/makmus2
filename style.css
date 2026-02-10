@@ -351,6 +351,26 @@ h1, h2, h3, .section-title {
     transition: 0.2s;
 }
 .nav-btn:hover { background: #f0f0f0; }
+.slider-container {
+    overflow: hidden; /* Cache ce qui dépasse */
+    width: 100%;
+    padding: 20px 0;
+}
+
+.sports-track {
+    display: flex; /* Aligne les cartes horizontalement */
+    gap: 20px;
+    transition: transform 0.4s ease-in-out;
+    will-change: transform;
+}
+
+/* Style des cartes qui vont être injectées */
+.sports-track .match-card {
+    min-width: 300px; /* Largeur de chaque carte sport */
+    background: #fff;
+    border-bottom: 4px solid #a30000;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
 /* ==========================================================================
    8. FOOTER, MENU & MODALE
    ========================================================================== */
