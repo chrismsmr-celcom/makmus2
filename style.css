@@ -828,6 +828,45 @@ h1, h2, h3, .section-title {
     .menu-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
     .menu-search input { font-size: 1.1rem; }
 }
+#tags-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.trending-link {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: #1a1a1a;
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
+    white-space: nowrap;
+    position: relative;
+}
+
+.trending-link:hover {
+    color: var(--makmus-red, #a30000);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+/* Indicateur de sujet chaud sans hashtag */
+.is-live {
+    color: #a30000;
+}
+
+.is-live::after {
+    content: "•";
+    margin-left: 5px;
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
 /* ==========================================================================
    9. RESPONSIVE MOBILE
    ========================================================================== */
