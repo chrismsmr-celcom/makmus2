@@ -253,10 +253,17 @@ window.toggleMute = (e, btn) => {
 window.toggleFullscreen = (e, btn) => {
     e.stopPropagation();
     const video = btn.closest('.video-card').querySelector('video');
-    if (video.requestFullscreen) video.requestFullscreen();
-    else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
-};
 
+    if (video.requestFullscreen) {
+        video.requestFullscreen();
+    } else if (video.webkitRequestFullscreen) { /* Safari / iOS */
+        video.webkitRequestFullscreen();
+    } else if (video.webkitEnterFullscreen) { /* Anciens iOS */
+        video.webkitEnterFullscreen();
+    } else if (video.msRequestFullscreen) { /* IE11 */
+        video.msRequestFullscreen();
+    }
+};
 window.handleLike = async (e, btn, id) => {
     e.stopPropagation();
     const likedVideos = JSON.parse(localStorage.getItem('makmus_liked_videos') || '[]');
