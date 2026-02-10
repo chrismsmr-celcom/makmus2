@@ -120,19 +120,41 @@ h1, h2, h3, .section-title {
 }
 #live-date {
     font-family: 'Inter', sans-serif;
-    font-size: 0.85rem; /* Taille normale sur PC */
+    font-size: 0.85rem;
     font-weight: 600;
     color: #333;
     white-space: nowrap;
+    
+    /* CORRECTION ICI */
+    width: auto;         /* Ne pas forcer 100% */
+    text-align: left;
+    margin-left: 0;      /* On utilise le padding du parent à la place */
+    flex-shrink: 0;      /* La date ne doit jamais rétrécir */
+}    
+    /* Ajouts pour l'alignement */
+    display: block;      /* Pour qu'il occupe sa propre ligne si besoin */
+    text-align: left;    /* Aligne le texte à gauche */
+    margin-left: 15px;   /* Petit espace par rapport au bord gauche */
+    width: 100%;         /* Prend toute la largeur pour valider l'alignement */
 }
 
 /* --- Ajustement pour Mobile (écrans inférieurs à 768px) --- */
+@media (min-width: 1024px) {
+    .market-ticker-container {
+        display: block; /* Apparaît sur PC */
+    }
+}
+
 @media (max-width: 768px) {
     #live-date {
-        font-size: 0.65rem; /* Plus petit pour tenir sur une ligne */
+        font-size: 0.65rem; 
         letter-spacing: 0.5px;
     }
     
+    .top-bar-content {
+        justify-content: space-between; /* Sur mobile, sépare la date et le bouton compte */
+    }
+}    
     /* On peut aussi raccourcir le bouton Mon Compte pour gagner de la place */
     #openModal {
         font-size: 0.65rem;
