@@ -1,21 +1,23 @@
 {
   "name": "MakMus News",
   "short_name": "MakMus",
-  "description": "Actualités en temps réel et lecture vocale",
-  "start_url": "/index.html",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#a30000",
+  "description": "Actualités et lecture vocale en temps réel.",
   "icons": [
     {
       "src": "icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     }
   ]
 }
