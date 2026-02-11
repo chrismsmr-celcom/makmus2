@@ -456,69 +456,170 @@ h1, h2, h3, .section-title {
 /* ==========================================================================
    7. MAGAZINE (LIFESTYLE & SPORTS)
    ========================================================================== */
-.magazine-section { max-width: 1200px; margin: 40px auto; padding: 0 20px; border-top: 1px solid #000; }
-.lifestyle-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 30px; margin-top: 20px; }
-
-.section-header-flex { display: flex; justify-content: space-between; align-items: center; border-top: 2px solid #000; margin-top: 20px; padding-top: 10px; }
-.sports-slider-container { overflow: hidden; width: 100%; }
-.sports-track { display: flex; transition: transform 0.5s ease-in-out; }
-.sports-slide {
-    min-width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1.5fr; /* Gauche: Texte/Tableau, Droite: Image */
-    gap: 20px;
-    padding: 20px 0;
-}
-/* Partie gauche : Infos */
-.sports-info { border-right: 1px solid #eee; padding-right: 20px; }
-.live-badge { color: #d00; font-weight: light; font-size: 12px; }
-.sports-title { font-size: 24px; font-weight: 800; margin: 10px 0; line-height: 1.1; }
-.sports-desc { font-size: 14px; color: #555; margin-bottom: 20px; }
-
-/* Tableau des médailles (Capture 3) */
-.medal-table { width: 100%; border-collapse: collapse; font-size: 14px; }
-.medal-table th { text-align: left; color: #888; font-weight: 400; padding-bottom: 10px; }
-.medal-table td { padding: 8px 0; font-weight: bold; }
-.country-flag { width: 20px; margin-right: 10px; vertical-align: middle; }
-
-/* Partie droite : Image (Capture 3) */
-.sports-visual img {
-    width: 100%;
-    height: 400px;
-    object-fit: cover;
+/* 1. SECTIONS DE MISE EN PAGE GÉNÉRALE */
+.magazine-section { 
+    max-width: 1200px; 
+    margin: 40px auto; 
+    padding: 0 20px; 
+    border-top: 1px solid #000; 
 }
 
-/* Boutons Navigation (Capture 4) */
-.nav-btn {
+.lifestyle-grid { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
+    gap: 30px; 
+    margin-top: 20px; 
+}
+
+/* 2. DASHBOARD SPORTS (HEADER & NAV UI) */
+.sports-dashboard {
     background: #fff;
-    border: 1px solid #ccc;
-    border-radius: 50%;
+    padding: 20px;
+    border-top: 1px solid #eee;
+    font-family: 'Inter', sans-serif;
+    color: #1a1a1a;
+}
+
+.dashboard-header-ui {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    margin-bottom: 10px;
+}
+
+/* Pagination Dots */
+.pagination-dots { display: flex; gap: 6px; }
+.dot { width: 6px; height: 6px; background: #ddd; border-radius: 50%; transition: 0.3s; }
+.dot.active { background: #000; transform: scale(1.2); }
+
+/* Flèches Circulaires */
+.nav-arrows-group { display: flex; gap: 8px; }
+.circle-arrow {
     width: 35px;
     height: 35px;
+    border-radius: 50%;
+    border: 1px solid #eee;
+    background: #fff;
     cursor: pointer;
-    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: 0.2s;
 }
-.nav-btn:hover { background: #f0f0f0; }
-.slider-container {
-    overflow: hidden; /* Cache ce qui dépasse */
-    width: 100%;
-    padding: 20px 0;
-}
+.circle-arrow:hover { border-color: #000; background: #f9f9f9; }
+.circle-arrow svg { width: 20px; height: 20px; fill: #555; }
 
-.sports-track {
-    display: flex; /* Aligne les cartes horizontalement */
+/* 3. NAVIGATION PAR ONGLETS (TABS) */
+.dashboard-tabs {
+    display: flex !important;      /* Force l'alignement horizontal */
     gap: 20px;
-    transition: transform 0.4s ease-in-out;
-    will-change: transform;
+    overflow-x: auto;              /* PERMET LE SCROLL */
+    scroll-behavior: smooth;       /* Animation fluide pour scrollBy */
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+    white-space: nowrap;           /* Empêche les boutons d'aller à la ligne */
+    
+    /* Cache la barre de défilement */
+    scrollbar-width: none;         /* Firefox */
+    -ms-overflow-style: none;      /* IE/Edge */
 }
 
-/* Style des cartes qui vont être injectées */
-.sports-track .match-card {
-    min-width: 300px; /* Largeur de chaque carte sport */
+.dashboard-tabs::-webkit-scrollbar {
+    display: none;                 /* Chrome/Safari */
+}
+
+/* --- BOUTONS D'ONGLETS --- */
+.tab-btn {
+    display: inline-flex;          /* Garde icône et texte alignés */
+    align-items: center;
+    gap: 10px;
+    background: none;
+    border: none;
+    padding: 10px 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    color: #888;
+    text-transform: uppercase;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+    flex-shrink: 0;                /* EMPÊCHE LES BOUTONS DE RÉTRÉCIR */
+}
+
+.tab-btn.active {
+    color: #000;
+    border-bottom: 2px solid #000;
+}
+
+.tab-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+    pointer-events: none;          /* L'image ne bloque pas le clic du bouton */
+}
+
+/* --- LE RESTE DE TON CODE (MÉDAILLES, ETC.) --- */
+.medal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.medal-table th {
+    text-align: center;
+    color: #999;
+    font-size: 0.7rem;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    text-transform: uppercase;
+}
+.medal-table th:first-child { text-align: left; }
+
+.medal-table td {
+    padding: 12px 10px;
+    text-align: center;
+    border-bottom: 1px solid #f9f9f9;
+}
+
+.team-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left !important;
+    font-weight: 700;
+}
+
+.flag-icon {
+    width: 24px;
+    height: 16px;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+/* 5. SLIDER DE RÉSUMÉS (MATCH CARDS) */
+.sports-slider-container { overflow: hidden; width: 100%; padding: 20px 0; }
+.sports-track { display: flex; gap: 20px; transition: transform 0.5s ease; }
+
+.match-card {
+    min-width: 300px;
     background: #fff;
     border-bottom: 4px solid #a30000;
     box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+}
+
+.live-badge { color: #d00; font-weight: bold; font-size: 11px; text-transform: uppercase; }
+.bold { font-weight: 800; }
+#tabs-scroll-container {
+    display: flex;
+    overflow-x: auto; /* Indispensable pour que le JS puisse scroller */
+    scroll-behavior: smooth;
+    gap: 20px;
+    scrollbar-width: none; /* Cache la barre sur Firefox */
+}
+
+#tabs-scroll-container::-webkit-scrollbar {
+    display: none; /* Cache la barre sur Chrome/Safari */
 }
 /* ==========================================================================
    8. FOOTER, MENU & MODALE
