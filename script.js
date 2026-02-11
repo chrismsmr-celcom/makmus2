@@ -72,11 +72,11 @@ const tracker = {
     }
 };
 
-window.captureAction = async (title, category, url) => {
+window.captureAction = async (encodedTitle, category, url) => {
+    const title = decodeURIComponent(encodedTitle); // On retrouve le vrai texte ici
     await tracker.log('click_article', { title, category });
     if (url) window.location.href = url;
 };
-
 /* ==========================================================================
    4. BOURSE & TICKER
    ========================================================================== */
@@ -184,28 +184,29 @@ function renderUI(myArticles, worldNews = []) {
         const h = heroArticle;
         const displayTitle = h.titre || h.title || "";
         const displayLink = h.id ? `redaction.html?id=${h.id}` : h.url;
-        const cleanTitle = displayTitle.replace(/'/g, "\\'");
+        // SOLUTION : On encode le titre pour qu'il ne casse jamais le JS
+        const safeTitle = encodeURIComponent(displayTitle);
 
         heroZone.innerHTML = `
             <div class="main-article">
-                <h1 onclick="captureAction('${cleanTitle}', '${h.category || 'INFO'}', '${displayLink}')" style="cursor:pointer;">${displayTitle}</h1>
+                <h1 onclick="captureAction('${safeTitle}', '${h.category || 'INFO'}', '${displayLink}')" style="cursor:pointer;">${displayTitle}</h1>
                 <div class="hero-content">
                     <div class="hero-text">
-                        <p class="hero-description" onclick="captureAction('${cleanTitle}', '${h.category || 'INFO'}', '${displayLink}')" style="cursor:pointer;">
+                        <p class="hero-description" onclick="captureAction('${safeTitle}', '${h.category || 'INFO'}', '${displayLink}')" style="cursor:pointer;">
                             ${(h.description || "").replace(/<[^>]*>/g, '').substring(0, 160)}...
                         </p>
                         <div class="hero-sub-news-wrapper">
                             ${gridArticles.slice(0, 2).map(sub => {
-                                const subTitle = (sub.titre || sub.title || "").replace(/'/g, "\\'");
+                                const subT = sub.titre || sub.title || "";
                                 const subLink = sub.id ? `redaction.html?id=${sub.id}` : sub.url;
                                 return `
-                                    <div class="sub-news-item" onclick="captureAction('${subTitle}', '${sub.category || 'INFO'}', '${subLink}')">
-                                        <h4>${sub.titre || sub.title}</h4>
+                                    <div class="sub-news-item" onclick="captureAction('${encodeURIComponent(subT)}', '${sub.category || 'INFO'}', '${subLink}')">
+                                        <h4>${subT}</h4>
                                         <span class="read-time">2 MIN READ</span>
                                     </div>`;
                             }).join('')}
                         </div>
-                        <span class="read-more-btn" onclick="captureAction('${cleanTitle}', '${h.category || 'INFO'}', '${displayLink}')">LIRE L'ARTICLE COMPLET →</span>
+                        <span class="read-more-btn" onclick="captureAction('${safeTitle}', '${h.category || 'INFO'}', '${displayLink}')">LIRE L'ARTICLE COMPLET →</span>
                     </div>
                     <div class="hero-image">
                         <img src="${h.image_url || h.urlToImage || 'https://via.placeholder.com/800x500'}" onerror="this.src='https://via.placeholder.com/800x500'">
@@ -217,15 +218,19 @@ function renderUI(myArticles, worldNews = []) {
 
     if (grid) {
         const finalGridItems = gridArticles.slice(2, 8);
-        grid.innerHTML = finalGridItems.map(art => `
-            <div class="article-card" onclick="captureAction('${(art.titre || art.title || "").replace(/'/g, "\\'")}', '${art.category || 'Infos'}', '${art.id ? `redaction.html?id=${art.id}` : art.url}')">
-                <div class="card-img-wrapper">
-                    <img src="${art.image_url || art.urlToImage || 'https://via.placeholder.com/400x250'}">
-                </div>
-                <div style="padding:12px;">
-                    <h3 style="font-size:1rem; margin-bottom:8px; line-height:1.3; font-weight:800;">${art.titre || art.title}</h3>
-                </div>
-            </div>`).join('');
+        grid.innerHTML = finalGridItems.map(art => {
+            const t = art.titre || art.title || "";
+            const link = art.id ? `redaction.html?id=${art.id}` : art.url;
+            return `
+                <div class="article-card" onclick="captureAction('${encodeURIComponent(t)}', '${art.category || 'Infos'}', '${link}')">
+                    <div class="card-img-wrapper">
+                        <img src="${art.image_url || art.urlToImage || 'https://via.placeholder.com/400x250'}">
+                    </div>
+                    <div style="padding:12px;">
+                        <h3 style="font-size:1rem; margin-bottom:8px; line-height:1.3; font-weight:800;">${t}</h3>
+                    </div>
+                </div>`;
+        }).join('');
     }
 }
 
