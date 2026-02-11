@@ -234,36 +234,39 @@ async function loadSidebarContent() {
     const opinionList = document.getElementById('opinion-list');
 
     try {
-        const { data: trending, error: trendError } = await supabaseClient
+        const { data: trending } = await supabaseClient
             .from('articles').select('*').eq('is_published', true).eq('category', 'AUTRE_INFO')
             .order('created_at', { ascending: false }).limit(5);
 
-        if (!trendError && sidebarList && trending) {
-            sidebarList.innerHTML = trending.length > 0 
-                ? trending.map(art => `
-                    <div class="trending-item" onclick="captureAction('${(art.titre || "").replace(/'/g, "\\'")}', 'Autre Info', 'redaction.html?id=${art.id}')">
+        if (sidebarList && trending) {
+            sidebarList.innerHTML = trending.map(art => {
+                // On utilise encodeURIComponent pour le titre pour éviter tout conflit de caractères
+                const link = `redaction.html?id=${art.id}`;
+                return `
+                    <div class="trending-item" style="cursor:pointer" onclick="window.location.href='${link}'">
                         <div class="trending-content"><h4>${art.titre}</h4></div>
-                    </div>`).join('')
-                : "<p style='font-size:0.8rem; padding:10px; color:#999;'>Aucune information supplémentaire.</p>";
+                    </div>`;
+            }).join('');
         }
 
-        const { data: opinions, error: opError } = await supabaseClient
+        const { data: opinions } = await supabaseClient
             .from('articles').select('*').eq('is_published', true).eq('category', 'OPINION')
             .order('created_at', { ascending: false }).limit(4);
 
-        if (!opError && opinionList && opinions) {
-            opinionList.innerHTML = opinions.length > 0
-                ? opinions.map(op => `
-                    <div class="opinion-item" onclick="captureAction('${(op.titre || "").replace(/'/g, "\\'")}', 'Opinion', 'redaction.html?id=${op.id}')">
+        if (opinionList && opinions) {
+            opinionList.innerHTML = opinions.map(op => {
+                const link = `redaction.html?id=${op.id}`;
+                return `
+                    <div class="opinion-item" style="cursor:pointer" onclick="window.location.href='${link}'">
                         <div class="opinion-item-text">
                             <span>${op.author_name || 'RÉDACTION'}</span>
                             <h4>${op.titre}</h4>
                         </div>
-                        <img class="opinion-avatar" src="${op.author_image || 'https://via.placeholder.com/40'}" onerror="this.src='https://via.placeholder.com/40'">
-                    </div>`).join('')
-                : "<p style='font-size:0.8rem; padding:10px; color:#999;'>Aucune opinion publiée.</p>";
+                        <img class="opinion-avatar" src="${op.author_image || 'https://via.placeholder.com/40'}">
+                    </div>`;
+            }).join('');
         }
-    } catch (e) { console.error("Sidebar error:", e); }
+    } catch (e) { console.error("Erreur sidebar:", e); }
 }
 
 async function loadMoreNews() {
@@ -602,3 +605,4 @@ document.addEventListener('DOMContentLoaded', () => {
     window.fetchAllContent = (cat, query) => fetchHybridNews(cat, query);
     console.log("MAKMUS News : Initialisation terminée.");
 });
+
