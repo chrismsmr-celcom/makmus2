@@ -867,6 +867,313 @@ h1, h2, h3, .section-title {
     50% { opacity: 0; }
     100% { opacity: 1; }
 }
+.photo-credit {
+    font-size: 7px;
+    color: #777;
+    text-align: right;
+    margin-top: 5px;
+    font-style: italic;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.card-category {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: var(--makmus-red);
+    color: white;
+    font-size: 10px;
+    font-weight: bold;
+    padding: 3px 8px;
+    border-radius: 3px;
+    text-transform: uppercase;
+}
+/* Container sous la description */
+.hero-sub-news {
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.sub-news-item {
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.sub-news-item:hover h4 {
+    color: var(--makmus-red);
+    text-decoration: underline;
+}
+
+.sub-news-item .sub-cat {
+    font-size: 10px;
+    font-weight: 800;
+    color: var(--makmus-red);
+    display: block;
+    margin-bottom: 4px;
+}
+
+.sub-news-item h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #222;
+}
+
+/* On cache les infos sub-news sur mobile pour éviter de trop allonger la page */
+@media (max-width: 768px) {
+    .hero-sub-news {
+        display: none;
+    }
+}
+.hero-sub-news {
+    border-top: 1px solid #eee;
+    margin-top: 15px;
+    padding-top: 10px;
+}
+.sub-news-item { margin-bottom: 12px; cursor: pointer; }
+.sub-news-item h4 { font-size: 0.9rem; margin: 0; color: #222; }
+.sub-cat { color: #a30000; font-size: 0.7rem; font-weight: bold; }
+/* Container des titres secondaires */
+.hero-sub-news-wrapper {
+    margin-top: 20px;
+    border-top: 1px solid #e0e0e0; /* Ligne du haut */
+}
+
+/* Chaque item secondaire */
+.sub-news-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #e0e0e0; /* Le séparateur comme dans ta capture */
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.sub-news-item:hover h4 {
+    color: var(--makmus-red);
+}
+
+.sub-news-item h4 {
+    margin: 0 0 5px 0;
+    font-family: 'Inter', sans-serif;
+    font-size: 1.1rem;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #111;
+}
+
+.read-time {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #757575;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.read-more-btn {
+    display: inline-block;
+    margin-top: 15px;
+    font-weight: 800;
+    color: var(--makmus-red);
+    font-size: 0.75rem;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+/* Container Sidebar */
+.sidebar-column {
+    padding-left: 20px;
+    border-left: 1px solid #e0e0e0;
+}
+
+.sidebar-heading {
+    font-weight: 900;
+    font-size: 0.8rem;
+    border-bottom: 2px solid #000;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+
+/* Liste Numérotée (Trending) */
+.ordered-news-list {
+    counter-reset: news-counter;
+}
+
+.trending-item {
+    display: flex;
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+    align-items: flex-start;
+}
+
+.trending-item::before {
+    counter-increment: news-counter;
+    content: counter(news-counter);
+    font-family: 'Arial', sans-serif;
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ccc; /* Numéro gris comme dans la capture */
+    margin-right: 15px;
+    min-width: 20px;
+    line-height: 1;
+}
+
+.trending-item h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.25;
+    font-weight: 700;
+    color: #121212;
+}
+
+/* Section Opinion */
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 900;
+    margin: 30px 0 15px 0;
+    border-bottom: 1px solid #000;
+    padding-bottom: 5px;
+}
+
+.opinion-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+    cursor: pointer;
+}
+
+.opinion-item-text {
+    flex: 1;
+    padding-right: 10px;
+}
+
+.opinion-item-text span {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.opinion-item-text h4 {
+    margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.opinion-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: #eee;
+}
+.more-news-section {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    border-top: 2px solid #000;
+}
+
+.more-news-header {
+    font-family: 'Inter', sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    padding: 10px 0;
+    margin-bottom: 20px;
+}
+
+.more-news-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 colonnes comme dans la capture */
+    gap: 30px;
+}
+
+.category-block {
+    border-top: 1px solid #e0e0e0;
+    padding-top: 10px;
+}
+
+.category-block h2 {
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    margin-bottom: 15px;
+    color: #121212;
+}
+
+.category-main-item img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+.category-main-item h3 {
+    font-size: 1rem;
+    line-height: 1.3;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.category-sub-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.category-sub-item {
+    padding: 8px 0;
+    border-top: 1px solid #f0f0f0;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.category-sub-item:hover {
+    color: var(--makmus-red);
+}
+
+@media (max-width: 768px) {
+    .more-news-grid { grid-template-columns: 1fr; }
+}
+.opinion-footer {
+    margin-top: 15px;
+    padding-top: 10px;
+    border-top: 1px dashed #eee; /* Séparateur léger */
+}
+
+.discreet-link {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #888; /* Gris discret */
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: color 0.2s ease;
+}
+
+.discreet-link:hover {
+    color: var(--makmus-red); /* Ne s'allume qu'au survol */
+}
+
+.discreet-link .arrow {
+    font-size: 0.9rem;
+    margin-left: 3px;
+    transition: transform 0.2s ease;
+    display: inline-block;
+}
+
+.discreet-link:hover .arrow {
+    transform: translateX(3px); /* Petit effet de mouvement au survol */
+}
 /* ==========================================================================
    9. RESPONSIVE MOBILE
    ========================================================================== */
@@ -887,3 +1194,5 @@ h1, h2, h3, .section-title {
     .main-article h1 { font-size: 1.8rem; text-align: left; }
     .footer-bottom { flex-direction: column; gap: 15px; text-align: center; }
 }
+
+
