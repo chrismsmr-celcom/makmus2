@@ -12,7 +12,9 @@
     <link rel="stylesheet" href="style.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
+      <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#a30000">
+<link rel="apple-touch-icon" href="icon-192.png">
     <style>
         .top-ad-container { display: none; background: #f0f0f0; padding: 10px 0; text-align: center; border-bottom: 1px solid #ddd; }
         #ad-slider-wrapper { max-width: 728px; height: 90px; margin: 0 auto; overflow: hidden; position: relative; background: #ccc; }
@@ -29,6 +31,7 @@
     </style>
 </head>
 <body>
+    
 
     <div class="top-ad-container no-print">
         <div id="ad-slider-wrapper">
@@ -251,5 +254,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="script.js"></script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('PWA prête !'))
+        .catch(err => console.log('Erreur PWA', err));
+    });
+  }
+</script>
 </body>
 </html>
+
