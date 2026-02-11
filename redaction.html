@@ -7,6 +7,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="redaction.css">
     <link rel="stylesheet" href="style.css"> </head>
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#a30000">
+<link rel="apple-touch-icon" href="icon-192.png">
 <body>
 
 <div class="full-menu" id="fullMenu">
@@ -200,6 +203,14 @@
 </div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="redaction.js"></script>
-
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('PWA prête !'))
+        .catch(err => console.log('Erreur PWA', err));
+    });
+  }
+</script>
 </body>
 </html>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
