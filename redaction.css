@@ -1,0 +1,461 @@
+/* Layout Desktop */
+.newspaper-body {
+    max-width: 850px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #fff;
+}
+
+/* Typographie Article */
+.article-header h1 {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 3.2rem;
+    line-height: 1.1;
+    margin-top: 10px;
+    font-weight: 700;
+}
+
+.img-caption-style {
+    display: block;
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #727272;
+    text-align: right;
+    margin-top: 6px;
+}
+
+/* Recommandations en bas */
+.related-section {
+    max-width: 850px;
+    margin: 60px auto;
+    padding: 40px 20px;
+    border-top: 4px solid #121212;
+}
+
+.related-title {
+    font-family: Arial, sans-serif;
+    font-weight: 900;
+    font-size: 1.2rem;
+    text-transform: uppercase;
+    margin-bottom: 25px;
+}
+
+.related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 colonnes sur desktop */
+    gap: 30px;
+}
+
+.related-card { text-decoration: none; color: inherit; }
+.related-card img { width: 100%; height: 160px; object-fit: cover; margin-bottom: 12px; border: 1px solid #eee; }
+.related-card h4 { font-family: 'Libre Baskerville'; font-size: 1rem; line-height: 1.3; }
+
+/* Styles Partage & Modals (issus de ton script) */
+.share-grid-modern { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+.share-item-modern { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
+.s-icon { width: 45px; height: 45px; border-radius: 50%; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; }
+.bg-fb { background: #1877F2; } .bg-x { background: #000; } .bg-wa { background: #25D366; } .bg-cp { background: #666; }
+/* Barre d'outils minimaliste style Presse */
+.article-actions-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 15px 0;
+    margin: 20px 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+}
+
+.action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #555;
+    font-family: Arial, sans-serif;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    padding: 5px;
+}
+
+.action-btn:hover { color: #000; }
+
+.icon-circle {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #ccc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.action-btn:hover .icon-circle {
+    border-color: #000;
+    background-color: #f9f9f9;
+}
+
+/* Style spécifique pour le Like activé */
+.action-btn.liked { color: #c00; }
+.action-btn.liked .icon-circle { border-color: #c00; color: #c00; }
+
+/* Compteurs discrets */
+.count-label { font-weight: 500; color: #333; }
+/* --- Modals de Partage --- */
+.modal-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(255,255,255,0.9); z-index: 10001; align-items: center; justify-content: center;
+}
+.share-dialog {
+    background: white; width: 320px; border: 1px solid #ddd; box-shadow: 0 10px 30px rgba(0,0,0,0.1); padding: 20px; border-radius: 4px;
+}
+.share-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid #eee; padding-bottom: 10px; }
+.share-header h3 { font-family: Arial, sans-serif; font-size: 1rem; margin: 0; }
+.share-list button { 
+    display: block; width: 100%; text-align: left; background: none; border: none; 
+    padding: 12px 10px; cursor: pointer; font-family: Arial; border-bottom: 1px solid #f9f9f9;
+}
+.share-list button:hover { background: #f5f5f5; }
+
+/* --- Sidebar Commentaires (Style NYT) --- */
+.comment-sidebar-overlay {
+    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.2); z-index: 10002; justify-content: flex-end;
+}
+.comment-sidebar {
+    width: 400px; height: 100%; background: white; box-shadow: -5px 0 20px rgba(0,0,0,0.1);
+    display: flex; flex-direction: column; animation: slideIn 0.3s ease-out;
+}
+@keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
+
+.comment-header { padding: 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+.comment-form { padding: 20px; background: #f9f9f9; border-bottom: 1px solid #eee; }
+.comment-form input, .comment-form textarea {
+    width: 100%; margin-bottom: 10px; border: 1px solid #ddd; padding: 10px; font-family: Arial; box-sizing: border-box;
+}
+.comment-form textarea { height: 80px; resize: none; }
+.post-btn { background: #121212; color: white; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
+
+.comments-scroll-area { flex: 1; overflow-y: auto; padding: 20px; }
+.close-btn { background: none; border: none; font-size: 24px; cursor: pointer; color: #666; }
+
+/* Mobile */
+@media (max-width: 500px) { .comment-sidebar { width: 100%; } }
+/* Style des Toasts MakMus */
+.makmus-toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #121212;
+    color: #ffffff;
+    padding: 12px 24px;
+    border-radius: 2px; /* Carré pour le côté sérieux/journal */
+    font-family: Arial, sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 0.5px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    z-index: 20000;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.makmus-toast.show {
+    transform: translateX(-50%) translateY(0);
+}
+
+.makmus-toast i {
+    color: #c00; /* Touche de rouge pour le logo */
+}
+/* --- Style du Menu Plein Écran avec Animation --- */
+#fullMenu {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh; /* Utilise toute la hauteur de l'écran */
+    background-color: #ffffff;
+    z-index: 100000;
+    overflow-y: auto;
+    display: block !important; /* On remplace display:none par la gestion de l'opacité */
+    
+    /* État initial (Caché) */
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none; /* Empêche de cliquer à travers quand il est invisible */
+    transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+/* État Actif (Quand on clique sur SECTIONS) */
+#fullMenu.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto; /* Réactive les clics */
+}
+
+/* Animation du contenu interne (Effet de montée) */
+#fullMenu .menu-content {
+    transform: translateY(30px); /* Un peu plus d'amplitude pour l'effet */
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+#fullMenu.is-active .menu-content {
+    transform: translateY(0);
+}
+
+/* Optionnel : Assombrir légèrement le fond de la page derrière pour le focus */
+#fullMenu::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.05);
+    z-index: -1;
+}
+/* --- Ajustements mobiles pour l'article --- */
+@media (max-width: 768px) {
+    /* Le titre de l'article */
+    .article-header h1 {
+        font-size: 2.1rem !important; /* Taille réduite pour mobile */
+        line-height: 1.2 !important;
+        margin-bottom: 15px !important;
+        letter-spacing: -0.5px; /* Un peu plus serré pour le style */
+    }
+
+    /* Ajustement de la barre d'actions (Like, Partage, etc.) */
+    .article-actions-bar {
+        gap: 12px !important; /* On réduit l'espace entre les boutons */
+        overflow-x: auto; /* Permet de swiper si les boutons sont trop larges */
+        padding: 10px 0 !important;
+    }
+
+    /* Le texte de l'article (corps du texte) */
+    .article-content {
+        font-size: 1.15rem !important; /* Un peu plus petit pour le confort */
+        line-height: 1.7 !important;
+        padding: 0 15px !important;
+    }
+}
+.main-article-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 3.2rem; /* Taille ordinateur */
+    line-height: 1.1;
+    margin: 0 0 20px 0;
+    font-weight: 700;
+    color: #121212;
+}
+
+/* Puis la media query s'occupe du reste en bas du fichier */
+@media (max-width: 768px) {
+    .main-article-title {
+        font-size: 2.1rem !important;
+    }
+}
+/* Style par défaut (Ordinateur) */
+.article-main-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 3.2rem;
+    line-height: 1.1;
+    margin: 0 0 20px 0;
+    font-weight: 700;
+    color: #121212;
+}
+
+.article-content {
+    max-width: 700px;
+    margin: 40px auto;
+    padding: 0 20px;
+    font-family: 'Libre Baskerville', serif;
+    font-size: 1.25rem;
+    line-height: 1.85;
+    color: #1a1a1a;
+}
+
+/* Ajustements pour Mobile */
+@media (max-width: 768px) {
+    .article-main-title {
+        font-size: 2.1rem !important; /* Taille réduite sur mobile */
+        line-height: 1.2;
+    }
+
+    .article-content {
+        font-size: 1.1rem !important;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+}
+/* --- Titre dynamique --- */
+.article-main-title {
+    font-family: 'Libre Baskerville', serif;
+    font-size: 3.2rem;
+    line-height: 1.1;
+    margin: 0 0 20px 0;
+    font-weight: 700;
+    color: #121212;
+}
+
+/* --- Bloc d'injection (Pub) --- */
+.in-article-ad {
+    margin: 40px auto;
+    max-width: 600px;
+    background: #f9f9f9;
+    padding: 20px;
+    border: 1px dashed #ccc;
+    text-align: center;
+}
+
+.ad-label {
+    display: block;
+    font-size: 10px;
+    color: #999;
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+}
+
+.ad-box {
+    font-family: Arial, sans-serif;
+}
+
+/* --- Media Query Mobile --- */
+@media (max-width: 768px) {
+    .article-main-title {
+        font-size: 2.1rem !important; /* Taille réduite sur mobile */
+        line-height: 1.2;
+    }
+    .article-content {
+        font-size: 1.15rem !important;
+        padding: 0 15px;
+    }
+}
+.in-article-ad {
+    margin: 40px auto;
+    max-width: 600px;
+    background: #fdfdfd;
+    border: 1px dashed #ccc;
+    padding: 20px;
+    text-align: center;
+}
+
+.in-article-ad span {
+    font-size: 10px;
+    color: #aaa;
+    letter-spacing: 2px;
+    display: block;
+    margin-bottom: 15px;
+}
+
+.ad-placeholder {
+    font-family: Arial, sans-serif;
+    color: #333;
+}
+.article-content img {
+    max-width: 100%;
+    height: auto;
+    margin: 20px 0;
+    display: block;
+}
+/* Conteneur principal dans l'article */
+.inline-recommendations {
+    margin: 40px 0;
+    padding: 20px 0;
+    border-top: 2px solid #000;
+    border-bottom: 1px solid #eee;
+}
+
+.grid-title {
+    font-family: Arial, sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 1.5px;
+    color: #c00;
+    margin-bottom: 15px;
+}
+
+/* La Grille */
+.mini-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 colonnes sur ordi */
+    gap: 20px;
+}
+
+.mini-card-img {
+    width: 100%;
+    height: 120px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 8px;
+}
+
+.mini-card p {
+    line-height: 1.3 !important;
+    margin: 0 !important;
+}
+
+/* Responsive Mobile : on passe à 1 seule colonne */
+@media (max-width: 600px) {
+    .mini-grid {
+        grid-template-columns: 1fr;
+    }
+    .mini-card-img {
+        height: 180px; /* Plus grand sur mobile pour le confort */
+    }
+}
+#trending-tags {
+    border-bottom: 1px solid #eee;
+    background: #fff;
+}
+
+/* On cache la scrollbar tout en gardant le défilement actif */
+#trending-tags > div::-webkit-scrollbar {
+    display: none;
+}
+#trending-tags > div {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+}
+
+#tags-container {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.trending-link {
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: #1a1a1a;
+    letter-spacing: 0.5px;
+    transition: color 0.2s;
+    white-space: nowrap; /* Indispensable pour l'overflow horizontal */
+    position: relative;
+    text-transform: uppercase;
+}
+
+.trending-link:hover {
+    color: #a30000;
+    text-decoration: underline;
+    text-underline-offset: 4px;
+}
+
+.is-live {
+    color: #a30000;
+}
+
+.is-live::after {
+    content: "•";
+    margin-left: 5px;
+    animation: blink 1.2s infinite;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
