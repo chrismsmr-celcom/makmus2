@@ -175,63 +175,163 @@ async function fetchHybridNews(category = 'top', querySearch = '') {
     }
 }
 function renderUI(myArticles, worldNews = []) {
-    const all = [...myArticles, ...worldNews]; 
-    const hero = document.getElementById('hero-zone');
+    const heroZone = document.getElementById('hero-zone');
     const grid = document.getElementById('news-grid');
 
-    if (all.length === 0) {
-        if (grid) grid.innerHTML = "<p>Aucun article trouvé.</p>";
-        return;
-    }
+    const heroArticle = myArticles.find(a => a.is_priority === true) || myArticles[0] || worldNews[0];
+    const allItems = [...myArticles, ...worldNews];
+    const gridArticles = allItems.filter(a => 
+        (a.id && heroArticle && a.id !== heroArticle.id) || 
+        (a.url && heroArticle && a.url !== heroArticle.url)
+    );
 
-    // --- Rendu du HERO (Le premier article) ---
-    if (hero && all[0]) {
-        const h = all[0];
-        const displayTitle = h.titre || h.title;
-        const displayImg = h.image_url || h.urlToImage || 'https://via.placeholder.com/800x500';
+    if (heroZone && heroArticle) {
+        const h = heroArticle;
+        const displayTitle = h.titre || h.title || "";
         const displayLink = h.id ? `redaction.html?id=${h.id}` : h.url;
         const cleanTitle = displayTitle.replace(/'/g, "\\'");
 
-        hero.innerHTML = `
-            <div class="main-article" onclick="captureAction('${cleanTitle}', '${h.category || 'Monde'}', '${displayLink}')" style="cursor:pointer;">
-                <h1>${displayTitle}</h1>
+        heroZone.innerHTML = `
+            <div class="main-article">
+                <h1 onclick="captureAction('${cleanTitle}', '${h.category || 'INFO'}', '${displayLink}')" style="cursor:pointer;">${displayTitle}</h1>
                 <div class="hero-content">
                     <div class="hero-text">
-                        <p style="font-size:1.1rem; color:#333; margin-bottom:15px;">
-                            ${(h.description || "").substring(0, 220)}...
+                        <p class="hero-description" onclick="captureAction('${cleanTitle}', '${h.category || 'INFO'}', '${displayLink}')" style="cursor:pointer;">
+                            ${(h.description || "").replace(/<[^>]*>/g, '').substring(0, 160)}...
                         </p>
-                        <span style="font-weight:bold; color:#a30000; text-transform:uppercase; font-size:0.8rem;">Lire la suite →</span>
+                        
+                        <div class="hero-sub-news-wrapper">
+                            ${gridArticles.slice(0, 2).map(sub => {
+                                const subTitle = (sub.titre || sub.title || "").replace(/'/g, "\\'");
+                                const subLink = sub.id ? `redaction.html?id=${sub.id}` : sub.url;
+                                return `
+                                    <div class="sub-news-item" onclick="captureAction('${subTitle}', '${sub.category || 'INFO'}', '${subLink}')">
+                                        <h4>${sub.titre || sub.title}</h4>
+                                        <span class="read-time">2 MIN READ</span>
+                                    </div>`;
+                            }).join('')}
+                        </div>
+
+                        <span class="read-more-btn" onclick="captureAction('${cleanTitle}', '${h.category || 'INFO'}', '${displayLink}')">LIRE L'ARTICLE COMPLET →</span>
                     </div>
                     <div class="hero-image">
-                        <img src="${displayImg}" alt="Focus News" onerror="this.src='https://via.placeholder.com/800x500'">
+                        <img src="${h.image_url || h.urlToImage || 'https://via.placeholder.com/800x500'}" onerror="this.src='https://via.placeholder.com/800x500'">
+                        ${h.image_caption ? `<div class="photo-credit"> ${h.image_caption}</div>` : ''}
                     </div>
                 </div>
             </div>`;
     }
 
-    // --- Rendu de la GRILLE (Les articles suivants, de 1 à 5) ---
+    // Rendu de la grille standard
     if (grid) {
-        const gridItems = all.slice(1, 7); // J'ai augmenté à 6 articles pour une grille plus remplie
-        grid.innerHTML = gridItems.map(art => {
-            const t = art.titre || art.title;
-            const img = art.image_url || art.urlToImage || 'https://via.placeholder.com/400x250';
-            const link = art.id ? `redaction.html?id=${art.id}` : art.url;
-            const cleanT = t.replace(/'/g, "\\'");
-            
-            return `
-                <div class="article-card" onclick="captureAction('${cleanT}', '${art.category || 'Infos'}', '${link}')" style="cursor:pointer;">
-                    <div class="card-img-wrapper" style="height:180px; overflow:hidden;">
-                        <img src="${img}" style="width:100%; height:100%; object-fit:cover;" onerror="this.src='https://via.placeholder.com/400x250'">
-                    </div>
-                    <div style="padding:12px;">
-                        <h3 style="font-size:1rem; margin-bottom:8px; line-height:1.3;">${t}</h3>
-                        <p style="font-size:0.85rem; color:#666;">${(art.description || "").substring(0, 85)}...</p>
-                    </div>
-                </div>`;
-        }).join('');
+        const finalGridItems = gridArticles.slice(2, 8);
+        grid.innerHTML = finalGridItems.map(art => `
+            <div class="article-card" onclick="captureAction('${(art.titre || art.title || "").replace(/'/g, "\\'")}', '${art.category || 'Infos'}', '${art.id ? `redaction.html?id=${art.id}` : art.url}')">
+                <div class="card-img-wrapper">
+                    <img src="${art.image_url || art.urlToImage || 'https://via.placeholder.com/400x250'}">
+                </div>
+                <div style="padding:12px;">
+                    <h3 style="font-size:1rem; margin-bottom:8px; line-height:1.3; font-weight:800;">${art.titre || art.title}</h3>
+                </div>
+            </div>`).join('');
+    }
+    async function loadSidebarContent() {
+    const sidebarList = document.getElementById('sidebar-list');
+    const opinionList = document.getElementById('opinion-list');
+
+    try {
+        // 1. Articles "AUTRE INFO" (La liste numérotée via CSS)
+        const { data: trending, error: trendError } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('is_published', true)
+            .eq('category', 'AUTRE_INFO') // Filtre spécifique pour la liste numérotée
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (!trendError && sidebarList && trending) {
+            sidebarList.innerHTML = trending.length > 0 
+                ? trending.map(art => `
+                    <div class="trending-item" onclick="captureAction('${(art.titre || "").replace(/'/g, "\\'")}', 'Autre Info', 'redaction.html?id=${art.id}')">
+                        <div class="trending-content">
+                            <h4>${art.titre}</h4>
+                        </div>
+                    </div>`).join('')
+                : "<p style='font-size:0.8rem; padding:10px; color:#999;'>Aucune information supplémentaire.</p>";
+        }
+
+        // 2. Articles "OPINION" avec avatars
+        const { data: opinions, error: opError } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('is_published', true)
+            .eq('category', 'OPINION') // Utilise maintenant le mode OPINION de ton éditeur
+            .order('created_at', { ascending: false })
+            .limit(4);
+
+        if (!opError && opinionList && opinions) {
+            opinionList.innerHTML = opinions.length > 0
+                ? opinions.map(op => `
+                    <div class="opinion-item" onclick="captureAction('${(op.titre || "").replace(/'/g, "\\'")}', 'Opinion', 'redaction.html?id=${op.id}')">
+                        <div class="opinion-item-text">
+                            <span>${op.author_name || 'RÉDACTION'}</span>
+                            <h4>${op.titre}</h4>
+                        </div>
+                        <img class="opinion-avatar" src="${op.author_image || 'https://via.placeholder.com/40'}" 
+                             onerror="this.src='https://via.placeholder.com/40'">
+                    </div>`).join('')
+                : "<p style='font-size:0.8rem; padding:10px; color:#999;'>Aucune opinion publiée.</p>";
+        }
+    } catch (e) {
+        console.error("Erreur lors du chargement de la sidebar:", e);
     }
 }
-/* ==========================================================================
+async function loadMoreNews() {
+    const container = document.getElementById('more-news-grid');
+    if (!container) return;
+
+    // Liste des rubriques que tu souhaites afficher
+    const categories = ['ECONOMIE', 'SPORT', 'TECH']; 
+    
+    let html = '';
+
+    for (const cat of categories) {
+        const { data: articles } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('category', cat)
+            .eq('is_published', true)
+            .order('created_at', { ascending: false })
+            .limit(4);
+
+        if (articles && articles.length > 0) {
+            const main = articles[0]; // Le premier avec image
+            const subs = articles.slice(1); // Les suivants sans image
+
+            html += `
+                <div class="category-block">
+                    <h2>${cat}</h2>
+                    <div class="category-main-item" onclick="window.location.href='redaction.html?id=${main.id}'" style="cursor:pointer;">
+                        <img src="${main.image_url}" onerror="this.src='https://via.placeholder.com/400x250'">
+                        <h3>${main.titre}</h3>
+                    </div>
+                    <div class="category-sub-list">
+                        ${subs.map(s => `
+                            <div class="category-sub-item" onclick="window.location.href='redaction.html?id=${s.id}'">
+                                ${s.titre}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+    }
+    container.innerHTML = html;
+}
+
+// Appelle la fonction au chargement
+document.addEventListener('DOMContentLoaded', loadMoreNews);
+}/* ==========================================================================
    6. VIDÉOS & PUBS
    ========================================================================== */
 const ICONS = {
@@ -471,23 +571,36 @@ document.addEventListener('DOMContentLoaded', () => {
         }).toUpperCase();
     }
 
-    // 2. Lancement des flux de données
+    // 2. Lancement des flux de données principaux
     fetchMarketData();       // Bourse
-    fetchHybridNews('top');  // News principales (Exclut les résumés sportifs automatiquement)
+    fetchHybridNews('top');  // News principales (Hero + Grille)
     fetchVideosVerticaux();  // Shorts / Vidéos
     initAdSlider();          // Publicités
-    loadSportsResumes();     // TON SLIDER SPORT (Chargement des scores)
+    loadSportsResumes();     // Slider Sport (Scores)
 
-    // 3. Mise à jour automatique du Ticker (Bourse) toutes les 5 secondes
+    // 3. NOUVEAU : Chargement des sections spécifiques (Sidebar & Footer)
+    if (typeof loadSidebarContent === 'function') {
+        loadSidebarContent(); // Remplit "Autre Info" et "Opinion"
+    }
+    
+    if (typeof loadMoreNews === 'function') {
+        loadMoreNews();      // Remplit la section archive avant le footer
+    }
+
+    // 4. Mise à jour automatique du Ticker (Bourse) toutes les 5 secondes
     setInterval(updateTickerUI, 5000);
     
-    // 4. Vérifications de sécurité pour les fonctions optionnelles (Lifestyle, etc.)
-    if(typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
-    if(typeof fetchLifestyleNews === 'function') fetchLifestyleNews();
+    // 5. Fonctions optionnelles et Trending
+    if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
+    
+    // 6. Analytics & Tracking
+    if (tracker && typeof tracker.log === 'function') {
+        tracker.log('view_home');
+    }
 
-    // 5. Analytics
-    tracker.log('view_home');
-
-    // 6. Fonction de compatibilité pour la recherche et le menu
+    // 7. Fonction de compatibilité globale
     window.fetchAllContent = (cat, query) => fetchHybridNews(cat, query);
+    
+    console.log("MAKMUS News : Initialisation terminée avec succès.");
 });
+
