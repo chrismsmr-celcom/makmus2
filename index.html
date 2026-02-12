@@ -43,8 +43,7 @@
 
     <div class="full-menu" id="fullMenu">
         <div class="menu-header">
-            <div class="menu-logo"><img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png
-" alt="MakMus"></div>
+            <div class="menu-logo"><img src="https://logphtrdkpbfgtejtime.supabase.co/storage/v1/object/public/Photo,%20Image/Untitled%20folder/MAK_MUS__1_-removebg-preview.png" alt="MakMus"></div>
             <span class="close-menu" id="closeMenu" onclick="toggleMenu(false)">&times; FERMER</span>
         </div>
         <div class="menu-content">
@@ -56,8 +55,8 @@
      <div class="menu-section">
     <h3>ACTUALITÉS</h3>
     <ul>
-        <li><a href="#" onclick="fetchHybridNews('top'); toggleMenu(false); return false;">À la une</a></li>
-        <li><a href="#" onclick="fetchHybridNews('top', 'RDC Congo'); toggleMenu(false); return false;">RDC</a></li>
+        <li><a href="#" onclick="fetchMakmusNews('top'); toggleMenu(false); return false;">À la une</a></li>
+        <li><a href="#" onclick="fetchMakmusNews('top', 'RDC Congo'); toggleMenu(false); return false;">RDC</a></li>
         <li><a href="#" onclick="fetchHybridNews('politics'); toggleMenu(false); return false;">Politique</a></li>
         <li><a href="#" onclick="fetchHybridNews('world'); toggleMenu(false); return false;">International</a></li>
         <li><a href="#" onclick="fetchHybridNews('environment'); toggleMenu(false); return false;">Environnement</a></li>
@@ -105,25 +104,27 @@
     <span class="menu-label">SECTIONS</span>
 </div>
     <div class="logo-container">
-        <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png
-" alt="MakMus">
+        <img src="https://logphtrdkpbfgtejtime.supabase.co/storage/v1/object/public/Photo,%20Image/Untitled%20folder/MAK_MUS__1_-removebg-preview.png" alt="MakMus">
     </div>
 
     <div class="header-right">
         <button class="btn-subscribe">S'ABONNER</button>
     </div>
 </header>
-    <nav class="nav-compact">
-        <ul>
-            <li><a href="#" class="active" onclick="fetchAllContent('top'); return false;">À LA UNE</a></li>
-            <li><a href="#" onclick="fetchAllContent('top', 'RDC Congo'); return false;">RDC</a></li>
-            <li><a href="#" onclick="fetchAllContent('politics'); return false;">POLITIQUE</a></li>
-            <li><a href="#" onclick="fetchAllContent('business'); return false;">ÉCONOMIE</a></li>
-            <li><a href="#" onclick="fetchAllContent('sports'); return false;">SPORT</a></li>
-            <li><a href="jeux.html" class="nav-red">JEUX</a></li>
-        </ul>
-    </nav>
-
+<nav class="nav-compact">
+    <ul>
+        <li><a href="#" class="active" onclick="fetchMakmusNews('top'); return false;">À LA UNE</a></li>
+        
+        <li><a href="#" onclick="fetchMakmusNews('top', 'RDC Congo'); return false;">RDC</a></li>
+        
+        <li><a href="#" onclick="fetchMakmusNews('politics'); return false;">POLITIQUE</a></li>
+        <li><a href="#" onclick="fetchMakmusNews('business'); return false;">ÉCONOMIE</a></li>
+        
+        <li><a href="#" onclick="fetchMakmusNews('sports'); return false;">SPORT</a></li>
+        
+        <li><a href="jeux.html" class="nav-red">JEUX</a></li>
+    </ul>
+</nav>
     <div id="trending-tags">
         <div style="max-width: 1200px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; overflow-x: auto;">
             <span style="font-weight: 800; font-size: 0.7rem; text-transform: uppercase; border-right: 1px solid #ddd; padding-right: 12px; flex-shrink: 0;">En ce moment</span>
@@ -221,22 +222,31 @@
         </button>
     </div>
 
-    <div class="dashboard-container">
-        <div id="sports-dynamic-content" class="dashboard-content">
+    <div class="dashboard-grid-container">
+        
+        <div id="sports-dynamic-content" class="dashboard-table-side">
             <p style="text-align:center; padding:20px; color:#999;">Chargement des scores...</p>
         </div>
+
+        <div id="sports-featured-article" class="featured-article-side">
+            <div class="featured-placeholder">
+                <div class="skeleton-img"></div>
+                <div class="skeleton-text"></div>
+            </div>
+        </div>
+
     </div>
 </section>
-<section class="more-news-section">
-    <div class="more-news-header">PLUS D'INFOS</div>
-    <div id="more-news-grid" class="more-news-grid">
+<section class="more-info-section">
+    <div class="section-divider-double"></div>
+    <h2 class="section-main-title">PLUS D'INFO</h2>
+    <div id="more-info-grid" class="more-info-grid">
         </div>
 </section>
-
     <footer class="nyt-footer">
         <div class="footer-container">
             <div class="footer-brand">
-                <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+                <img src="https://logphtrdkpbfgtejtime.supabase.co/storage/v1/object/public/Photo,%20Image/Untitled%20folder/MAK_MUS__1_-removebg-preview.png" alt="MAKMUS">
                 <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
             </div>
 
