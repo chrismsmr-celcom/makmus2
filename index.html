@@ -332,27 +332,36 @@
             </div>
         </div>
 
-        <nav class="side-nav">
-            <div class="nav-group-label">VOTRE ACTIVITÉ</div>
-            <a href="#" class="nav-item">
-                <img src="https://img.icons8.com/material-outlined/20/bookmark-ribbon.png"/> 
-                Articles favoris <span class="chevron">›</span>
-            </a>
-            <a href="#" class="nav-item">
-                <img src="https://img.icons8.com/material-outlined/20/comments.png"/> 
-                Vos commentaires <span class="chevron">›</span>
-            </a>
-            <a href="#" class="nav-item">
-                <img src="https://img.icons8.com/material-outlined/20/time-machine.png"/> 
-                Historique de lecture <span class="chevron">›</span>
-            </a>
+       <nav class="side-nav">
+    <div class="nav-group-label">VOTRE ACTIVITÉ</div>
+    
+    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('favoris')">
+        <img src="https://img.icons8.com/material-outlined/20/bookmark-ribbon.png"/> 
+        Articles favoris <span class="chevron">›</span>
+    </a>
+    
+    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('commentaires')">
+        <img src="https://img.icons8.com/material-outlined/20/comments.png"/> 
+        Vos commentaires <span class="chevron">›</span>
+    </a>
+    
+    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('historique')">
+        <img src="https://img.icons8.com/material-outlined/20/time-machine.png"/> 
+        Historique de lecture <span class="chevron">›</span>
+    </a>
 
-            <div class="nav-group-label">PARAMÈTRES</div>
-            <a href="#" class="nav-item">Profil et Sécurité <span class="chevron">›</span></a>
-            <a href="#" class="nav-item">Newsletters <span class="chevron">›</span></a>
-            
-            <button class="btn-logout-link" onclick="handleLogout()">Se déconnecter</button>
-        </nav>
+    <div class="nav-group-label">PARAMÈTRES</div>
+    
+    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('profil')">
+        Profil et Sécurité <span class="chevron">›</span>
+    </a>
+    
+    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('newsletters')">
+        Newsletters <span class="chevron">›</span>
+    </a>
+    
+    <button class="btn-logout-link" onclick="handleLogout()">Se déconnecter</button>
+</nav>
     </div>
 </div>
 
@@ -369,3 +378,5 @@
 </script>
 </body>
 </html>
+
+
