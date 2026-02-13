@@ -1069,52 +1069,16 @@ window.updatePaginationDots = function() {
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', async () => {
-    console.log("🚀 MAKMUS News Engine : Démarrage du système...");
+    console.log("🚀 MAKMUS News Engine : Démarrage...");
 
-    // 1. GESTION DE LA DATE (Look Journal Papier)
+    // 1. DATE DU JOUR
     const dateEl = document.getElementById('live-date');
     if (dateEl) {
         const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
         dateEl.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
     }
 
-    // 2. VÉRIFICATION DE LA SESSION UTILISATEUR (Indispensable pour l'Espace Compte)
-    if (typeof window.checkUserStatus === 'function') {
-        await window.checkUserStatus(); 
-    }
-
-    // 3. CHARGEMENT DES ARTICLES (Priorité #1 : Le contenu éditorial)
-    if (typeof fetchMakmusNews === 'function') {
-        fetchMakmusNews(); 
-    }
-
-    // 4. INITIALISATION DU DASHBOARD SPORTIF (Affichage par défaut : JO)
-    if (typeof window.switchSport === 'function') {
-        // On attend un court instant pour laisser les news charger en priorité
-        setTimeout(() => {
-            window.switchSport('JO', null); 
-        }, 300);
-    }
-
-    // 5. GESTION DU TICKER BOURSE (USD/CDF & Crypto)
-    if (typeof fetchMarketData === 'function') {
-        fetchMarketData().then(() => {
-            if (typeof updateTickerUI === 'function') {
-                updateTickerUI(); // Premier affichage
-                setInterval(updateTickerUI, 5000); // Rotation toutes les 5 secondes
-            }
-        });
-    }
-
-    // 6. SERVICES SECONDAIRES (Chargés en arrière-plan)
-    setTimeout(() => {
-        if (typeof fetchVideosVerticaux === 'function') fetchVideosVerticaux();
-        if (typeof initAdSlider === 'function') initAdSlider();
-        if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
-        if (typeof window.loadUserActivity === 'function') window.loadUserActivity();
-    }, 1000); // On attend 1s pour garantir la fluidité sur mobile
-
-    // 7. SYSTÈME DE RECHERCHE & NAVIGATION PAR TAGS
+    // 2. RECHERCHE GLOBALE (Définie avant les appels pour être prête immédiatement)
     window.fetchAllContent = (query) => {
         if (typeof fetchMakmusNews === 'function') {
             fetchMakmusNews(query);
@@ -1122,14 +1086,43 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // 8. ÉCOUTEUR DE SCROLL (Pour les points de navigation des onglets sports)
+    // 3. AUTH & CONTENU PRIORITAIRE
+    if (typeof window.checkUserStatus === 'function') await window.checkUserStatus();
+    if (typeof fetchMakmusNews === 'function') fetchMakmusNews();
+
+    // 4. DASHBOARD SPORTIF
+    if (typeof window.switchSport === 'function') {
+        // 'JO' par défaut, le spinner gérera l'attente visuelle
+        window.switchSport('JO', null); 
+    }
+
+    // 5. SERVICES SECONDAIRES & TICKER
+    setTimeout(() => {
+        // Ticker Bourse
+        if (typeof fetchMarketData === 'function') {
+            fetchMarketData().then(() => {
+                if (typeof updateTickerUI === 'function') {
+                    updateTickerUI();
+                    setInterval(updateTickerUI, 5000);
+                }
+            });
+        }
+
+        // Vidéos, Pubs et Tags
+        if (typeof fetchVideosVerticaux === 'function') fetchVideosVerticaux();
+        if (typeof initAdSlider === 'function') initAdSlider();
+        if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
+        if (typeof window.loadUserActivity === 'function') window.loadUserActivity();
+    }, 800); // 800ms est le "sweet spot" pour laisser le CPU respirer après le rendu initial
+
+    // 6. SCROLL & DOTS
     const tabsContainer = document.getElementById('tabs-scroll-container');
     if (tabsContainer && typeof window.updatePaginationDots === 'function') {
         tabsContainer.addEventListener('scroll', () => {
             window.requestAnimationFrame(window.updatePaginationDots);
         }, { passive: true });
-        window.updatePaginationDots(); // Appel initial pour l'état de départ
+        window.updatePaginationDots();
     }
 
-    console.log("✅ MAKMUS Engine : Tous les services sont opérationnels.");
+    console.log("✅ MAKMUS Engine : Prêt.");
 });
