@@ -1084,17 +1084,17 @@ window.updatePaginationDots = function() {
    7. INITIALISATION UNIQUE ET GLOBALE (LE CHEF D'ORCHESTRE)
    ========================================================================== */
 
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => { // Suppression du "async" ici pour ne pas bloquer le thread principal
     console.log("🚀 MAKMUS News Engine : Démarrage...");
 
-    // 1. DATE DU JOUR
+    // 1. DATE DU JOUR (Instantané)
     const dateEl = document.getElementById('live-date');
     if (dateEl) {
         const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
         dateEl.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
     }
 
-    // 2. RECHERCHE GLOBALE (Définie avant les appels pour être prête immédiatement)
+    // 2. RECHERCHE GLOBALE
     window.fetchAllContent = (query) => {
         if (typeof fetchMakmusNews === 'function') {
             fetchMakmusNews(query);
@@ -1102,36 +1102,41 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     };
 
-    // 3. AUTH & CONTENU PRIORITAIRE
-    if (typeof window.checkUserStatus === 'function') await window.checkUserStatus();
+    // 3. LANCEMENT PARALLÈLE (Optimisation de vitesse)
+    // On lance tout en même temps sans attendre (pas de await bloquant)
     if (typeof fetchMakmusNews === 'function') fetchMakmusNews();
-
-    // 4. DASHBOARD SPORTIF
+    if (typeof window.checkUserStatus === 'function') window.checkUserStatus();
+    
+    // Dashboard Sportif (Lancement immédiat)
     if (typeof window.switchSport === 'function') {
-        // 'JO' par défaut, le spinner gérera l'attente visuelle
         window.switchSport('JO', null); 
     }
 
-    // 5. SERVICES SECONDAIRES & TICKER
-    setTimeout(() => {
-        // Ticker Bourse
-        if (typeof fetchMarketData === 'function') {
-            fetchMarketData().then(() => {
-                if (typeof updateTickerUI === 'function') {
-                    updateTickerUI();
-                    setInterval(updateTickerUI, 5000);
-                }
-            });
-        }
+    // 4. SERVICES SECONDAIRES (Différés pour fluidité)
+    // On utilise requestIdleCallback si disponible (mieux que setTimeout)
+    const runSecondaryServices = () => {
+        setTimeout(() => {
+            // Ticker Bourse
+            if (typeof fetchMarketData === 'function') {
+                fetchMarketData().then(() => {
+                    if (typeof updateTickerUI === 'function') {
+                        updateTickerUI();
+                        setInterval(updateTickerUI, 5000);
+                    }
+                });
+            }
 
-        // Vidéos, Pubs et Tags
-        if (typeof fetchVideosVerticaux === 'function') fetchVideosVerticaux();
-        if (typeof initAdSlider === 'function') initAdSlider();
-        if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
-        if (typeof window.loadUserActivity === 'function') window.loadUserActivity();
-    }, 800); // 800ms est le "sweet spot" pour laisser le CPU respirer après le rendu initial
+            // Vidéos, Pubs et Tags
+            if (typeof fetchVideosVerticaux === 'function') fetchVideosVerticaux();
+            if (typeof initAdSlider === 'function') initAdSlider();
+            if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
+            if (typeof window.loadUserActivity === 'function') window.loadUserActivity();
+        }, 1200); // Augmenté à 1.2s pour garantir que les news sont déjà affichées
+    };
 
-    // 6. SCROLL & DOTS
+    runSecondaryServices();
+
+    // 5. SCROLL & UI INTERACTION
     const tabsContainer = document.getElementById('tabs-scroll-container');
     if (tabsContainer && typeof window.updatePaginationDots === 'function') {
         tabsContainer.addEventListener('scroll', () => {
