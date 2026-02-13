@@ -1294,12 +1294,18 @@ window.switchSport = async function(sportCode, event) {
 };
 
 window.fetchMarketData = async function() {
+    function sanitize(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
     try {
         const res = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/latest/USD`);
         const data = await res.json();
         const ticker = document.getElementById('ticker-rates');
         if (ticker && data.conversion_rates) {
-            ticker.innerHTML = `<span>🇺🇸 USD/CDF : ${data.conversion_rates['CDF']}</span> | <span>🇪🇺 EUR/USD : 1.08</span> | <span>⛽ Pétrole : $82.4</span>`;
+            const safeRate = sanitize(String(data.conversion_rates['CDF']));
+            ticker.innerHTML = `<span>🇺🇸 USD/CDF : ${safeRate}</span> | <span>🇪🇺 EUR/USD : 1.08</span> | <span>⛽ Pétrole : $82.4</span>`;
         }
     } catch (e) { console.warn("Ticker error"); }
 };
