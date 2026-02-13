@@ -76,11 +76,11 @@ h1, h2, h3, .section-title {
 /* ==========================================================================
    3. BARRE SUPÉRIEURE & BOURSE
    ========================================================================== */
+/* --- Structure de la Top Bar --- */
 .top-bar { 
     background: #fff; 
-    border-bottom: 1px solid var(--border-color); 
-    padding: 8px 20px; 
-    font-size: 12px; 
+    border-bottom: 1px solid var(--border-color, #eee); 
+    padding: 8px 0; /* Padding vertical uniquement ici */
 }
 
 .top-bar-content { 
@@ -89,88 +89,78 @@ h1, h2, h3, .section-title {
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
+    padding: 0 20px; /* Padding horizontal pour protéger les bords */
 }
 
+/* --- Ticker Market (Masqué par défaut sur mobile) --- */
 .market-ticker-container {
+    display: none; /* Cache le ticker sur mobile/tablette */
     flex-grow: 1;
     margin: 0 20px;
     overflow: hidden;
     height: 20px;
+    text-align: center; /* Centre le ticker entre la date et le bouton */
 }
 
 #ticker-content {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
     transition: opacity 0.3s ease;
     text-transform: uppercase;
     white-space: nowrap;
     font-weight: 600;
 }
 
-#ticker-content small { margin-left: 5px; font-weight: 800; }
-/* --- Masquer le ticker par défaut sur mobile --- */
-.market-ticker-container {
-    display: none; /* Cache le conteneur */
+#ticker-content small { 
+    margin-left: 5px; 
+    font-weight: 800; 
 }
-.top-bar-content {
-    display: flex;
-    justify-content: space-between; /* Pousse les éléments aux bords */
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
+
+/* --- Date Live --- */
 #live-date {
     font-family: 'Inter', sans-serif;
     font-size: 0.85rem;
     font-weight: 600;
     color: #333;
     white-space: nowrap;
-    
-    /* CORRECTION ICI */
-    width: auto;         /* Ne pas forcer 100% */
-    text-align: left;
-    margin-left: 0;      /* On utilise le padding du parent à la place */
-    flex-shrink: 0;      /* La date ne doit jamais rétrécir */
-}    
-    /* Ajouts pour l'alignement */
-    display: block;      /* Pour qu'il occupe sa propre ligne si besoin */
-    text-align: left;    /* Aligne le texte à gauche */
-    margin-left: 15px;   /* Petit espace par rapport au bord gauche */
-    width: 100%;         /* Prend toute la largeur pour valider l'alignement */
+    flex-shrink: 0; /* Empêche la date de s'écraser */
 }
 
-/* --- Ajustement pour Mobile (écrans inférieurs à 768px) --- */
+/* --- Bouton Compte --- */
+#openModal {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* --- Ajustements Responsive --- */
+
+/* Écrans Larges (PC) : On affiche le Ticker */
 @media (min-width: 1024px) {
     .market-ticker-container {
-        display: block; /* Apparaît sur PC */
+        display: block; 
     }
 }
 
+/* Mobiles (Smartphones) */
 @media (max-width: 768px) {
     #live-date {
-        font-size: 0.65rem; 
+        font-size: 0.7rem; 
         letter-spacing: 0.5px;
     }
     
-    .top-bar-content {
-        justify-content: space-between; /* Sur mobile, sépare la date et le bouton compte */
+    .account-text {
+        display: none; /* Cache le texte "MON COMPTE" pour ne garder que l'icône sur mobile */
     }
-}    
-    /* On peut aussi raccourcir le bouton Mon Compte pour gagner de la place */
+
     #openModal {
-        font-size: 0.65rem;
-        padding: 5px 10px;
-    }
-}
-/* --- Afficher le ticker uniquement sur les écrans larges (Tablettes et PC) --- */
-@media (min-width: 1024px) {
-    .market-ticker-container {
-        display: block; /* Réapparaît sur ordinateur */
-        flex: 1;
-        margin: 0 20px;
-        font-family: 'Inter', sans-serif;
-        font-size: 0.85rem;
-        overflow: hidden;
-        white-space: nowrap;
+        padding: 5px;
     }
 }
 /* --- Style général du bouton --- */
@@ -243,6 +233,214 @@ h1, h2, h3, .section-title {
 .close-modal:hover {
     transform: scale(1.1);    /* Petit effet visuel au survol */
 }
+/* --- Base du Panneau Latéral --- */
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Caché à droite */
+    width: 100%;
+    max-width: 400px; /* Largeur sur PC */
+    height: 100vh;
+    background: #fff;
+    z-index: 9999;
+    transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.side-panel.active {
+    right: 0; /* Affiche le menu */
+}
+
+/* --- Overlay sombre derrière --- */
+.side-panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.side-panel.active + .side-panel-overlay {
+    display: block;
+    opacity: 1;
+}
+
+/* --- Design Interne (Style NYT) --- */
+.side-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-small { font-family: 'Playfair Display'; font-weight: 900; letter-spacing: -1px; }
+.close-panel { font-size: 30px; cursor: pointer; color: #666; }
+
+.side-panel-body { padding: 30px 20px; overflow-y: auto; }
+
+.premium-title { font-family: 'Playfair Display'; font-size: 2.5rem; margin-bottom: 5px; }
+.premium-subtitle { font-size: 0.9rem; color: #666; margin-bottom: 30px; line-height: 1.4; }
+.user-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #121212;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    background: #121212;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.user-meta { display: flex; flex-direction: column; }
+.user-email { font-weight: 700; font-size: 14px; color: #121212; }
+.user-status { font-size: 12px; color: #a30000; font-weight: 600; text-transform: uppercase; }
+
+.nav-item img { margin-right: 10px; opacity: 0.7; }
+
+.btn-logout-link {
+    background: none;
+    border: none;
+    color: #666;
+    text-decoration: underline;
+    font-size: 13px;
+    margin-top: 40px;
+    cursor: pointer;
+    padding: 0;
+}
+.btn-logout-link:hover { color: #000; }
+.article-actions {
+    display: flex;
+    gap: 20px;
+    padding: 15px 0;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+    color: #444;
+    transition: 0.2s;
+}
+
+.action-btn:hover { color: #a30000; }
+.action-btn img { width: 20px; }
+
+/* --- Inputs & Boutons --- */
+.premium-input {
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.btn-black-full {
+    width: 100%;
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.nav-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid #f5f5f5;
+    text-decoration: none;
+    color: #121212;
+    font-size: 0.95rem;
+}
+
+.nav-group-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #999;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+.btn-outline-full {
+    width: 100%;
+    background: transparent;
+    color: #121212;
+    border: 1px solid #121212;
+    padding: 14px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    margin-top: 10px;
+    border-radius: 2px; /* Coins très légèrement arrondis pour le style moderne */
+}
+
+/* Effet au passage de la souris */
+.btn-outline-full:hover {
+    background-color: #f9f9f9;
+    border-color: #000;
+    transform: translateY(-1px); /* Petit effet de levier */
+}
+
+/* Effet au clic */
+.btn-outline-full:active {
+    background-color: #eee;
+    transform: translateY(0);
+}
+
+/* Optionnel : Le séparateur "OU" entre les boutons */
+.auth-divider {
+    text-align: center;
+    position: relative;
+    margin: 20px 0;
+    color: #999;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.auth-divider::before, .auth-divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 42%;
+    height: 1px;
+    background: #eee;
+}
+
+.auth-divider::before { left: 0; }
+.auth-divider::after { right: 0; }
 /* ==========================================================================
    4. HEADER, LOGO & NAV
    ========================================================================== */
@@ -597,31 +795,331 @@ h1, h2, h3, .section-title {
     border: 1px solid #eee;
 }
 
-/* 5. SLIDER DE RÉSUMÉS (MATCH CARDS) */
-.sports-slider-container { overflow: hidden; width: 100%; padding: 20px 0; }
-.sports-track { display: flex; gap: 20px; transition: transform 0.5s ease; }
-
-.match-card {
-    min-width: 300px;
-    background: #fff;
-    border-bottom: 4px solid #a30000;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+/* --- 1. STRUCTURE GLOBALE DU DASHBOARD (GRID SPLIT) --- */
+.dashboard-grid-container {
+    display: grid;
+    grid-template-columns: 380px 1fr; /* Tableau fixe, Article prend le reste */
+    gap: 30px;
+    max-width: 1200px;
+    margin: 20px auto;
+    padding: 0 15px;
 }
 
-.live-badge { color: #d00; font-weight: bold; font-size: 11px; text-transform: uppercase; }
-.bold { font-weight: 800; }
+.dashboard-table-side {
+    background: #fff;
+    border-right: 1px solid #eee;
+    padding-right: 15px;
+}
+
+/* --- 2. NAVIGATION (TABS & DOTS) --- */
 #tabs-scroll-container {
     display: flex;
-    overflow-x: auto; /* Indispensable pour que le JS puisse scroller */
-    scroll-behavior: smooth;
-    gap: 20px;
-    scrollbar-width: none; /* Cache la barre sur Firefox */
+    overflow-x: auto; /* Permet le scroll horizontal */
+    scroll-behavior: smooth; /* Rend le scroll des flèches fluide */
+    -webkit-overflow-scrolling: touch; /* Scroll fluide sur mobile */
+}
+#tabs-scroll-container::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+/* Cache la barre de défilement moche */
+#tabs-scroll-container::-webkit-scrollbar {
+    display: none;
+}
+.pagination-dots { display: flex; gap: 8px; padding: 10px 0; }
+.dot { width: 8px; height: 8px; background: #ddd; border-radius: 50%; cursor: pointer; }
+.dot.active { background: #a30000; }
+
+/* --- 3. LE TABLEAU DES SCORES (MEDAL TABLE) --- */
+.medal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Arial', sans-serif;
 }
 
+.medal-table th {
+    text-transform: uppercase;
+    font-size: 11px;
+    font-weight: 700;
+    color: #888;
+    border-bottom: 1px solid #eee;
+    padding: 10px 5px;
+    text-align: center;
+}
+
+.medal-table td {
+    padding: 12px 5px;
+    border-bottom: 1px solid #f5f5f5;
+    text-align: center;
+    font-size: 14px;
+}
+
+/* Cellule Équipe / Logo */
+.team-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-align: left;
+    padding-left: 5px;
+}
+
+.team-name-text {
+    font-family: 'Playfair Display', serif; /* Look NYT */
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 14px;
+    color: #000;
+}
+
+.flag-icon {
+    width: 24px;
+    height: 16px;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+/* Utilitaires Scores */
+.bold, .col-total { font-weight: 900; color: #000; }
+
+/* --- 4. BLOC ARTICLE VEDETTE (DROIT) --- */
+.featured-article-side {
+    cursor: pointer;
+}
+
+.featured-card {
+    background: white;
+    transition: transform 0.3s ease;
+}
+
+.image-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.featured-card img {
+    width: 100%;
+    height: 400px;
+    object-fit: cover;
+    transition: opacity 0.3s;
+}
+
+.badge-new {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    background: #a30000;
+    color: white;
+    padding: 4px 12px;
+    font-size: 10px;
+    font-weight: 800;
+    border-radius: 2px;
+    letter-spacing: 1px;
+}
+
+.featured-card h2 {
+    font-family: 'Inter', sans-serif;
+    font-size: 28px;
+    font-weight: 800;
+    margin: 15px 0 10px 0;
+    line-height: 1.2;
+    color: #000;
+}
+
+.featured-card p {
+    font-size: 15px;
+    color: #444;
+    line-height: 1.5;
+}
+
+.read-more-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    font-weight: 800;
+    font-size: 12px;
+    color: #a30000;
+    text-transform: uppercase;
+}
+
+/* --- 5. RESPONSIVE DESIGN --- */
+@media (max-width: 900px) {
+    .dashboard-grid-container {
+        grid-template-columns: 1fr; /* Empilement vertical */
+        gap: 20px;
+    }
+
+    .dashboard-table-side {
+        border-right: none;
+        padding-right: 0;
+        overflow-x: auto; /* Scroll horizontal pour le tableau si trop large */
+    }
+
+    .featured-article-side {
+        order: -1; /* L'article passe au-dessus du tableau */
+    }
+
+    .featured-card img {
+        height: 250px;
+    }
+
+    .featured-card h2 {
+        font-size: 22px;
+    }
+
+    .medal-table { font-size: 12px; }
+    
+    .team-name-text { font-size: 12px; }
+
+    .team-cell span {
+        max-width: 100px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* Masquer les colonnes secondaires sur mobile très étroit */
+@media (max-width: 400px) {
+    .medal-table th:nth-child(2), 
+    .medal-table td:nth-child(2),
+    .medal-table th:nth-child(3), 
+    .medal-table td:nth-child(3) {
+        display: none;
+    }
+}
+.footer-link {
+    display: block;
+    margin-top: 15px;
+    font-size: 12px;
+    color: #333;
+    text-decoration: none;
+    border-top: 1px solid #000;
+    padding-top: 10px;
+}
 #tabs-scroll-container::-webkit-scrollbar {
     display: none; /* Cache la barre sur Chrome/Safari */
 }
-/* ==========================================================================
+.more-info-section {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+}
+
+.section-divider-double {
+    border-top: 3px solid #000;
+    border-bottom: 1px solid #000;
+    height: 3px;
+    margin-bottom: 10px;
+}
+
+.section-main-title {
+    font-family: 'Arial Black', sans-serif;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.more-info-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 colonnes comme la capture */
+    gap: 15px;
+}
+
+.info-category-block {
+    border-right: 1px solid #e2e2e2;
+    padding-right: 15px;
+}
+
+.info-category-block:last-child {
+    border-right: none;
+}
+
+.category-label {
+    font-family: 'Arial', sans-serif;
+    font-weight: 900;
+    font-size: 11px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.info-main-img {
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+    margin-bottom: 8px;
+}
+
+.info-main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 700;
+    margin-bottom: 10px;
+    cursor: pointer;
+}
+
+.info-sub-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border-top: 1px solid #eee;
+    padding-top: 10px;
+}
+
+.info-sub-title {
+    font-family: 'Arial', sans-serif;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 10px;
+    cursor: pointer;
+    color: #333;
+}
+
+.info-sub-title:hover { color: #666; }
+
+/* Responsive */
+@media (max-width: 768px) {
+    .more-info-grid {
+        grid-template-columns: 1fr; /* Une seule colonne sur mobile */
+        gap: 30px; /* Plus d'espace entre les blocs de catégories */
+    }
+
+    .info-category-block {
+        border-right: none; /* On enlève la séparation verticale */
+        border-bottom: 2px solid #000; /* On met une séparation horizontale forte */
+        padding-right: 0;
+        padding-bottom: 25px;
+    }
+
+    .info-category-block:last-child {
+        border-bottom: none;
+    }
+
+    .info-main-img {
+        height: 220px; /* Image plus grande sur mobile pour l'impact */
+        width: 100%;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+
+    .info-main-title {
+        font-size: 18px; /* Titre plus lisible sur smartphone */
+        margin-bottom: 15px;
+    }
+
+    .info-sub-list {
+        display: grid;
+        grid-template-columns: 1fr; /* Les sous-titres restent en liste */
+        gap: 12px;
+        border-top: 1px dashed #ccc; /* Séparation plus légère pour les sous-titres */
+        padding-top: 15px;
+    }
+
+    .info-sub-title {
+        font-size: 14px;
+        padding-left: 10px;
+        border-left: 3px solid #e2e2e2; /* Petite barre décorative à gauche */
+    }
+}/* ==========================================================================
    8. FOOTER, MENU & MODALE
    ========================================================================== */
 .nyt-footer { border-top: 1px solid #000; padding: 60px 20px; margin-top: 50px; background: #fff; }
@@ -1329,61 +1827,163 @@ h1, h2, h3, .section-title {
     text-transform: uppercase;
     font-weight: bold;
 }
-/* --- SECTION AUTRE INFO (STYLE TRENDING) --- */
-.trending-item {
-    display: flex;
-    gap: 15px;
-    padding: 12px 0;
-    border-bottom: 1px dashed #ddd;
-    transition: 0.2s;
-    cursor: pointer;
-}
-.trending-item:hover h4 { color: var(--makmus-red); }
-.trending-item h4 {
-    font-size: 0.95rem;
-    line-height: 1.3;
-    font-weight: 700;
-    margin: 0;
-    color: #222;
-}
-.trending-number {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.5rem;
-    color: #ccc;
-    line-height: 1;
+/* --- SECTION AUTRE INFO (SLIDER) --- */
+.sidebar-column {
+    overflow: hidden; /* Empêche tout débordement de la colonne */
 }
 
-/* --- SECTION OPINION (STYLE ÉDITORIAL) --- */
-.opinion-item {
+#sidebar-list {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scroll-snap-type: x mandatory;
+    gap: 20px;
+    padding: 10px 0;
+    scrollbar-width: none; /* Firefox */
+}
+
+#sidebar-list::-webkit-scrollbar {
+    display: none; /* Chrome/Safari */
+}
+
+.trending-slide-card {
+    flex: 0 0 100%; /* Une carte à la fois pour un cadrage parfait */
+    scroll-snap-align: start;
+    cursor: pointer;
+}
+
+.slide-cover {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    margin-bottom: 10px;
+}
+
+/* --- BOUTONS NAVIGATION (Style Capture 4) --- */
+.slider-navigation {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0 20px 0;
+    border-bottom: 1px solid #e2e2e2;
+    margin-bottom: 20px;
+}
+
+.nav-btn {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 1px solid #e2e2e2;
+    background: white;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #333;
+    font-size: 18px;
+}
+
+.nav-btn:hover {
+    border-color: #333;
+    background-color: #f9f9f9;
+}
+/* Conteneur global de navigation */
+.slider-controls-wrapper {
+    display: flex;
+    justify-content: space-between; /* Espace entre les points et les flèches */
+    align-items: center;
+    padding: 10px 0 20px 0;
+    border-bottom: 1px solid #e2e2e2;
+    margin-bottom: 20px;
+}
+
+/* Les points de pagination */
+.slider-dots {
+    display: flex;
+    gap: 6px;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    background-color: #ccc;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.dot.active {
+    background-color: #000; /* Le point devient noir quand l'article est actif */
+    transform: scale(1.2);
+}
+
+/* Les flèches à droite */
+.slider-arrows {
+    display: flex;
+    gap: 8px;
+}
+
+.nav-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #e2e2e2;
+    background: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+}
+
+.nav-btn:hover {
+    background: #f0f0f0;
+}
+/* --- SECTION OPINION (Style Capture 2) --- */
+.opinion-container-box {
     padding: 15px 0;
-    border-bottom: 1px solid #eee;
-    gap: 12px;
+    border-bottom: 1px solid #e2e2e2;
 }
-.opinion-item-text { flex: 1; }
-.opinion-item-text span {
-    font-size: 10px;
-    font-weight: 800;
-    color: var(--makmus-red);
+
+.opinion-author-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+}
+
+.author-name {
+    font-family: 'Arial', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
     text-transform: uppercase;
-    display: block;
-    margin-bottom: 4px;
+    color: #333;
+    margin-top: 5px;
 }
-.opinion-item-text h4 {
-    font-size: 1rem;
-    font-weight: 800;
-    margin: 0;
-    line-height: 1.2;
-    font-family: 'Playfair Display', serif;
-}
-.opinion-avatar {
-    width: 50px;
-    height: 50px;
+
+.author-avatar {
+    width: 42px;
+    height: 42px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #f0f0f0;
+}
+
+.opinion-text-title {
+    font-family: 'Playfair Display', serif; /* Ou une police Serif élégante */
+    font-size: 1.3rem;
+    line-height: 1.2;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: #121212;
+}
+
+.opinion-main-cover {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-top: 10px;
 }
 /* ==========================================================================
    9. RESPONSIVE MOBILE
@@ -1405,3 +2005,7 @@ h1, h2, h3, .section-title {
     .main-article h1 { font-size: 1.8rem; text-align: left; }
     .footer-bottom { flex-direction: column; gap: 15px; text-align: center; }
 }
+
+
+
+
