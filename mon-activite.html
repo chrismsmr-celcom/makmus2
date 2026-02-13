@@ -4,7 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mon Activité - MAKMUS</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    <link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#a30000">
+<link rel="apple-touch-icon" href="icon-192.png">
+
+
     <style>
         :root {
             --primary-color: #a30000;
@@ -82,7 +92,42 @@
         .btn-action:hover { border-color: var(--primary-color); color: var(--primary-color); }
 
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+         .tab-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px; /* Espace entre l'icône et le texte */
+    width: 100%;
+    padding: 12px 15px;
+    border: none;
+    background: none;
+    font-size: 15px;
+    color: #444;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+}
 
+.tab-btn i {
+    font-size: 18px; /* Taille de l'icône */
+    opacity: 0.8;
+}
+
+.tab-btn.active {
+    background: #000;
+    color: #fff;
+}
+
+.tab-btn.active i {
+    opacity: 1;
+}
+
+.logout-link {
+    color: #d93025 !important; /* Rouge pour la déconnexion */
+}
+
+.logout-link:hover {
+    background-color: #fff1f0 !important;
+}
         /* Mobile */
         @media (max-width: 768px) {
             .activity-wrapper { flex-direction: column; }
@@ -100,16 +145,29 @@
             <h3 id="display-email" style="font-size: 14px; color: #666;">Chargement...</h3>
         </div>
         
-        <nav>
-            <button class="tab-btn active" onclick="switchSection(event, 'favoris')">⭐ Articles Favoris</button>
-            <button class="tab-btn" onclick="switchSection(event, 'commentaires')">💬 Mes Commentaires</button>
-            <button class="tab-btn" onclick="switchSection(event, 'historique')">🕒 Historique</button>
-            <button class="tab-btn" onclick="switchSection(event, 'profil')">⚙️ Paramètres Profil</button>
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
-            <button class="tab-btn" style="color: var(--primary-color);" onclick="logout()">Se déconnecter</button>
-        </nav>
-    </aside>
-
+<nav class="activity-nav">
+    <button class="tab-btn active" onclick="switchSection(event, 'favoris')">
+        <i class="fa-regular fa-bookmark fa-fw"></i> Articles Favoris
+    </button>
+    
+    <button class="tab-btn" onclick="switchSection(event, 'commentaires')">
+        <i class="fa-regular fa-comment-dots fa-fw"></i> Mes Commentaires
+    </button>
+    
+    <button class="tab-btn" onclick="switchSection(event, 'historique')">
+        <i class="fa-solid fa-clock-rotate-left fa-fw"></i> Historique
+    </button>
+    
+    <button class="tab-btn" onclick="switchSection(event, 'profil')">
+        <i class="fa-solid fa-user-gear fa-fw"></i> Paramètres Profil
+    </button>
+    
+    <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+    
+    <button class="tab-btn logout-link" onclick="logout()">
+        <i class="fa-solid fa-arrow-right-from-bracket fa-fw"></i> Se déconnecter
+    </button>
+</nav>
     <main class="activity-main">
         <section id="favoris" class="section-content active">
             <h1>Vos Articles Favoris</h1>
@@ -142,12 +200,12 @@
 </div>
 
 <script>
-    // CONFIGURATION SUPABASE
-    const SUPABASE_URL = 'https://votre-projet.supabase.co';
-    const SUPABASE_KEY = 'votre-cle-anonyme';
+    // 1. CONFIGURATION SUPABASE
+    const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
     const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-    // AU CHARGEMENT DE LA PAGE
+    // 2. AU CHARGEMENT DE LA PAGE
     document.addEventListener('DOMContentLoaded', async () => {
         const { data: { user } } = await supabaseClient.auth.getUser();
         
@@ -156,76 +214,104 @@
             return;
         }
 
+        // Affichage des infos utilisateur
         document.getElementById('display-email').textContent = user.email;
         document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
-        document.getElementById('creation-date').textContent = new Date(user.created_at).toLocaleDateString();
+        if(document.getElementById('creation-date')) {
+            document.getElementById('creation-date').textContent = new Date(user.created_at).toLocaleDateString();
+        }
 
-        // Charger les favoris par défaut
-        loadFavoris(user.id);
+        // --- GESTION DE L'URL (Redirection automatique vers l'onglet) ---
+        const params = new URLSearchParams(window.location.search);
+        const sectionFromUrl = params.get('section');
+
+        if (sectionFromUrl) {
+            // On attend un tout petit peu que le DOM soit prêt pour cliquer
+            setTimeout(() => window.switchSection(null, sectionFromUrl), 100);
+        } else {
+            loadFavoris(); // Par défaut
+        }
     });
 
-    // NAVIGATION ENTRE LES SECTIONS
-    function switchSection(e, sectionId) {
-        // Gérer les boutons
+    // 3. NAVIGATION ENTRE LES SECTIONS (Améliorée)
+    window.switchSection = function(e, sectionId) {
+        console.log("Changement vers la section :", sectionId);
+
+        // 1. Gérer l'apparence des boutons
         document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-        e.currentTarget.classList.add('active');
+        
+        if (e && e.currentTarget) {
+            // Si c'est un clic manuel
+            e.currentTarget.classList.add('active');
+        } else {
+            // Si c'est automatique (via URL), on cherche le bouton correspondant
+            const targetBtn = document.querySelector(`.tab-btn[onclick*="'${sectionId}'"]`);
+            if (targetBtn) targetBtn.classList.add('active');
+        }
 
-        // Gérer les sections
+        // 2. Gérer l'affichage des blocs de contenu
         document.querySelectorAll('.section-content').forEach(section => section.classList.remove('active'));
-        document.getElementById(sectionId).classList.add('active');
+        const targetSection = document.getElementById(sectionId);
+        if (targetSection) targetSection.classList.add('active');
 
-        // Charger les données selon la section
+        // 3. Charger les données spécifiques
         if(sectionId === 'favoris') loadFavoris();
-        if(sectionId === 'historique') loadHistory();
-    }
+        if(sectionId === 'commentaires') loadComments();
+        if(sectionId === 'historique') console.log("Chargement historique...");
+    };
 
-    // CHARGEMENT DES FAVORIS
+    // 4. CHARGEMENT DES FAVORIS
     async function loadFavoris() {
-        const { data: { user } } = await supabaseClient.auth.getUser();
         const container = document.getElementById('favoris-list');
-        container.innerHTML = "Chargement...";
+        if (!container) return;
+        
+        container.innerHTML = "<p>Chargement de vos favoris...</p>";
 
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        // On récupère les favoris avec une jointure sur la table 'articles'
         const { data, error } = await supabaseClient
-            .from('favoris')
+            .from('favorites') // /!\ Vérifie si ta table est 'favoris' ou 'favorites'
             .select('article_id, articles(*)')
             .eq('user_id', user.id);
 
         if (error || !data || data.length === 0) {
-            container.innerHTML = "<p>Aucun favori pour le moment.</p>";
+            container.innerHTML = "<p>Aucun article sauvegardé pour le moment.</p>";
             return;
         }
 
         container.innerHTML = data.map(item => `
             <div class="item-card">
-                <img src="${item.articles.image_url || 'https://via.placeholder.com/300'}" alt="">
+                <img src="${item.articles?.image_url || 'https://via.placeholder.com/300'}" alt="">
                 <div class="item-details">
-                    <h3>${item.articles.titre}</h3>
-                    <button class="btn-action" onclick="window.location.href='redaction.html?id=${item.article_id}'">Lire</button>
-                    <button class="btn-action" onclick="removeFav('${item.article_id}')">Supprimer</button>
+                    <h3>${item.articles?.titre || 'Article sans titre'}</h3>
+                    <div style="display:flex; gap:10px;">
+                        <button class="btn-action" onclick="window.location.href='redaction.html?id=${item.article_id}'">Lire</button>
+                        <button class="btn-action" style="color:red;" onclick="removeFav('${item.article_id}')">Supprimer</button>
+                    </div>
                 </div>
             </div>
         `).join('');
     }
 
-    // DECONNEXION
-    async function logout() {
+    // 5. SUPPRIMER UN FAVORI
+    window.removeFav = async function(id) {
+        if(!confirm("Supprimer cet article de vos favoris ?")) return;
+        
+        const { error } = await supabaseClient
+            .from('favorites')
+            .delete()
+            .eq('article_id', id);
+
+        if (error) alert("Erreur lors de la suppression");
+        else loadFavoris(); // Rafraîchir la liste
+    };
+
+    // 6. DECONNEXION
+    window.logout = async function() {
         await supabaseClient.auth.signOut();
         window.location.href = 'index.html';
-    }
-
-    async function removeFav(id) {
-        await supabaseClient.from('favoris').delete().eq('article_id', id);
-        loadFavoris(); // Rafraichir
-    }
-    // Dans mon-activite.html
-document.addEventListener('DOMContentLoaded', () => {
-    const params = new URLSearchParams(window.location.search);
-    const section = params.get('section');
-    if (section && typeof window.switchSection === 'function') {
-        window.switchSection(null, section);
-    }
-});
+    };
 </script>
-
 </body>
 </html>
