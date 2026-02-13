@@ -1,8 +1,9 @@
+import * as supabase from '@supabase/supabase-js';
 /* ==========================================================================
    1. CONFIGURATION & CLIENTS
    ========================================================================== */
 const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
 const EXCHANGE_API_KEY = '4e4fee63bab6fce7ba7b39e8';
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -17,7 +18,7 @@ window.toggleMenu = (show) => {
    1. CONFIGURATION & CLIENTS
    ========================================================================== */
 const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
 const EXCHANGE_API_KEY = '4e4fee63bab6fce7ba7b39e8';
 const BACKEND_URL = 'https://makmus2-backend-api.onrender.com/api/news';
 
@@ -1129,6 +1130,7 @@ document.addEventListener('DOMContentLoaded', () => { // Retrait du async bloqua
 
     // 5. CHARGEMENT DIFFÉRÉ (Services secondaires)
     // On attend 1.2s pour laisser les news et images s'afficher d'abord
+    /* global fetchMarketData, updateTickerUI, fetchVideosVerticaux, initAdSlider, loadAutoTrendingTags */
     setTimeout(() => {
         console.log("📦 Chargement des services secondaires...");
         
@@ -1145,7 +1147,7 @@ document.addEventListener('DOMContentLoaded', () => { // Retrait du async bloqua
         if (typeof initAdSlider === 'function') initAdSlider();
         if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
         if (typeof window.loadUserActivity === 'function') window.loadUserActivity();
-    }, 1200); 
+    }, 1200);
 
     // 6. SCROLL & UI
     const tabsContainer = document.getElementById('tabs-scroll-container');
