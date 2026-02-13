@@ -1,20 +1,24 @@
-const CACHE_NAME = 'makmus-v1.2';
+const CACHE_NAME = 'makmus-v1.3'; // On monte la version
 const ASSETS = [
-  '/',
-  '/index.html',
-  '/redaction.html',
-  '/style.css',
-  '/redaction.css',
-  '/script.js', // N'oublie pas ton fichier JS principal !
-  '/redaction.js',
-  '/manifest.json'
+  './', // Chemin relatif au dossier actuel
+  './index.html',
+  './mon-activite.html', // N'oublie pas ta nouvelle page !
+  './redaction.html',
+  './style.css',
+  './redaction.css',
+  './script.js',
+  './redaction.js',
+  './manifest.json'
 ];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('✅ Service Worker : Mise en cache des fichiers');
+      return cache.addAll(ASSETS);
+    })
   );
-  self.skipWaiting(); // Force la mise à jour immédiate
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (e) => {
@@ -22,7 +26,10 @@ self.addEventListener('activate', (e) => {
     caches.keys().then((keys) => {
       return Promise.all(
         keys.map((key) => {
-          if (key !== CACHE_NAME) return caches.delete(key);
+          if (key !== CACHE_NAME) {
+            console.log('🗑️ Service Worker : Nettoyage ancien cache', key);
+            return caches.delete(key);
+          }
         })
       );
     })
@@ -30,23 +37,27 @@ self.addEventListener('activate', (e) => {
 });
 
 self.addEventListener('fetch', (e) => {
-  // On ne met pas en cache les requêtes vers Supabase (toujours live)
+  // 1. Priorité au réseau pour Supabase (données en temps réel)
   if (e.request.url.includes('supabase.co')) {
-    e.respondWith(fetch(e.request));
-    return;
+    return; // On laisse le navigateur gérer normalement
   }
 
-  // Pour le reste (CSS, JS, Images locales)
+  // 2. Stratégie Stale-While-Revalidate (Cache d'abord, puis mise à jour)
   e.respondWith(
     caches.match(e.request).then((cachedResponse) => {
       const fetchPromise = fetch(e.request).then((networkResponse) => {
-        // On met à jour le cache silencieusement pour la prochaine fois
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(e.request, networkResponse.clone());
-        });
+        // On ne met en cache que les réponses valides (200)
+        if (networkResponse && networkResponse.status === 200) {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(e.request, responseToCache);
+          });
+        }
         return networkResponse;
+      }).catch(() => {
+        // Optionnel : retourner une page hors-ligne ici si fetch échoue
       });
-      // On retourne le cache immédiatement s'il existe, sinon le réseau
+
       return cachedResponse || fetchPromise;
     })
   );
