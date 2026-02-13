@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon Activité - MAKMUS</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        :root {
+            --primary-color: #a30000;
+            --bg-light: #f9f9f9;
+            --border-color: #eee;
+        }
+
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background: #fff; }
+
+        /* Mise en page Side-by-Side */
+        .activity-wrapper {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .activity-sidebar {
+            width: 280px;
+            background: var(--bg-light);
+            border-right: 1px solid var(--border-color);
+            padding: 40px 20px;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+        }
+
+        .user-info-large { margin-bottom: 40px; text-align: center; }
+        .avatar-circle {
+            width: 80px; height: 80px; background: #000; color: #fff;
+            border-radius: 50%; display: flex; align-items: center;
+            justify-content: center; font-size: 32px; margin: 0 auto 15px;
+        }
+
+        .tab-btn {
+            display: block; width: 100%; padding: 15px; border: none;
+            background: none; text-align: left; font-size: 16px;
+            cursor: pointer; border-radius: 8px; transition: 0.3s;
+            color: #555; margin-bottom: 10px;
+        }
+
+        .tab-btn.active { background: #000; color: #fff; font-weight: bold; }
+        .tab-btn:hover:not(.active) { background: #e9e9e9; }
+
+        /* Contenu Principal */
+        .activity-main { flex: 1; padding: 40px 60px; }
+        .section-content { display: none; animation: fadeIn 0.4s ease; }
+        .section-content.active { display: block; }
+
+        h1 { font-size: 28px; margin-bottom: 30px; }
+
+        /* Grille d'articles (Favoris/Historique) */
+        .activity-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .item-card {
+            border: 1px solid var(--border-color);
+            border-radius: 12px; overflow: hidden;
+            transition: transform 0.2s;
+        }
+
+        .item-card img { width: 100%; height: 160px; object-fit: cover; }
+        .item-details { padding: 15px; }
+        .item-details h3 { margin: 0 0 10px; font-size: 16px; line-height: 1.4; }
+        
+        .btn-action {
+            background: none; border: 1px solid #ddd; padding: 5px 12px;
+            border-radius: 4px; cursor: pointer; font-size: 12px;
+        }
+
+        .btn-action:hover { border-color: var(--primary-color); color: var(--primary-color); }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Mobile */
+        @media (max-width: 768px) {
+            .activity-wrapper { flex-direction: column; }
+            .activity-sidebar { width: 100%; height: auto; position: relative; border-right: none; border-bottom: 1px solid var(--border-color); }
+            .activity-main { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="activity-wrapper">
+    <aside class="activity-sidebar">
+        <div class="user-info-large">
+            <div id="user-avatar" class="avatar-circle">M</div>
+            <h3 id="display-email" style="font-size: 14px; color: #666;">Chargement...</h3>
+        </div>
+        
+        <nav>
+            <button class="tab-btn active" onclick="switchSection(event, 'favoris')">⭐ Articles Favoris</button>
+            <button class="tab-btn" onclick="switchSection(event, 'commentaires')">💬 Mes Commentaires</button>
+            <button class="tab-btn" onclick="switchSection(event, 'historique')">🕒 Historique</button>
+            <button class="tab-btn" onclick="switchSection(event, 'profil')">⚙️ Paramètres Profil</button>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #ddd;">
+            <button class="tab-btn" style="color: var(--primary-color);" onclick="logout()">Se déconnecter</button>
+        </nav>
+    </aside>
+
+    <main class="activity-main">
+        <section id="favoris" class="section-content active">
+            <h1>Vos Articles Favoris</h1>
+            <div id="favoris-list" class="activity-grid">
+                </div>
+        </section>
+
+        <section id="commentaires" class="section-content">
+            <h1>Vos Commentaires</h1>
+            <div id="comments-list">
+                <p style="color: #999;">Aucun commentaire trouvé.</p>
+            </div>
+        </section>
+
+        <section id="historique" class="section-content">
+            <h1>Historique de lecture</h1>
+            <div id="history-list" class="activity-grid">
+                </div>
+        </section>
+
+        <section id="profil" class="section-content">
+            <h1>Paramètres du Profil</h1>
+            <div style="background: var(--bg-light); padding: 30px; border-radius: 12px;">
+                <p><strong>Statut :</strong> Membre Premium</p>
+                <p><strong>Compte créé le :</strong> <span id="creation-date">...</span></p>
+                <button class="btn-action" onclick="alert('Bientôt disponible')">Changer le mot de passe</button>
+            </div>
+        </section>
+    </main>
+</div>
+
+<script>
+    // CONFIGURATION SUPABASE
+    const SUPABASE_URL = 'https://votre-projet.supabase.co';
+    const SUPABASE_KEY = 'votre-cle-anonyme';
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // AU CHARGEMENT DE LA PAGE
+    document.addEventListener('DOMContentLoaded', async () => {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        if (!user) {
+            window.location.href = 'index.html'; // Redirige si pas connecté
+            return;
+        }
+
+        document.getElementById('display-email').textContent = user.email;
+        document.getElementById('user-avatar').textContent = user.email.charAt(0).toUpperCase();
+        document.getElementById('creation-date').textContent = new Date(user.created_at).toLocaleDateString();
+
+        // Charger les favoris par défaut
+        loadFavoris(user.id);
+    });
+
+    // NAVIGATION ENTRE LES SECTIONS
+    function switchSection(e, sectionId) {
+        // Gérer les boutons
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+
+        // Gérer les sections
+        document.querySelectorAll('.section-content').forEach(section => section.classList.remove('active'));
+        document.getElementById(sectionId).classList.add('active');
+
+        // Charger les données selon la section
+        if(sectionId === 'favoris') loadFavoris();
+        if(sectionId === 'historique') loadHistory();
+    }
+
+    // CHARGEMENT DES FAVORIS
+    async function loadFavoris() {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        const container = document.getElementById('favoris-list');
+        container.innerHTML = "Chargement...";
+
+        const { data, error } = await supabaseClient
+            .from('favoris')
+            .select('article_id, articles(*)')
+            .eq('user_id', user.id);
+
+        if (error || !data || data.length === 0) {
+            container.innerHTML = "<p>Aucun favori pour le moment.</p>";
+            return;
+        }
+
+        container.innerHTML = data.map(item => `
+            <div class="item-card">
+                <img src="${item.articles.image_url || 'https://via.placeholder.com/300'}" alt="">
+                <div class="item-details">
+                    <h3>${item.articles.titre}</h3>
+                    <button class="btn-action" onclick="window.location.href='redaction.html?id=${item.article_id}'">Lire</button>
+                    <button class="btn-action" onclick="removeFav('${item.article_id}')">Supprimer</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // DECONNEXION
+    async function logout() {
+        await supabaseClient.auth.signOut();
+        window.location.href = 'index.html';
+    }
+
+    async function removeFav(id) {
+        await supabaseClient.from('favoris').delete().eq('article_id', id);
+        loadFavoris(); // Rafraichir
+    }
+    // Dans mon-activite.html
+document.addEventListener('DOMContentLoaded', () => {
+    const params = new URLSearchParams(window.location.search);
+    const section = params.get('section');
+    if (section && typeof window.switchSection === 'function') {
+        window.switchSection(null, section);
+    }
+});
+</script>
+
+</body>
+</html>
