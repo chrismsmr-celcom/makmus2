@@ -441,6 +441,29 @@ h1, h2, h3, .section-title {
 
 .auth-divider::before { left: 0; }
 .auth-divider::after { right: 0; }
+.nav-item {
+    cursor: pointer !important; /* Force le curseur "main" */
+    transition: background 0.2s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.nav-item:hover {
+    background-color: #f5f5f5; /* Change de couleur au survol */
+}
+
+.btn-logout-link {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #a30000;
+    font-weight: bold;
+    margin-top: 20px;
+    padding: 10px;
+    text-align: left;
+    width: 100%;
+}
 /* ==========================================================================
    4. HEADER, LOGO & NAV
    ========================================================================== */
