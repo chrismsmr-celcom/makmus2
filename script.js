@@ -1293,13 +1293,20 @@ window.switchSport = async function(sportCode, event) {
     finally { if (loader) loader.style.display = 'none'; }
 };
 
+function sanitize(html) {
+    const template = document.createElement('template');
+    template.innerHTML = html;
+    return template.innerHTML;
+}
+
 window.fetchMarketData = async function() {
     try {
         const res = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/latest/USD`);
         const data = await res.json();
         const ticker = document.getElementById('ticker-rates');
         if (ticker && data.conversion_rates) {
-            ticker.innerHTML = `<span>🇺🇸 USD/CDF : ${data.conversion_rates['CDF']}</span> | <span>🇪🇺 EUR/USD : 1.08</span> | <span>⛽ Pétrole : $82.4</span>`;
+            const rawHTML = `<span>🇺🇸 USD/CDF : ${data.conversion_rates['CDF']}</span> | <span>🇪🇺 EUR/USD : 1.08</span> | <span>⛽ Pétrole : $82.4</span>`;
+            ticker.innerHTML = sanitize(rawHTML);
         }
     } catch (e) { console.warn("Ticker error"); }
 };
