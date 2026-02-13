@@ -25,113 +25,125 @@ window.toggleMenu = (show) => {
     }
 };
 
-// 2. GESTION DU PANNEAU LATÉRAL (Compte utilisateur)
+/* ==========================================================================
+   1. GESTION DU PANNEAU LATÉRAL (SIDE ACCOUNT)
+   ========================================================================== */
+
+// Ouvrir ou fermer le panneau
 window.toggleSidePanel = (isOpen) => {
     const panel = document.getElementById('sideAccount');
     if (!panel) return;
-
-    if (isOpen) {
-        panel.classList.add('active');
-        document.body.style.overflow = 'hidden';
-    } else {
-        panel.classList.remove('active');
-        document.body.style.overflow = 'auto';
-    }
+    
+    panel.classList.toggle('active', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : 'auto';
 };
 
-// 3. FERMETURE AUTOMATIQUE EN CLIQUANT À L'EXTÉRIEUR
-window.addEventListener('click', function(event) {
-    // Si on clique sur l'overlay du Side Panel
+// Fermeture automatique au clic sur l'overlay (le fond sombre)
+window.addEventListener('click', (event) => {
     if (event.target.classList.contains('side-panel-overlay')) {
         window.toggleSidePanel(false);
     }
-    
-    // Si on clique sur l'overlay d'un ancien modal (si tu en as encore)
+    // Gestion des anciens modals si présents
     if (event.target.classList.contains('modal-overlay')) {
         event.target.style.display = 'none';
         document.body.style.overflow = 'auto';
     }
 });
-// --- AUTHENTIFICATION ---
-window.handleAuth = async function(type) {
-    console.log("Tentative d'authentification :", type);
+
+/* ==========================================================================
+   2. NAVIGATION VERS "MON ACTIVITÉ"
+   ========================================================================== */
+
+window.navigateToAccountOption = function(option) {
+    console.log("🚀 Navigation vers la section :", option);
     
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-password').value;
+    // On ferme le panneau avant de partir
+    window.toggleSidePanel(false);
 
-    if (!email || !password) {
-        alert("Veuillez remplir tous les champs.");
-        return;
-    }
-
-    try {
-        let result;
-        if (type === 'signup') {
-            result = await supabaseClient.auth.signUp({ email, password });
-            if (!result.error) {
-                alert("Inscription réussie ! Vérifiez votre boîte mail pour confirmer votre compte.");
-                // Optionnel: window.toggleSidePanel(false);
-            }
-        } else {
-            result = await supabaseClient.auth.signInWithPassword({ email, password });
-        }
-
-        if (result.error) throw result.error;
-
-        // Si on a une session (Connexion réussie ou inscription sans confirmation email)
-        if (result.data.session) {
-            console.log("Session établie !");
-            await window.checkUserStatus(); // On attend la mise à jour de l'UI
-            window.toggleSidePanel(false); 
-        }
-
-    } catch (error) {
-        console.error("Erreur détaillée:", error);
-        alert("Erreur : " + error.message);
-    }
+    // Redirection vers la page unique avec le paramètre de section
+    // Ex: mon-activite.html?section=favoris
+    window.location.href = `mon-activite.html?section=${option}`;
 };
 
-// --- DÉCONNEXION ---
-window.handleLogout = async function() {
-    try {
-        const { error } = await supabaseClient.auth.signOut();
-        if (error) throw error;
-        
-        await window.checkUserStatus();
-        window.toggleSidePanel(false);
-        alert("Vous avez été déconnecté.");
-    } catch (error) {
-        alert("Erreur lors de la déconnexion : " + error.message);
-    }
-};
+/* ==========================================================================
+   3. AUTHENTIFICATION (CONNEXION / INSCRIPTION / STATUS)
+   ========================================================================== */
 
-// --- MISE À JOUR DE L'INTERFACE ---
+// Mettre à jour l'affichage selon si l'utilisateur est connecté ou non
 window.checkUserStatus = async function() {
-    // Récupération de l'utilisateur actuel
     const { data: { user } } = await supabaseClient.auth.getUser();
     
     const loggedOutView = document.getElementById('logged-out-view');
     const loggedInView = document.getElementById('logged-in-view');
     const emailDisplay = document.getElementById('user-email-display');
     const btnText = document.querySelector('.account-text');
+    const avatar = document.querySelector('.user-avatar');
 
     if (user) {
+        // Mode Connecté
         if (loggedOutView) loggedOutView.style.display = 'none';
         if (loggedInView) loggedInView.style.display = 'block';
         if (emailDisplay) emailDisplay.textContent = user.email;
         if (btnText) btnText.textContent = "MON ESPACE";
-        
-        // Petit bonus : Mettre la première lettre en majuscule dans l'avatar si tu en as un
-        const avatar = document.querySelector('.user-avatar');
         if (avatar) avatar.textContent = user.email.charAt(0).toUpperCase();
         
+        // Charger un aperçu rapide des favoris dans le menu
+        window.loadUserActivity();
     } else {
+        // Mode Déconnecté
         if (loggedOutView) loggedOutView.style.display = 'block';
         if (loggedInView) loggedInView.style.display = 'none';
         if (btnText) btnText.textContent = "MON COMPTE";
     }
 };
-// FONCTION POUR SAUVEGARDER UN ARTICLE
+
+// Gérer l'inscription et la connexion
+window.handleAuth = async function(type) {
+    const email = document.getElementById('auth-email').value;
+    const password = document.getElementById('auth-password').value;
+
+    if (!email || !password) return alert("Veuillez remplir tous les champs.");
+
+    try {
+        let result;
+        if (type === 'signup') {
+            result = await supabaseClient.auth.signUp({ email, password });
+            if (!result.error) alert("Inscription réussie ! Vérifiez vos emails.");
+        } else {
+            result = await supabaseClient.auth.signInWithPassword({ email, password });
+        }
+
+        if (result.error) throw result.error;
+
+        if (result.data.session) {
+            await window.checkUserStatus();
+            window.toggleSidePanel(false); 
+        }
+    } catch (error) {
+        alert("Erreur : " + error.message);
+    }
+};
+
+// Déconnexion
+window.handleLogout = async function() {
+    if (!confirm("Voulez-vous vraiment vous déconnecter ?")) return;
+
+    try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        
+        // Redirection vers l'accueil pour tout réinitialiser
+        window.location.href = "index.html"; 
+    } catch (error) {
+        alert("Erreur lors de la déconnexion : " + error.message);
+    }
+};
+
+/* ==========================================================================
+   4. ACTIONS UTILISATEUR (FAVORIS & COMMENTAIRES)
+   ========================================================================== */
+
+// Sauvegarder un article
 window.toggleFavorite = async function(articleId, title) {
     const { data: { user } } = await supabaseClient.auth.getUser();
     
@@ -142,17 +154,16 @@ window.toggleFavorite = async function(articleId, title) {
     }
 
     const { error } = await supabaseClient
-        .from('favorites')
+        .from('favorites') // Vérifie bien que ta table s'appelle 'favorites' dans Supabase
         .insert([{ user_id: user.id, article_id: articleId, article_title: title }]);
 
-    if (error) alert("Déjà dans vos favoris !");
+    if (error) alert("Déjà dans vos favoris ou erreur de table !");
     else alert("Article sauvegardé !");
 };
 
-// FONCTION POUR AJOUTER UN COMMENTAIRE
+// Poster un commentaire
 window.postComment = async function(articleId, text) {
     const { data: { user } } = await supabaseClient.auth.getUser();
-    
     if (!user) return alert("Connectez-vous pour commenter.");
 
     const { error } = await supabaseClient
@@ -166,28 +177,33 @@ window.postComment = async function(articleId, text) {
 
     if (!error) {
         alert("Commentaire publié !");
-        location.reload(); // Pour afficher le nouveau commentaire
+        location.reload(); 
     }
 };
+
+// Charger un aperçu (5 derniers) dans le sidepanel
 window.loadUserActivity = async function() {
     const { data: { user } } = await supabaseClient.auth.getUser();
     if (!user) return;
 
-    // Récupérer les favoris
     const { data: favs } = await supabaseClient
         .from('favorites')
         .select('*')
+        .eq('user_id', user.id)
         .limit(5);
 
     const favContainer = document.getElementById('user-favorites-list');
     if (favContainer && favs) {
         favContainer.innerHTML = favs.map(f => `
             <div class="mini-fav-item">
-                <a href="/article.html?id=${f.article_id}">${f.article_title}</a>
+                <a href="redaction.html?id=${f.article_id}">${f.article_title}</a>
             </div>
         `).join('');
     }
 };
+
+// Lancer la vérification au démarrage
+document.addEventListener('DOMContentLoaded', window.checkUserStatus);
 /* ==========================================================================
    3. ANALYTICS & TRACKING
    ========================================================================== */
