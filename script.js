@@ -306,6 +306,7 @@ async function fetchMakmusNews(querySearch = '') {
     if (status) status.textContent = "CHARGEMENT...";
 
     try {
+        // 1. Charger les articles
         let query = supabaseClient
             .from('articles')
             .select('*')
@@ -313,62 +314,52 @@ async function fetchMakmusNews(querySearch = '') {
             .order('created_at', { ascending: false });
 
         if (querySearch && querySearch !== 'top') {
-            // Recherche flexible (insensible à la casse) dans catégorie, titre ou tags
             query = query.or(`category.ilike.%${querySearch}%,titre.ilike.%${querySearch}%,tags.ilike.%${querySearch}%`);
         }
 
-        let { data: allArticles, error } = await query;
-        if (error) throw error;
+        const { data: allArticles, error: artError } = await query;
+        if (artError) throw artError;
 
-        // --- CAS 1 : RECHERCHE OU FILTRE ---
+        // 2. Charger les stats sportives (Classement)
+        const { data: sportsData, error: sportsError } = await supabaseClient
+            .from('sports_stats')
+            .select('*')
+            .order('display_order', { ascending: true });
+
+        if (sportsError) throw sportsError;
+
+        // --- AFFICHAGE RECHERCHE ---
         if (querySearch && querySearch !== 'top') {
-            if (status) status.textContent = `RÉSULTATS POUR : ${querySearch.toUpperCase()}`;
-            if (allArticles.length === 0) {
-                if (status) status.textContent = "AUCUN RÉSULTAT TROUVÉ";
-                return;
-            }
-            renderUI(allArticles[0], allArticles.slice(1, 13));
-            return; 
-        }
-
-        // --- CAS 2 : ÉDITION DU JOUR (PAR DÉFAUT) ---
-        if (!allArticles || allArticles.length === 0) {
-            if (status) status.textContent = "AUCUNE ACTUALITÉ POUR LE MOMENT";
+            if (status) status.textContent = `RÉSULTATS : ${querySearch.toUpperCase()}`;
+            renderUI(allArticles[0], allArticles.slice(1, 10));
             return;
         }
 
-        // Distribution intelligente
+        // --- DISTRIBUTION PAR CATÉGORIE (CSV) ---
         const opinions = allArticles.filter(a => a.category === 'OPINION').slice(0, 3);
         const lifestyle = allArticles.filter(a => a.category === 'LIFESTYLE').slice(0, 4);
         const autreInfos = allArticles.filter(a => a.category === 'AUTRE_INFO').slice(0, 6);
-        const sportResumes = allArticles.filter(a => a.category === 'MAKMUS_SPORT_RESUME').slice(0, 6);
-
-        // Flux principal (Tout sauf les sections spéciales, pour éviter les doublons)
+        
+        // Flux principal (exclut les sections spéciales)
         const mainStream = allArticles.filter(a => 
-            !['OPINION', 'MAKMUS_SPORT_RESUME', 'AUTRE_INFO', 'LIFESTYLE'].includes(a.category)
+            !['OPINION', 'AUTRE_INFO', 'LIFESTYLE'].includes(a.category)
         );
 
-        // Sécurité : Si mainStream est vide, on utilise tous les articles
-        const sourceForHero = mainStream.length > 0 ? mainStream : allArticles;
-        
-        const heroArticle = allArticles.find(a => a.is_priority === true) || sourceForHero[0];
-        const gridArticles = sourceForHero.filter(a => a.id !== heroArticle?.id).slice(0, 6);
+        const heroArticle = allArticles.find(a => a.is_priority === true) || mainStream[0];
+        const gridArticles = mainStream.filter(a => a.id !== heroArticle?.id).slice(0, 6);
 
-        // Rendu des composants
+        // --- RENDU DES SECTIONS ---
         renderUI(heroArticle, gridArticles);
-        
         if (typeof renderAutreInfoSlider === 'function') renderAutreInfoSlider(autreInfos);
         if (typeof renderOpinions === 'function') renderOpinions(opinions);
         if (typeof renderLifestyle === 'function') renderLifestyle(lifestyle);
-        if (typeof renderSportsSlider === 'function') renderSportsSlider(sportResumes);
         
-        if (typeof renderMoreNews === 'function') {
-            renderMoreNews(allArticles.slice(10)); 
-        }
+        // APPEL SPÉCIFIQUE POUR LE CLASSEMENT SPORTIF
+        renderSportsRanking(sportsData);
 
         if (status) status.textContent = "ÉDITION DU JOUR — MAKMUS";
     } catch (e) {
-        console.error("Erreur moteur:", e);
+        console.error("Erreur Engine:", e);
         if (status) status.textContent = "ERREUR DE CONNEXION";
     }
 }
@@ -860,7 +851,6 @@ window.switchSport = async function(sportType, btn) {
     if (btn) {
         btn.classList.add('active');
     } else {
-        // Si chargé auto, on cherche le bouton correspondant pour l'allumer
         const defaultBtn = document.querySelector(`.tab-btn[onclick*="'${sportType}'"]`);
         if (defaultBtn) defaultBtn.classList.add('active');
     }
@@ -869,12 +859,12 @@ window.switchSport = async function(sportType, btn) {
     const articleContainer = document.getElementById('sports-featured-article');
     if (!tableContainer || !articleContainer) return;
 
-    // Affichage des loaders (Spinners / Squelettes)
+    // Affichage des loaders
     tableContainer.innerHTML = `<div style="text-align:center; padding:40px;"><div class="spinner"></div></div>`;
     articleContainer.innerHTML = `<div class="skeleton-loader" style="height:300px; background:#eee; border-radius:8px;"></div>`;
 
     try {
-        // 2. CHARGEMENT SIMULTANÉ (Vitesse Optimale)
+        // 2. CHARGEMENT SIMULTANÉ
         const [statsRes, articleRes] = await Promise.all([
             supabaseClient
                 .from('sports_stats')
@@ -887,7 +877,6 @@ window.switchSport = async function(sportType, btn) {
                 .select('*')
                 .eq('category', sportType)
                 .eq('is_published', true)
-                .neq('author_name', 'MAKMUS_SPORT_RESUME') 
                 .order('created_at', { ascending: false })
                 .limit(1)
                 .maybeSingle()
@@ -896,7 +885,11 @@ window.switchSport = async function(sportType, btn) {
         if (statsRes.error) throw statsRes.error;
 
         // 3. RENDU DU TABLEAU
-        renderTable(statsRes.data, sportType);
+        if (statsRes.data && statsRes.data.length > 0) {
+            renderTable(statsRes.data, sportType);
+        } else {
+            tableContainer.innerHTML = `<p style="text-align:center; color:#999; padding:20px;">Aucun classement disponible pour ${sportType}.</p>`;
+        }
 
         // 4. RENDU DE L'ARTICLE VEDETTE
         if (articleRes.data) {
@@ -910,22 +903,19 @@ window.switchSport = async function(sportType, btn) {
 
     } catch (e) {
         console.error("❌ Erreur Dashboard Sport:", e);
-        tableContainer.innerHTML = "<p style='text-align:center; padding:20px;'>Erreur de chargement des scores.</p>";
+        tableContainer.innerHTML = "<p style='text-align:center; padding:20px;'>Erreur de connexion aux scores.</p>";
     }
 };
 
-/**
- * Sous-fonction : Génère le HTML du tableau de classement
- */
 function renderTable(data, type) {
     const container = document.getElementById('sports-dynamic-content');
-    if (!container || !data) return;
+    if (!container) return;
 
-    // Adaptation des entêtes selon le sport (Médailles pour JO, Points pour le reste)
+    // Configuration des entêtes selon le type de sport
     let h = { c1: 'J', c2: 'V', c3: 'N', tot: 'PTS' };
     if (type === 'JO') h = { c1: '🥇', c2: '🥈', c3: '🥉', tot: 'TOT.' };
 
-    let html = `
+    container.innerHTML = `
         <table class="medal-table">
             <thead>
                 <tr>
@@ -936,8 +926,8 @@ function renderTable(data, type) {
                     <th>${h.tot}</th>
                 </tr>
             </thead>
-            <tbody>` + 
-            data.map(item => `
+            <tbody>
+                ${data.map(item => `
                 <tr>
                     <td class="team-cell">
                         <img src="${item.logo_url || 'https://via.placeholder.com/20'}" class="flag-icon" onerror="this.src='https://via.placeholder.com/20'">
@@ -947,20 +937,14 @@ function renderTable(data, type) {
                     <td>${item.stat_v || 0}</td>
                     <td>${item.stat_n || 0}</td>
                     <td class="bold">${item.stat_total || 0}</td>
-                </tr>`).join('') + 
-            `</tbody>
+                </tr>`).join('')}
+            </tbody>
         </table>`;
-
-    container.innerHTML = html;
 }
 
-/**
- * Sous-fonction : Génère le HTML de l'article à la une du sport
- */
 function renderFeaturedArticle(art) {
     const container = document.getElementById('sports-featured-article');
     if (!container) return;
-
     const cleanDesc = art.description ? art.description.replace(/<[^>]*>/g, '').substring(0, 150) : "";
     
     container.innerHTML = `
