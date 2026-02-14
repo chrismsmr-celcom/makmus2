@@ -1,4 +1,4 @@
-/* global supabase */
+/* global supabase, renderLifestyle, renderSportsRanking */
 /* ==========================================================================
    1. CONFIGURATION & CLIENTS
    ========================================================================== */
