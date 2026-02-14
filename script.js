@@ -1,11 +1,10 @@
-/* global supabase */
 /* ==========================================================================
    1. CONFIGURATION & CLIENTS
    ========================================================================== */
 const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
 const EXCHANGE_API_KEY = '4e4fee63bab6fce7ba7b39e8';
-//const BACKEND_URL = 'https://makmus2-backend-api.onrender.com/api/news';
+const BACKEND_URL = 'https://makmus2-backend-api.onrender.com/api/news';
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -205,6 +204,7 @@ window.loadUserActivity = async function() {
 
 // Lancer la vérification au démarrage
 document.addEventListener('DOMContentLoaded', window.checkUserStatus);
+
 /* ==========================================================================
    3. ANALYTICS & TRACKING
    ========================================================================== */
@@ -306,62 +306,75 @@ async function fetchMakmusNews(querySearch = '') {
     if (status) status.textContent = "CHARGEMENT...";
 
     try {
-        // 1. Charger les articles
         let query = supabaseClient
             .from('articles')
             .select('*')
             .eq('is_published', true)
             .order('created_at', { ascending: false });
 
+        // --- NOUVEAU : FILTRAGE SI RECHERCHE ---
+        // Si querySearch n'est pas vide et n'est pas 'top', on filtre
         if (querySearch && querySearch !== 'top') {
-            query = query.or(`category.ilike.%${querySearch}%,titre.ilike.%${querySearch}%,tags.ilike.%${querySearch}%`);
+            // On cherche si le mot est dans la catégorie OU le titre
+            query = query.or(`category.ilike.%${querySearch}%,titre.ilike.%${querySearch}%`);
         }
 
-        const { data: allArticles, error: artError } = await query;
-        if (artError) throw artError;
+        let { data: allArticles, error } = await query;
+        if (error) throw error;
 
-        // 2. Charger les stats sportives (Classement)
-        const { data: sportsData, error: sportsError } = await supabaseClient
-            .from('sports_stats')
-            .select('*')
-            .order('display_order', { ascending: true });
-
-        if (sportsError) throw sportsError;
-
-        // --- AFFICHAGE RECHERCHE ---
+        // Si on est en mode "Recherche", on change l'affichage du titre
         if (querySearch && querySearch !== 'top') {
-            if (status) status.textContent = `RÉSULTATS : ${querySearch.toUpperCase()}`;
-            renderUI(allArticles[0], allArticles.slice(1, 10));
-            return;
+            if (status) status.textContent = `RÉSULTATS POUR : ${querySearch.toUpperCase()}`;
+            
+            // En mode recherche, on affiche tout dans la grille principale
+            renderUI(allArticles[0], allArticles.slice(1, 13));
+            return; // On s'arrête ici pour ne pas écraser les autres sections (Opinions, etc.)
         }
 
-        // --- DISTRIBUTION PAR CATÉGORIE (CSV) ---
-        const opinions = allArticles.filter(a => a.category === 'OPINION').slice(0, 3);
-        const lifestyle = allArticles.filter(a => a.category === 'LIFESTYLE').slice(0, 4);
-        const autreInfos = allArticles.filter(a => a.category === 'AUTRE_INFO').slice(0, 6);
+        // --- LOGIQUE PAR DÉFAUT (ÉDITION DU JOUR) ---
         
-        // Flux principal (exclut les sections spéciales)
+        // Hero & Grille
         const mainStream = allArticles.filter(a => 
-            !['OPINION', 'AUTRE_INFO', 'LIFESTYLE'].includes(a.category)
+            !['OPINION', 'MAKMUS_SPORT_RESUME', 'AUTRE_INFO', 'LIFESTYLE'].includes(a.category)
         );
-
         const heroArticle = allArticles.find(a => a.is_priority === true) || mainStream[0];
         const gridArticles = mainStream.filter(a => a.id !== heroArticle?.id).slice(0, 6);
 
-        // --- RENDU DES SECTIONS ---
+        // Autres Sections
+        const autreInfos = allArticles.filter(a => a.category === 'AUTRE_INFO').slice(0, 6);
+        const opinions = allArticles.filter(a => a.category === 'OPINION').slice(0, 3);
+        const lifestyle = allArticles.filter(a => a.category === 'LIFESTYLE').slice(0, 4);
+        const sportResumes = allArticles.filter(a => a.category === 'MAKMUS_SPORT_RESUME' || a.author_name === 'MAKMUS_SPORT_RESUME').slice(0, 6);
+
+        // Distribution
         renderUI(heroArticle, gridArticles);
         if (typeof renderAutreInfoSlider === 'function') renderAutreInfoSlider(autreInfos);
         if (typeof renderOpinions === 'function') renderOpinions(opinions);
         if (typeof renderLifestyle === 'function') renderLifestyle(lifestyle);
+        if (typeof renderSportsSlider === 'function') renderSportsSlider(sportResumes);
         
-        // APPEL SPÉCIFIQUE POUR LE CLASSEMENT SPORTIF
-        renderSportsRanking(sportsData);
+        renderMoreNews(allArticles.slice(15)); 
 
         if (status) status.textContent = "ÉDITION DU JOUR — MAKMUS";
     } catch (e) {
-        console.error("Erreur Engine:", e);
+        console.error("Erreur moteur:", e);
         if (status) status.textContent = "ERREUR DE CONNEXION";
     }
+}
+// --- RENDU LIFESTYLE ---
+function renderLifestyle(articles) {
+    const container = document.getElementById('lifestyle-grid');
+    if (!container || articles.length === 0) return;
+
+    container.innerHTML = articles.map(art => `
+        <div class="lifestyle-card" onclick="window.location.href='redaction.html?id=${art.id}'">
+            <div class="lifestyle-img-wrapper">
+                <img src="${art.image_url}" onerror="this.src='https://via.placeholder.com/400x600'">
+                <span class="lifestyle-tag">LIFESTYLE</span>
+            </div>
+            <h4>${art.titre}</h4>
+        </div>
+    `).join('');
 }
 
 // --- RENDU RÉSUMÉS SPORTIFS ---
@@ -559,6 +572,30 @@ function setupSliderControls(count) {
     // Écouter le scroll pour mettre à jour les dots
     sidebarList.addEventListener('scroll', updateSliderDots);
 }
+function renderOpinions(opinions) {
+    const opinionList = document.getElementById('opinion-list');
+    if (!opinionList) {
+        console.warn("Conteneur 'opinion-list' introuvable dans le HTML");
+        return;
+    }
+
+    if (!opinions || opinions.length === 0) {
+        opinionList.innerHTML = "<p style='font-size:12px; color:#666;'>Aucune opinion disponible pour le moment.</p>";
+        return;
+    }
+
+    opinionList.innerHTML = opinions.map(op => `
+        <div class="opinion-container-box">
+            <div class="opinion-author-row">
+                <span class="author-name">${op.author_name || 'CHRONIQUEUR'}</span>
+                <img class="author-avatar" src="${op.author_image || 'https://via.placeholder.com/42'}" onerror="this.src='https://via.placeholder.com/42'">
+            </div>
+            <h4 class="opinion-text-title" onclick="window.location.href='redaction.html?id=${op.id}'">${op.titre}</h4>
+            <span class="read-time-small">${op.read_time || '4'} MIN READ</span>
+            <img class="opinion-main-cover" src="${op.image_url}" onclick="window.location.href='redaction.html?id=${op.id}'" onerror="this.style.display='none'">
+        </div>
+    `).join('');
+}
 // Fonction pour mettre à jour l'état des points (dots) lors du défilement
 function updateSliderDots() {
     const container = document.getElementById('sidebar-list');
@@ -630,7 +667,7 @@ window.slideMore = (direction) => {
     }
 };
 /* ==========================================================================
-   6. VIDÉOS & PUBS (CORRIGÉ)
+   6. VIDÉOS & PUBS
    ========================================================================== */
 const ICONS = {
     LIKE: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
@@ -650,35 +687,17 @@ window.toggleMute = (e, btn) => {
 window.toggleFullscreen = (e, btn) => {
     e.stopPropagation();
     const video = btn.closest('.video-card').querySelector('video');
-
-    if (!video) return;
-
-    // Tentative pour iOS (iPhone) : utilise souvent webkitEnterFullscreen sur la vidéo elle-même
-    if (video.webkitEnterFullscreen) {
-        video.webkitEnterFullscreen();
-    } 
-    // Tentative standard (Android / Chrome)
-    else if (video.requestFullscreen) {
-        video.requestFullscreen();
-    } 
-    else if (video.webkitRequestFullscreen) {
-        video.webkitRequestFullscreen();
-    } 
-    else if (video.msRequestFullscreen) {
-        video.msRequestFullscreen();
-    }
+    if (video.requestFullscreen) video.requestFullscreen();
+    else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
 };
 
 window.handleLike = async (e, btn, id) => {
     e.stopPropagation();
     const likedVideos = JSON.parse(localStorage.getItem('makmus_liked_videos') || '[]');
     if (likedVideos.includes(id)) return;
-    
     btn.innerHTML = ICONS.LIKE_FILLED;
     likedVideos.push(id);
     localStorage.setItem('makmus_liked_videos', JSON.stringify(likedVideos));
-    
-    // Appel RPC (s'assurer que la fonction SQL increment_likes existe sur Supabase)
     try { await supabaseClient.rpc('increment_likes', { row_id: id }); } catch(err) { console.error(err); }
 };
 
@@ -693,164 +712,171 @@ window.autoScrollNext = (currentIndex) => {
     const nextCard = document.getElementById(`vcard-${currentIndex + 1}`);
     if (nextCard) {
         nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        const v = nextCard.querySelector('video'); 
-        if (v) v.play().catch(e => console.warn("Autoplay bloqué par le navigateur"));
+        const v = nextCard.querySelector('video'); if (v) v.play().catch(e => {});
     }
 };
 
 async function fetchVideosVerticaux() {
-    try {
-        // 1. Récupération des données
-        const { data, error } = await supabaseClient
-            .from('videos_du_jour')
-            .select('*')
-            .eq('is_published', true)
-            .order('created_at', { ascending: false });
-
-        const slider = document.getElementById('video-slider');
-        if (!slider || error || !data) return;
-
-        const likedVideos = JSON.parse(localStorage.getItem('makmus_liked_videos') || '[]');
-
-        // 2. Génération du HTML
-        slider.innerHTML = data.map((vid, index) => {
-            const isLiked = likedVideos.includes(vid.id);
+    const { data } = await supabaseClient.from('videos_du_jour').select('*').eq('is_published', true);
+    const slider = document.getElementById('video-slider');
+    if (!slider || !data) return;
+    
+    const likedVideos = JSON.parse(localStorage.getItem('makmus_liked_videos') || '[]');
+    
+    slider.innerHTML = data.map((vid, index) => {
+        const isLiked = likedVideos.includes(vid.id);
+        
+        // On ne met l'attribut 'autoplay' que si index est égal à 0
+        const autoplayAttr = index === 0 ? 'autoplay' : '';
+        
+        return `
+        <div class="video-card" id="vcard-${index}">
+            <div class="video-controls-top">
+                <button class="control-btn" onclick="handleLike(event, this, '${vid.id}')">
+                    ${isLiked ? ICONS.LIKE_FILLED : ICONS.LIKE}
+                </button>
+                <button class="control-btn" onclick="toggleMute(event, this)">
+                    ${ICONS.MUTE}
+                </button>
+                <button class="control-btn" onclick="toggleFullscreen(event, this)">
+                    ${ICONS.FULL}
+                </button>
+            </div>
             
-            // Sécurité : on vérifie si l'URL existe
-            if (!vid.video_url) return '';
-
-            return `
-            <div class="video-card" id="vcard-${index}">
-                <div class="video-controls-top">
-                    <button class="control-btn" onclick="handleLike(event, this, '${vid.id}')">
-                        ${isLiked ? ICONS.LIKE_FILLED : ICONS.LIKE}
-                    </button>
-                    <button class="control-btn" onclick="toggleMute(event, this)">
-                        ${ICONS.MUTE}
-                    </button>
-                    <button class="control-btn" onclick="toggleFullscreen(event, this)">
-                        ${ICONS.FULL}
-                    </button>
-                </div>
-                
-                <video 
-                    src="${vid.video_url}" 
-                    playsinline 
-                    muted 
-                    ${index === 0 ? 'autoplay' : ''} 
-                    onclick="this.paused ? this.play() : this.pause()" 
-                    ontimeupdate="window.updateProgress(this, ${index})" 
-                    onended="window.autoScrollNext(${index})"
-                    preload="metadata"
-                    style="width:100%; height:100%; object-fit:cover;">
-                </video>
-
-                <div class="progress-bar-container">
-                    <div class="progress-fill" id="bar-${index}"></div>
-                </div>
-
-                <div class="video-overlay-bottom">
-                    <h4>${vid.titre || 'Sans titre'}</h4>
-                </div>
-            </div>`;
-        }).join('');
-
-        // 3. ACTIVATION DE L'OBSERVER (Smart Play/Pause)
-        // On attend un cycle de rendu (setTimeout 0) pour être sûr que le HTML est injecté
-        setTimeout(() => {
-            if (typeof initVideoObserver === 'function') {
-                initVideoObserver();
-            }
-        }, 100);
-
-    } catch (e) {
-        console.error("Erreur fetch videos:", e);
-    }
+            <video src="${vid.video_url}" 
+                   playsinline 
+                   muted 
+                   ${autoplayAttr} 
+                   onclick="this.paused ? this.play() : this.pause()" 
+                   ontimeupdate="window.updateProgress(this, ${index})" 
+                   onended="window.autoScrollNext(${index})">
+            </video>
+            
+            <div class="progress-bar-container">
+                <div class="progress-fill" id="bar-${index}"></div>
+            </div>
+            
+            <div class="video-overlay-bottom">
+                <h4>${vid.titre}</h4>
+            </div>
+        </div>`;
+    }).join('');
 }
-
-/* --- SYSTÈME DE PUBS OPTIMISÉ --- */
 let activeAds = [], currentAdIndex = 0;
-
 async function initAdSlider() {
     const { data } = await supabaseClient.from('publicites').select('*').eq('est_active', true);
     if (!data || data.length === 0) return;
     activeAds = data;
-    showNextAd(); 
-    setInterval(showNextAd, 15000); // Rotation 15s
+    showNextAd(); setInterval(showNextAd, 15000);
 }
 
 function showNextAd() {
     const zone = document.getElementById('ad-display-zone');
     if (!zone || activeAds.length === 0) return;
     const ad = activeAds[currentAdIndex];
-    const content = ad.type === 'video' 
-        ? `<video class="ad-media ad-fade" src="${ad.media_url}" autoplay muted loop playsinline></video>` 
-        : `<img class="ad-media ad-fade" src="${ad.media_url}">`;
-    
+    const content = ad.type === 'video' ? `<video class="ad-media ad-fade" src="${ad.media_url}" autoplay muted loop playsinline></video>` : `<img class="ad-media ad-fade" src="${ad.media_url}">`;
     zone.innerHTML = `<div onclick="trackAdClick('${ad.id}', '${ad.lien_clic}')" style="cursor:pointer">${content}</div>`;
     currentAdIndex = (currentAdIndex + 1) % activeAds.length;
 }
 
-// Correction du conflit de trackAdClick : Une seule version propre
 async function trackAdClick(id, url) {
     if (url) window.open(url, '_blank');
     try {
-        // Version optimisée : On incrémente directement sans lire d'abord
-        await supabaseClient.rpc('increment_ad_clicks', { ad_id: id });
-    } catch (e) { 
-        // Fallback si RPC n'existe pas
-        console.warn("RPC non trouvé, tentative d'update classique");
         const { data: ad } = await supabaseClient.from('publicites').select('nb_clics').eq('id', id).single();
         await supabaseClient.from('publicites').update({ nb_clics: (ad.nb_clics || 0) + 1 }).eq('id', id);
+    } catch (e) { console.error("Ad track error"); }
+}
+
+async function loadSportsResumes() {
+    const track = document.getElementById('sports-resume-track');
+    if (!track) return;
+    const { data } = await supabaseClient.from('articles').select('*').eq('author_name', 'MAKMUS_SPORT_RESUME').order('created_at', { ascending: false });
+    if (data && data.length > 0) {
+        track.innerHTML = data.map(match => `
+            <div class="match-card">
+                <img src="${match.image_url}" alt="match" style="width:100%; height:180px; object-fit:cover;">
+                <div style="padding:15px;">
+                    <small style="color:#a30000; font-weight:800; text-transform:uppercase;">${match.image_caption}</small>
+                    <h3 style="margin:10px 0; font-family:'Inter'; font-weight:900; color:#fff;">${match.titre}</h3>
+                    <a href="redaction.html?id=${match.id}" style="text-decoration:none; font-size:0.8rem; font-weight:700; color:#a30000;">VOIR LE RÉSUMÉ →</a>
+                </div>
+            </div>`).join('');
+    }
+}
+
+let slideIndex = 0;
+window.moveSlide = (direction) => {
+    const track = document.getElementById('sports-resume-track');
+    const cards = document.querySelectorAll('.match-card');
+    if(cards.length === 0) return;
+    const cardWidth = cards[0].offsetWidth + 20;
+    slideIndex = Math.max(0, Math.min(slideIndex + direction, cards.length - 1));
+    track.style.transform = `translateX(${-slideIndex * cardWidth}px)`;
+};
+
+async function loadAutoTrendingTags() {
+    const container = document.getElementById('tags-container');
+    if (!container) return;
+
+    try {
+        // 1. Récupération des tags des articles publiés
+        const { data, error } = await supabaseClient
+            .from('articles')
+            .select('tags')
+            .eq('is_published', true)
+            .not('tags', 'is', null)
+            .limit(30);
+
+        if (error) throw error;
+
+        // 2. Comptage des occurrences de chaque tag
+        const counts = data.reduce((acc, art) => {
+            // Sécurité : on vérifie que art.tags est bien une chaîne avant le split
+            const tagList = typeof art.tags === 'string' ? art.tags.split(',') : [];
+            tagList.forEach(tag => { 
+                const t = tag.trim(); 
+                if (t) acc[t] = (acc[t] || 0) + 1; 
+            });
+            return acc;
+        }, {});
+
+        // 3. Tri et sélection des 6 meilleurs tags
+        const topTags = Object.keys(counts)
+            .sort((a, b) => counts[b] - counts[a])
+            .slice(0, 6);
+
+        // 4. Rendu HTML avec l'appel à la NOUVELLE fonction fetchMakmusNews
+        container.innerHTML = topTags.map((tag, index) => {
+            // On utilise fetchMakmusNews pour filtrer par tag au clic
+            return `<span class="trending-link ${index === 0 ? 'is-live' : ''}" 
+                          onclick="fetchMakmusNews('${tag}')">
+                        ${tag.toUpperCase()}
+                    </span>`;
+        }).join('');
+
+    } catch (e) { 
+        console.warn("Erreur chargement tags:", e); 
     }
 }
 /* ==========================================================================
-   OPTIMISATION : INTERSECTION OBSERVER (SMART PLAY/PAUSE)
-   ========================================================================== */
-
-function initVideoObserver() {
-    const options = {
-        root: document.getElementById('video-slider'), // On observe à l'intérieur du slider
-        threshold: 0.7 // La vidéo doit être visible à 70% pour se lancer
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            const video = entry.target.querySelector('video');
-            if (!video) return;
-
-            if (entry.isIntersecting) {
-                // La vidéo entre au centre : on la joue
-                video.play().catch(e => console.log("Lecture auto bloquée"));
-            } else {
-                // La vidéo sort de l'écran : on la met en pause pour économiser les ressources
-                video.pause();
-            }
-        });
-    }, options);
-
-    // On attache l'observeur à chaque carte vidéo
-    document.querySelectorAll('.video-card').forEach(card => {
-        observer.observe(card);
-    });
-}
-/* ==========================================================================
-   FONCTION GLOBALE : DASHBOARD SPORTS (CORRIGÉE)
+   FONCTION GLOBALE : DASHBOARD SPORTS
    ========================================================================== */
 
 /**
- * Fonction unique pour changer de sport
- * Gère le classement (stats) et l'article vedette en parallèle
+ * Fonction principale pour changer de sport
+ * Gère à la fois le tableau (stats) et l'article vedette (actu)
  */
-window.switchSport = async function(sportType, btn) {
-    console.log("🏆 Sports : Basculement vers", sportType);
-
+async function switchSport(sportType, btn) {
     // 1. UI : Gérer l'état actif des boutons
+    // On retire la classe active de TOUS les boutons
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
 
-    if (btn) {
+    // CORECTION ICI : On n'ajoute la classe que si 'btn' est fourni
+    if (btn && btn.classList) {
         btn.classList.add('active');
     } else {
+        // Optionnel : Si aucun bouton n'est passé (chargement auto), 
+        // on cherche le bouton qui correspond au sportType pour l'allumer
         const defaultBtn = document.querySelector(`.tab-btn[onclick*="'${sportType}'"]`);
         if (defaultBtn) defaultBtn.classList.add('active');
     }
@@ -860,103 +886,92 @@ window.switchSport = async function(sportType, btn) {
     if (!tableContainer || !articleContainer) return;
 
     // Affichage des loaders
-    tableContainer.innerHTML = `<div style="text-align:center; padding:40px;"><div class="spinner"></div></div>`;
-    articleContainer.innerHTML = `<div class="skeleton-loader" style="height:300px; background:#eee; border-radius:8px;"></div>`;
+    tableContainer.innerHTML = `<div style="text-align:center; padding:20px;"><div class="spinner"></div><p>Chargement des scores...</p></div>`;
+    articleContainer.innerHTML = `<div class="skeleton-loader"></div>`;
 
     try {
-        // 2. CHARGEMENT SIMULTANÉ
-        const [statsRes, articleRes] = await Promise.all([
-            supabaseClient
-                .from('sports_stats')
-                .select('*')
-                .eq('category', sportType)
-                .order('display_order', { ascending: true }),
-            
-            supabaseClient
-                .from('articles')
-                .select('*')
-                .eq('category', sportType)
-                .eq('is_published', true)
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle()
-        ]);
+        // 2. CHARGEMENT DU TABLEAU (Table: sports_stats)
+        const { data: stats, error: statsError } = await supabaseClient
+            .from('sports_stats')
+            .select('*')
+            .eq('category', sportType)
+            .order('display_order', { ascending: true });
 
-        if (statsRes.error) throw statsRes.error;
+        if (statsError) throw statsError;
+        renderTable(stats, sportType);
 
-        // 3. RENDU DU TABLEAU
-        if (statsRes.data && statsRes.data.length > 0) {
-            renderTable(statsRes.data, sportType);
-        } else {
-            tableContainer.innerHTML = `<p style="text-align:center; color:#999; padding:20px;">Aucun classement disponible pour ${sportType}.</p>`;
-        }
+        // 3. CHARGEMENT DE L'ARTICLE LE PLUS RÉCENT (Table: articles)
+        const { data: article, error: artError } = await supabaseClient
+            .from('articles')
+            .select('*')
+            .eq('category', sportType)
+            .eq('is_published', true)
+            // On exclut l'auteur spécial pour ne prendre que du vrai contenu éditorial
+            .neq('author_name', 'MAKMUS_SPORT_RESUME') 
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle();
 
-        // 4. RENDU DE L'ARTICLE VEDETTE
-        if (articleRes.data) {
-            renderFeaturedArticle(articleRes.data);
+        if (article) {
+            renderFeaturedArticle(article);
         } else {
             articleContainer.innerHTML = `
-                <div class="no-article" style="text-align:center; padding:40px; border:1px dashed #ccc;">
-                    <p style="color:#999; font-style:italic;">Aucune actualité récente pour ce sport.</p>
+                <div class="no-article">
+                    <p style="color:#999; font-style:italic; padding:40px; text-align:center;">
+                        Aucune actualité récente pour ${sportType.replace('_', ' ')}.
+                    </p>
                 </div>`;
         }
 
     } catch (e) {
-        console.error("❌ Erreur Dashboard Sport:", e);
-        tableContainer.innerHTML = "<p style='text-align:center; padding:20px;'>Erreur de connexion aux scores.</p>";
+        console.error("Erreur switchSport:", e);
+        tableContainer.innerHTML = "<p style='text-align:center; padding:20px;'>Erreur de connexion.</p>";
     }
-};
+}
 
+/**
+ * Sous-fonction : Génère le HTML du tableau de classement
+ */
 function renderTable(data, type) {
     const container = document.getElementById('sports-dynamic-content');
-    if (!container) return;
+    if (!container || !data) return;
 
-    // Configuration des entêtes selon le type de sport
     let h = { c1: 'J', c2: 'V', c3: 'N', tot: 'PTS' };
     if (type === 'JO') h = { c1: '🥇', c2: '🥈', c3: '🥉', tot: 'TOT.' };
 
-    container.innerHTML = `
-        <table class="medal-table">
-            <thead>
-                <tr>
-                    <th style="text-align:left;">ÉQUIPE</th>
-                    <th>${h.c1}</th>
-                    <th>${h.c2}</th>
-                    <th>${h.c3}</th>
-                    <th>${h.tot}</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${data.map(item => `
-                <tr>
-                    <td class="team-cell">
-                        <img src="${item.logo_url || 'https://via.placeholder.com/20'}" class="flag-icon" onerror="this.src='https://via.placeholder.com/20'">
-                        <span class="team-name-text">${item.team_name}</span>
-                    </td>
-                    <td>${item.stat_j || 0}</td>
-                    <td>${item.stat_v || 0}</td>
-                    <td>${item.stat_n || 0}</td>
-                    <td class="bold">${item.stat_total || 0}</td>
-                </tr>`).join('')}
-            </tbody>
-        </table>`;
+    let html = `<table class="medal-table">
+        <thead><tr><th style="text-align:left;">ÉQUIPE</th><th>${h.c1}</th><th>${h.c2}</th><th>${h.c3}</th><th>${h.tot}</th></tr></thead>
+        <tbody>` + 
+        data.map(item => `
+            <tr>
+                <td class="team-cell">
+                    <img src="${item.logo_url}" class="flag-icon">
+                    <span class="team-name-text">${item.team_name}</span>
+                </td>
+                <td>${item.stat_j || 0}</td><td>${item.stat_v || 0}</td><td>${item.stat_n || 0}</td>
+                <td class="bold">${item.stat_total || 0}</td>
+            </tr>`).join('') + 
+        `</tbody></table>`;
+
+    container.innerHTML = html;
 }
 
 function renderFeaturedArticle(art) {
     const container = document.getElementById('sports-featured-article');
     if (!container) return;
-    const cleanDesc = art.description ? art.description.replace(/<[^>]*>/g, '').substring(0, 150) : "";
+
+    const cleanDesc = art.description ? art.description.replace(/<[^>]*>/g, '').substring(0, 160) : "";
     
     container.innerHTML = `
         <div class="featured-card" onclick="window.location.href='redaction.html?id=${art.id}'" style="cursor:pointer;">
-            <div class="image-wrapper" style="position:relative;">
-                <img src="${art.image_url}" alt="${art.titre}" style="width:100%; height:320px; object-fit:cover; border-radius:8px;">
-                <div class="badge-new" style="position:absolute; top:12px; left:12px; background:#a30000; color:white; padding:4px 10px; font-size:11px; font-weight:bold; border-radius:2px;">À LA UNE</div>
+            <div class="image-wrapper">
+                <img src="${art.image_url}" alt="${art.titre}" style="width:100%; height:350px; object-fit:cover; border-radius:4px;">
+                <div class="badge-new" style="position:absolute; top:10px; left:10px; background:red; color:white; padding:3px 8px; font-size:10px;">RÉCENT</div>
             </div>
-            <div class="article-meta" style="padding-top:15px;">
-                <h2 style="font-family:'Playfair Display', serif; font-size:1.6rem; margin-bottom:10px; line-height:1.2;">${art.titre}</h2>
-                <p style="color:#444; font-size:14px; line-height:1.5;">${cleanDesc}...</p>
-                <span style="display:inline-block; margin-top:10px; color:#a30000; font-weight:800; font-size:13px; text-transform:uppercase;">Lire le reportage →</span>
+            <div class="article-meta">
+                <h2 style="margin:10px 0;">${art.titre}</h2>
+                <p style="color:#555; font-size:14px;">${cleanDesc}...</p>
+                <span style="color:red; font-weight:bold; font-size:12px;">LIRE LA SUITE →</span>
             </div>
         </div>`;
 }
@@ -1038,61 +1053,59 @@ window.updatePaginationDots = function() {
     });
 };
 /* ==========================================================================
-   6. FONCTIONS DE SOUTIEN (TAGS & UI)
+   INITIALISATION UNIQUE DU SYSTÈME MAKMUS NEWS
    ========================================================================== */
 
-async function loadAutoTrendingTags() {
-    const container = document.getElementById('tags-container');
-    if (!container) return;
+document.addEventListener('DOMContentLoaded', () => {
+    console.log("MAKMUS News : Démarrage du moteur...");
 
-    try {
-        const { data, error } = await supabaseClient
-            .from('articles')
-            .select('tags')
-            .eq('is_published', true)
-            .not('tags', 'is', null)
-            .limit(30);
-
-        if (error) throw error;
-
-        const counts = data.reduce((acc, art) => {
-            const tagList = typeof art.tags === 'string' ? art.tags.split(',') : [];
-            tagList.forEach(tag => { 
-                const t = tag.trim(); 
-                if (t) acc[t] = (acc[t] || 0) + 1; 
-            });
-            return acc;
-        }, {});
-
-        const topTags = Object.keys(counts)
-            .sort((a, b) => counts[b] - counts[a])
-            .slice(0, 6);
-
-        container.innerHTML = topTags.map(tag => `
-            <span class="trending-tag" onclick="fetchAllContent('${tag}')">
-                ${tag}
-            </span>
-        `).join('');
-
-    } catch (_) {
-        console.warn("Système de tags : En attente de données.");
-    }
-}
-/* ==========================================================================
-   7. INITIALISATION UNIQUE ET GLOBALE (LE CHEF D'ORCHESTRE)
-   ========================================================================== */
-
-document.addEventListener('DOMContentLoaded', () => { 
-    console.log("🚀 MAKMUS News Engine : Démarrage...");
-
-    // 1. DATE DU JOUR
+    // 1. MISE À JOUR DE LA DATE (Design Journal)
     const dateEl = document.getElementById('live-date');
     if (dateEl) {
         const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+        // .replace('.', '') pour éviter "oct." au lieu de "octobre" sur certains navigateurs
         dateEl.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
     }
 
-    // 2. RECHERCHE GLOBALE
+    // 2. CHARGEMENT DU CONTENU ÉDITORIAL (Priorité haute)
+    if (typeof fetchMakmusNews === 'function') {
+        fetchMakmusNews(); 
+    }
+
+    // 3. INITIALISATION DU DASHBOARD SPORTIF
+    if (typeof window.switchSport === 'function') {
+        // On charge 'JO' par défaut au démarrage
+        window.switchSport('JO', null); 
+    }
+
+    // 4. GESTION DU SCROLL & DOTS (Onglets Sports)
+    const container = document.getElementById('tabs-scroll-container');
+    if (container && typeof window.updatePaginationDots === 'function') {
+        container.addEventListener('scroll', () => {
+            // Utilisation d'un requestAnimationFrame pour plus de fluidité au lieu du timeout
+            window.requestAnimationFrame(window.updatePaginationDots);
+        }, { passive: true });
+        
+        window.updatePaginationDots(); // Appel initial
+    }
+
+    // 5. GESTION DU TICKER (Bourse/Change)
+    if (typeof fetchMarketData === 'function') {
+        fetchMarketData().then(() => {
+            if (typeof updateTickerUI === 'function') {
+                updateTickerUI(); // Affiche la 1ère donnée immédiatement après le fetch
+                setInterval(updateTickerUI, 5000); // Lance la rotation
+            }
+        });
+    }
+
+    // 6. SERVICES SECONDAIRES
+    if (typeof fetchVideosVerticaux === 'function') fetchVideosVerticaux();
+    if (typeof initAdSlider === 'function') initAdSlider();
+    if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
+
+    // 7. SYSTÈME DE RECHERCHE GLOBAL & NAVIGATION
+    // On l'attache à window pour être sûr qu'il soit accessible partout
     window.fetchAllContent = (query) => {
         if (typeof fetchMakmusNews === 'function') {
             fetchMakmusNews(query);
@@ -1100,55 +1113,5 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 3. LANCEMENT DES NEWS (SANS FILTRE BLOQUANT)
-    if (typeof fetchMakmusNews === 'function') {
-        console.log("📥 Chargement des news en cours...");
-        fetchMakmusNews(); // Charge tout par défaut
-    }
-    
-    if (typeof window.checkUserStatus === 'function') {
-        window.checkUserStatus();
-    }
-
-    // 4. DASHBOARD SPORTIF (COMMENTÉ POUR ÉVITER L'ÉCRAN VIDE SI PAS DE "JO")
-    // Si tu veux réactiver le filtre JO plus tard, décommente les lignes ci-dessous.
-    /* if (typeof window.switchSport === 'function') {
-        window.switchSport('JO', null); 
-    }
-    */
-
-    // 5. CHARGEMENT DIFFÉRÉ DES SERVICES SECONDAIRES
-    setTimeout(() => {
-        console.log("📦 Chargement des services secondaires...");
-        
-        // Taux de change & Ticker
-        if (typeof fetchMarketData === 'function') {
-            fetchMarketData().then(() => {
-                if (typeof updateTickerUI === 'function') {
-                    updateTickerUI();
-                    setInterval(updateTickerUI, 5000);
-                }
-            });
-        }
-
-        // Autres modules
-        if (typeof fetchVideosVerticaux === 'function') fetchVideosVerticaux();
-        if (typeof initAdSlider === 'function') initAdSlider();
-        
-        // Tags automatiques (Ta fonction corrigée sans #)
-        if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
-        
-        if (typeof window.loadUserActivity === 'function') window.loadUserActivity();
-    }, 1200); 
-
-    // 6. SCROLL & UI (PAGINATION)
-    const tabsContainer = document.getElementById('tabs-scroll-container');
-    if (tabsContainer && typeof window.updatePaginationDots === 'function') {
-        tabsContainer.addEventListener('scroll', () => {
-            window.requestAnimationFrame(window.updatePaginationDots);
-        }, { passive: true });
-        window.updatePaginationDots();
-    }
-
-    console.log("✅ MAKMUS Engine : Prêt.");
+    console.log("MAKMUS News : Système initialisé avec succès.");
 });
