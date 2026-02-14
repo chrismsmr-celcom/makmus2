@@ -1120,19 +1120,28 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 3. LANCEMENT PARALLÈLE
-    if (typeof fetchMakmusNews === 'function') fetchMakmusNews();
-    if (typeof window.checkUserStatus === 'function') window.checkUserStatus();
-
-    // 4. DASHBOARD SPORTIF
-    if (typeof window.switchSport === 'function') {
-        window.switchSport('JO', null); 
+    // 3. LANCEMENT DES NEWS (SANS FILTRE BLOQUANT)
+    if (typeof fetchMakmusNews === 'function') {
+        console.log("📥 Chargement des news en cours...");
+        fetchMakmusNews(); // Charge tout par défaut
+    }
+    
+    if (typeof window.checkUserStatus === 'function') {
+        window.checkUserStatus();
     }
 
-    // 5. CHARGEMENT DIFFÉRÉ
+    // 4. DASHBOARD SPORTIF (COMMENTÉ POUR ÉVITER L'ÉCRAN VIDE SI PAS DE "JO")
+    // Si tu veux réactiver le filtre JO plus tard, décommente les lignes ci-dessous.
+    /* if (typeof window.switchSport === 'function') {
+        window.switchSport('JO', null); 
+    }
+    */
+
+    // 5. CHARGEMENT DIFFÉRÉ DES SERVICES SECONDAIRES
     setTimeout(() => {
         console.log("📦 Chargement des services secondaires...");
         
+        // Taux de change & Ticker
         if (typeof fetchMarketData === 'function') {
             fetchMarketData().then(() => {
                 if (typeof updateTickerUI === 'function') {
@@ -1142,13 +1151,17 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         }
 
+        // Autres modules
         if (typeof fetchVideosVerticaux === 'function') fetchVideosVerticaux();
         if (typeof initAdSlider === 'function') initAdSlider();
-        loadAutoTrendingTags(); // Appel de la fonction définie au dessus
+        
+        // Tags automatiques (Ta fonction corrigée sans #)
+        if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
+        
         if (typeof window.loadUserActivity === 'function') window.loadUserActivity();
     }, 1200); 
 
-    // 6. SCROLL & UI
+    // 6. SCROLL & UI (PAGINATION)
     const tabsContainer = document.getElementById('tabs-scroll-container');
     if (tabsContainer && typeof window.updatePaginationDots === 'function') {
         tabsContainer.addEventListener('scroll', () => {
