@@ -312,69 +312,65 @@ async function fetchMakmusNews(querySearch = '') {
             .eq('is_published', true)
             .order('created_at', { ascending: false });
 
-        // --- NOUVEAU : FILTRAGE SI RECHERCHE ---
-        // Si querySearch n'est pas vide et n'est pas 'top', on filtre
         if (querySearch && querySearch !== 'top') {
-            // On cherche si le mot est dans la catégorie OU le titre
-            query = query.or(`category.ilike.%${querySearch}%,titre.ilike.%${querySearch}%`);
+            // Recherche flexible (insensible à la casse) dans catégorie, titre ou tags
+            query = query.or(`category.ilike.%${querySearch}%,titre.ilike.%${querySearch}%,tags.ilike.%${querySearch}%`);
         }
 
         let { data: allArticles, error } = await query;
         if (error) throw error;
 
-        // Si on est en mode "Recherche", on change l'affichage du titre
+        // --- CAS 1 : RECHERCHE OU FILTRE ---
         if (querySearch && querySearch !== 'top') {
             if (status) status.textContent = `RÉSULTATS POUR : ${querySearch.toUpperCase()}`;
-            
-            // En mode recherche, on affiche tout dans la grille principale
+            if (allArticles.length === 0) {
+                if (status) status.textContent = "AUCUN RÉSULTAT TROUVÉ";
+                return;
+            }
             renderUI(allArticles[0], allArticles.slice(1, 13));
-            return; // On s'arrête ici pour ne pas écraser les autres sections (Opinions, etc.)
+            return; 
         }
 
-        // --- LOGIQUE PAR DÉFAUT (ÉDITION DU JOUR) ---
-        
-        // Hero & Grille
+        // --- CAS 2 : ÉDITION DU JOUR (PAR DÉFAUT) ---
+        if (!allArticles || allArticles.length === 0) {
+            if (status) status.textContent = "AUCUNE ACTUALITÉ POUR LE MOMENT";
+            return;
+        }
+
+        // Distribution intelligente
+        const opinions = allArticles.filter(a => a.category === 'OPINION').slice(0, 3);
+        const lifestyle = allArticles.filter(a => a.category === 'LIFESTYLE').slice(0, 4);
+        const autreInfos = allArticles.filter(a => a.category === 'AUTRE_INFO').slice(0, 6);
+        const sportResumes = allArticles.filter(a => a.category === 'MAKMUS_SPORT_RESUME').slice(0, 6);
+
+        // Flux principal (Tout sauf les sections spéciales, pour éviter les doublons)
         const mainStream = allArticles.filter(a => 
             !['OPINION', 'MAKMUS_SPORT_RESUME', 'AUTRE_INFO', 'LIFESTYLE'].includes(a.category)
         );
-        const heroArticle = allArticles.find(a => a.is_priority === true) || mainStream[0];
-        const gridArticles = mainStream.filter(a => a.id !== heroArticle?.id).slice(0, 6);
 
-        // Autres Sections
-        const autreInfos = allArticles.filter(a => a.category === 'AUTRE_INFO').slice(0, 6);
-        const opinions = allArticles.filter(a => a.category === 'OPINION').slice(0, 3);
-        const lifestyle = allArticles.filter(a => a.category === 'LIFESTYLE').slice(0, 4);
-        const sportResumes = allArticles.filter(a => a.category === 'MAKMUS_SPORT_RESUME' || a.author_name === 'MAKMUS_SPORT_RESUME').slice(0, 6);
+        // Sécurité : Si mainStream est vide, on utilise tous les articles
+        const sourceForHero = mainStream.length > 0 ? mainStream : allArticles;
+        
+        const heroArticle = allArticles.find(a => a.is_priority === true) || sourceForHero[0];
+        const gridArticles = sourceForHero.filter(a => a.id !== heroArticle?.id).slice(0, 6);
 
-        // Distribution
+        // Rendu des composants
         renderUI(heroArticle, gridArticles);
+        
         if (typeof renderAutreInfoSlider === 'function') renderAutreInfoSlider(autreInfos);
         if (typeof renderOpinions === 'function') renderOpinions(opinions);
         if (typeof renderLifestyle === 'function') renderLifestyle(lifestyle);
         if (typeof renderSportsSlider === 'function') renderSportsSlider(sportResumes);
         
-        renderMoreNews(allArticles.slice(15)); 
+        if (typeof renderMoreNews === 'function') {
+            renderMoreNews(allArticles.slice(10)); 
+        }
 
         if (status) status.textContent = "ÉDITION DU JOUR — MAKMUS";
     } catch (e) {
         console.error("Erreur moteur:", e);
         if (status) status.textContent = "ERREUR DE CONNEXION";
     }
-}
-// --- RENDU LIFESTYLE ---
-function renderLifestyle(articles) {
-    const container = document.getElementById('lifestyle-grid');
-    if (!container || articles.length === 0) return;
-
-    container.innerHTML = articles.map(art => `
-        <div class="lifestyle-card" onclick="window.location.href='redaction.html?id=${art.id}'">
-            <div class="lifestyle-img-wrapper">
-                <img src="${art.image_url}" onerror="this.src='https://via.placeholder.com/400x600'">
-                <span class="lifestyle-tag">LIFESTYLE</span>
-            </div>
-            <h4>${art.titre}</h4>
-        </div>
-    `).join('');
 }
 
 // --- RENDU RÉSUMÉS SPORTIFS ---
