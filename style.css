@@ -1142,6 +1142,12 @@ h1, h2, h3, .section-title {
         padding-left: 10px;
         border-left: 3px solid #e2e2e2; /* Petite barre décorative à gauche */
     }
+   .medal-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+.medal-table th { background: #f8f8f8; color: #666; padding: 10px; text-align: center; font-weight: bold; border-bottom: 2px solid #eee; }
+.medal-table td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; }
+.team-cell { display: flex; align-items: center; text-align: left !important; gap: 10px; font-weight: 600; }
+.flag-icon { width: 24px; height: 24px; object-fit: contain; }
+.bold { font-weight: 800; color: #a30000; }
 }/* ==========================================================================
    8. FOOTER, MENU & MODALE
    ========================================================================== */
@@ -2028,6 +2034,7 @@ h1, h2, h3, .section-title {
     .main-article h1 { font-size: 1.8rem; text-align: left; }
     .footer-bottom { flex-direction: column; gap: 15px; text-align: center; }
 }
+
 
 
 
