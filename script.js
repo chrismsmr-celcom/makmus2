@@ -328,6 +328,7 @@ async function fetchMakmusNews(querySearch = '') {
 
         if (sportsError) throw sportsError;
 
+/* global renderLifestyle, renderSportsRanking */
         // --- AFFICHAGE RECHERCHE ---
         if (querySearch && querySearch !== 'top') {
             if (status) status.textContent = `RÉSULTATS : ${querySearch.toUpperCase()}`;
