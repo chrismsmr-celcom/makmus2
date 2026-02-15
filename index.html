@@ -11,7 +11,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <meta name="theme-color" content="#a30000">
 <link rel="apple-touch-icon" href="icon-192.png">
     <style>
@@ -308,70 +308,69 @@
         </div>
 
         <div class="side-panel-body">
-            <div class="side-panel-body">
-    <div id="logged-out-view">
-        <h2 class="premium-title">Bonjour.</h2>
-        <p class="premium-subtitle">Connectez-vous pour sauvegarder des articles et gérer vos newsletters.</p>
-        
-        <div class="auth-form">
-            <input type="email" id="auth-email" placeholder="Email" class="premium-input">
-            <input type="password" id="auth-password" placeholder="Mot de passe" class="premium-input">
-            <button class="btn-black-full" onclick="handleAuth('login')">CONTINUER</button>
-            <p class="auth-divider"><span>OU</span></p>
-            <button class="btn-outline-full" onclick="handleAuth('signup')">CRÉER UN COMPTE</button>
-        </div>
-    </div>
+            <div id="logged-out-view">
+                <h2 class="premium-title">Bonjour.</h2>
+                <p class="premium-subtitle">Connectez-vous pour sauvegarder des articles et gérer vos newsletters.</p>
+                
+                <div class="auth-form">
+                    <input type="email" id="auth-email" placeholder="Email" class="premium-input">
+                    <input type="password" id="auth-password" placeholder="Mot de passe" class="premium-input">
+                    <button class="btn-black-full" onclick="handleAuth('login')">CONTINUER</button>
+                    <p class="auth-divider"><span>OU</span></p>
+                    <button class="btn-outline-full" onclick="handleAuth('signup')">CRÉER UN COMPTE</button>
+                </div>
+            </div>
 
-    <div id="logged-in-view" style="display: none;">
-        <div class="user-profile-header">
-            <div class="user-avatar">M</div>
-            <div class="user-meta">
-                <span id="user-email-display" class="user-email">email@exemple.com</span>
-                <span class="user-status">Membre Premium</span>
+            <div id="logged-in-view" style="display: none;">
+                <div class="user-profile-header">
+                    <div class="user-avatar">M</div>
+                    <div class="user-meta">
+                        <span id="user-email-display" class="user-email">email@exemple.com</span>
+                        <span class="user-status">Membre Premium</span>
+                    </div>
+                </div>
+
+                <nav class="side-nav">
+                    <div class="nav-group-label">VOTRE ACTIVITÉ</div>
+                    
+                    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('favoris')">
+                        <img src="https://img.icons8.com/material-outlined/20/bookmark-ribbon.png"/> 
+                        Articles favoris <span class="chevron">›</span>
+                    </a>
+                    
+                    <div id="user-favorites-list" class="mini-activity-list"></div>
+                    
+                    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('commentaires')">
+                        <img src="https://img.icons8.com/material-outlined/20/comments.png"/> 
+                        Vos commentaires <span class="chevron">›</span>
+                    </a>
+                    
+                    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('historique')">
+                        <img src="https://img.icons8.com/material-outlined/20/time-machine.png"/> 
+                        Historique de lecture <span class="chevron">›</span>
+                    </a>
+
+                    <div class="nav-group-label">PARAMÈTRES</div>
+                    
+                    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('profil')">
+                        Profil et Sécurité <span class="chevron">›</span>
+                    </a>
+                    
+                    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('newsletters')">
+                        Newsletters <span class="chevron">›</span>
+                    </a>
+                    
+                    <button class="btn-logout-link" onclick="handleLogout()">Se déconnecter</button>
+                </nav>
             </div>
         </div>
-
-       <nav class="side-nav">
-    <div class="nav-group-label">VOTRE ACTIVITÉ</div>
-    
-    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('favoris')">
-        <img src="https://img.icons8.com/material-outlined/20/bookmark-ribbon.png"/> 
-        Articles favoris <span class="chevron">›</span>
-    </a>
-    
-    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('commentaires')">
-        <img src="https://img.icons8.com/material-outlined/20/comments.png"/> 
-        Vos commentaires <span class="chevron">›</span>
-    </a>
-    
-    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('historique')">
-        <img src="https://img.icons8.com/material-outlined/20/time-machine.png"/> 
-        Historique de lecture <span class="chevron">›</span>
-    </a>
-
-    <div class="nav-group-label">PARAMÈTRES</div>
-    
-    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('profil')">
-        Profil et Sécurité <span class="chevron">›</span>
-    </a>
-    
-    <a href="javascript:void(0)" class="nav-item" onclick="navigateToAccountOption('newsletters')">
-        Newsletters <span class="chevron">›</span>
-    </a>
-    
-    <button class="btn-logout-link" onclick="handleLogout()">Se déconnecter</button>
-</nav>
     </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase.js"></script>
 <script src="script.js"></script>
     
 </body>
 </html>
-
-
-
 
 
 
