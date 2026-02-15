@@ -54,53 +54,52 @@ window.addEventListener('click', (event) => {
    2. NAVIGATION VERS "MON ACTIVITÉ"
    ========================================================================== */
 
-window.navigateToAccountOption = function(option) {
-    console.log("🚀 Navigation vers la section :", option);
-    
-    // On ferme le panneau avant de partir
-    window.toggleSidePanel(false);
-
-    // Redirection vers la page unique avec le paramètre de section
-    // Ex: mon-activite.html?section=favoris
-    window.location.href = `mon-activite.html?section=${option}`;
-};
-
 /* ==========================================================================
    3. AUTHENTIFICATION (CONNEXION / INSCRIPTION / STATUS)
    ========================================================================== */
 
+window.navigateToAccountOption = function(option) {
+    console.log("🚀 Navigation vers la section :", option);
+    if (typeof window.toggleSidePanel === 'function') window.toggleSidePanel(false);
+    window.location.href = `mon-activite.html?section=${option}`;
+};
+
 // Mettre à jour l'affichage selon si l'utilisateur est connecté ou non
 window.checkUserStatus = async function() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    
-    const loggedOutView = document.getElementById('logged-out-view');
-    const loggedInView = document.getElementById('logged-in-view');
-    const emailDisplay = document.getElementById('user-email-display');
-    const btnText = document.querySelector('.account-text');
-    const avatar = document.querySelector('.user-avatar');
-
-    if (user) {
-        // Mode Connecté
-        if (loggedOutView) loggedOutView.style.display = 'none';
-        if (loggedInView) loggedInView.style.display = 'block';
-        if (emailDisplay) emailDisplay.textContent = user.email;
-        if (btnText) btnText.textContent = "MON ESPACE";
-        if (avatar) avatar.textContent = user.email.charAt(0).toUpperCase();
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
         
-        // Charger un aperçu rapide des favoris dans le menu
-        window.loadUserActivity();
-    } else {
-        // Mode Déconnecté
-        if (loggedOutView) loggedOutView.style.display = 'block';
-        if (loggedInView) loggedInView.style.display = 'none';
-        if (btnText) btnText.textContent = "MON COMPTE";
+        const loggedOutView = document.getElementById('logged-out-view');
+        const loggedInView = document.getElementById('logged-in-view');
+        const emailDisplay = document.getElementById('user-email-display');
+        const btnText = document.querySelector('.account-text');
+        const avatar = document.querySelector('.user-avatar');
+
+        if (user) {
+            // Mode Connecté
+            if (loggedOutView) loggedOutView.style.display = 'none';
+            if (loggedInView) loggedInView.style.display = 'block';
+            if (emailDisplay) emailDisplay.textContent = user.email;
+            if (btnText) btnText.textContent = "MON ESPACE";
+            if (avatar) avatar.textContent = user.email.charAt(0).toUpperCase();
+            
+            // Charger l'aperçu sans bloquer le reste du script
+            window.loadUserActivity().catch(err => console.warn("Activité différée:", err));
+        } else {
+            // Mode Déconnecté
+            if (loggedOutView) loggedOutView.style.display = 'block';
+            if (loggedInView) loggedInView.style.display = 'none';
+            if (btnText) btnText.textContent = "MON COMPTE";
+        }
+    } catch (error) {
+        console.error("Erreur checkUserStatus:", error);
     }
 };
 
 // Gérer l'inscription et la connexion
 window.handleAuth = async function(type) {
-    const email = document.getElementById('auth-email').value;
-    const password = document.getElementById('auth-password').value;
+    const email = document.getElementById('auth-email')?.value;
+    const password = document.getElementById('auth-password')?.value;
 
     if (!email || !password) return alert("Veuillez remplir tous les champs.");
 
@@ -117,7 +116,7 @@ window.handleAuth = async function(type) {
 
         if (result.data.session) {
             await window.checkUserStatus();
-            window.toggleSidePanel(false); 
+            if (typeof window.toggleSidePanel === 'function') window.toggleSidePanel(false); 
         }
     } catch (error) {
         alert("Erreur : " + error.message);
@@ -127,12 +126,9 @@ window.handleAuth = async function(type) {
 // Déconnexion
 window.handleLogout = async function() {
     if (!confirm("Voulez-vous vraiment vous déconnecter ?")) return;
-
     try {
         const { error } = await supabaseClient.auth.signOut();
         if (error) throw error;
-        
-        // Redirection vers l'accueil pour tout réinitialiser
         window.location.href = "index.html"; 
     } catch (error) {
         alert("Erreur lors de la déconnexion : " + error.message);
@@ -145,60 +141,84 @@ window.handleLogout = async function() {
 
 // Sauvegarder un article
 window.toggleFavorite = async function(articleId, title) {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    
-    if (!user) {
-        alert("Connectez-vous pour sauvegarder cet article !");
-        window.toggleSidePanel(true);
-        return;
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        if (!user) {
+            alert("Connectez-vous pour sauvegarder cet article !");
+            if (typeof window.toggleSidePanel === 'function') window.toggleSidePanel(true);
+            return;
+        }
+
+        const { error } = await supabaseClient
+            .from('favorites')
+            .insert([{ user_id: user.id, article_id: articleId, article_title: title }]);
+
+        if (error) {
+            if (error.code === '23505') alert("Déjà dans vos favoris !");
+            else throw error;
+        } else {
+            alert("Article sauvegardé !");
+            window.loadUserActivity();
+        }
+    } catch (error) {
+        console.error("Erreur toggleFavorite:", error);
+        alert("Erreur lors de la sauvegarde.");
     }
-
-    const { error } = await supabaseClient
-        .from('favorites') // Vérifie bien que ta table s'appelle 'favorites' dans Supabase
-        .insert([{ user_id: user.id, article_id: articleId, article_title: title }]);
-
-    if (error) alert("Déjà dans vos favoris ou erreur de table !");
-    else alert("Article sauvegardé !");
 };
 
 // Poster un commentaire
 window.postComment = async function(articleId, text) {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return alert("Connectez-vous pour commenter.");
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return alert("Connectez-vous pour commenter.");
 
-    const { error } = await supabaseClient
-        .from('comments')
-        .insert([{ 
-            user_id: user.id, 
-            user_email: user.email, 
-            article_id: articleId, 
-            content: text 
-        }]);
+        const { error } = await supabaseClient
+            .from('comments')
+            .insert([{ 
+                user_id: user.id, 
+                user_email: user.email, 
+                article_id: articleId, 
+                content: text 
+            }]);
 
-    if (!error) {
+        if (error) throw error;
         alert("Commentaire publié !");
         location.reload(); 
+    } catch (error) {
+        alert("Erreur lors de la publication : " + error.message);
     }
 };
 
 // Charger un aperçu (5 derniers) dans le sidepanel
 window.loadUserActivity = async function() {
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) return;
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
 
-    const { data: favs } = await supabaseClient
-        .from('favorites')
-        .select('*')
-        .eq('user_id', user.id)
-        .limit(5);
+        const { data: favs, error } = await supabaseClient
+            .from('favorites')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(5);
 
-    const favContainer = document.getElementById('user-favorites-list');
-    if (favContainer && favs) {
-        favContainer.innerHTML = favs.map(f => `
-            <div class="mini-fav-item">
-                <a href="redaction.html?id=${f.article_id}">${f.article_title}</a>
-            </div>
-        `).join('');
+        if (error) throw error;
+
+        const favContainer = document.getElementById('user-favorites-list');
+        if (favContainer && favs) {
+            if (favs.length === 0) {
+                favContainer.innerHTML = '<p style="font-size:12px;color:gray;padding:10px;">Aucun favori.</p>';
+                return;
+            }
+            favContainer.innerHTML = favs.map(f => `
+                <div class="mini-fav-item">
+                    <a href="redaction.html?id=${f.article_id}">${f.article_title}</a>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.warn("Table favorites inaccessible ou vide.");
     }
 };
 
@@ -862,75 +882,90 @@ async function loadAutoTrendingTags() {
    FONCTION GLOBALE : DASHBOARD SPORTS
    ========================================================================== */
 
+/* ==========================================================================
+   SECTION RÉSUMÉ SPORTIF (STATS & ARTICLES)
+   ========================================================================== */
+
 /**
- * Fonction principale pour changer de sport
- * Gère à la fois le tableau (stats) et l'article vedette (actu)
+ * PONT : Cette fonction permet au moteur global (fetchMakmusNews) 
+ * d'afficher le classement sans erreur.
  */
-async function switchSport(sportType, btn) {
-    // 1. UI : Gérer l'état actif des boutons
-    // On retire la classe active de TOUS les boutons
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-
-    // CORECTION ICI : On n'ajoute la classe que si 'btn' est fourni
-    if (btn && btn.classList) {
-        btn.classList.add('active');
-    } else {
-        // Optionnel : Si aucun bouton n'est passé (chargement auto), 
-        // on cherche le bouton qui correspond au sportType pour l'allumer
-        const defaultBtn = document.querySelector(`.tab-btn[onclick*="'${sportType}'"]`);
-        if (defaultBtn) defaultBtn.classList.add('active');
-    }
-
-    const tableContainer = document.getElementById('sports-dynamic-content');
-    const articleContainer = document.getElementById('sports-featured-article');
-    if (!tableContainer || !articleContainer) return;
-
-    // Affichage des loaders
-    tableContainer.innerHTML = `<div style="text-align:center; padding:20px;"><div class="spinner"></div><p>Chargement des scores...</p></div>`;
-    articleContainer.innerHTML = `<div class="skeleton-loader"></div>`;
-
-    try {
-        // 2. CHARGEMENT DU TABLEAU (Table: sports_stats)
-        const { data: stats, error: statsError } = await supabaseClient
-            .from('sports_stats')
-            .select('*')
-            .eq('category', sportType)
-            .order('display_order', { ascending: true });
-
-        if (statsError) throw statsError;
-        renderTable(stats, sportType);
-
-        // 3. CHARGEMENT DE L'ARTICLE LE PLUS RÉCENT (Table: articles)
-        const { data: article, error: artError } = await supabaseClient
-            .from('articles')
-            .select('*')
-            .eq('category', sportType)
-            .eq('is_published', true)
-            // On exclut l'auteur spécial pour ne prendre que du vrai contenu éditorial
-            .neq('author_name', 'MAKMUS_SPORT_RESUME') 
-            .order('created_at', { ascending: false })
-            .limit(1)
-            .maybeSingle();
-
-        if (article) {
-            renderFeaturedArticle(article);
-        } else {
-            articleContainer.innerHTML = `
-                <div class="no-article">
-                    <p style="color:#999; font-style:italic; padding:40px; text-align:center;">
-                        Aucune actualité récente pour ${sportType.replace('_', ' ')}.
-                    </p>
-                </div>`;
-        }
-
-    } catch (e) {
-        console.error("Erreur switchSport:", e);
-        tableContainer.innerHTML = "<p style='text-align:center; padding:20px;'>Erreur de connexion.</p>";
+function renderSportsRanking(sportsData) {
+    console.log("📊 Moteur : Affichage du classement sportif");
+    if (typeof renderTable === 'function') {
+        // On affiche la Ligue 1 par défaut lors du premier chargement global
+        renderTable(sportsData, 'LIGUE1');
     }
 }
 
 /**
- * Sous-fonction : Génère le HTML du tableau de classement
+ * FONCTION UNIQUE : Gère le basculement entre les sports (Boutons)
+ */
+window.switchSport = async function(sportType, btn) {
+    console.log("🏆 Navigation vers :", sportType);
+
+    // 1. UI : Gestion de l'état actif des boutons
+    const allBtns = document.querySelectorAll('.tab-btn');
+    allBtns.forEach(b => b.classList.remove('active'));
+    
+    if (btn && btn.classList) {
+        btn.classList.add('active');
+    } else {
+        // Si chargé auto, on cherche le bouton correspondant
+        const target = document.querySelector(`.tab-btn[onclick*="'${sportType}'"]`);
+        if (target) target.classList.add('active');
+    }
+
+    // 2. Éléments cibles
+    const tableContainer = document.getElementById('sports-dynamic-content');
+    const articleContainer = document.getElementById('sports-featured-article');
+    if (!tableContainer || !articleContainer) return;
+
+    // Loader visuel
+    tableContainer.innerHTML = `<div style="text-align:center; padding:30px;"><div class="spinner"></div></div>`;
+    articleContainer.innerHTML = `<div class="skeleton-loader" style="height:300px; background:#f0f0f0; border-radius:8px;"></div>`;
+
+    try {
+        // 3. CHARGEMENT PARALLÈLE (Vitesse maximale)
+        const [statsRes, articleRes] = await Promise.all([
+            supabaseClient.from('sports_stats')
+                .select('*')
+                .eq('category', sportType)
+                .order('display_order', { ascending: true }),
+            
+            supabaseClient.from('articles')
+                .select('*')
+                .eq('category', sportType)
+                .eq('is_published', true)
+                .neq('author_name', 'MAKMUS_SPORT_RESUME')
+                .order('created_at', { ascending: false })
+                .limit(1)
+                .maybeSingle()
+        ]);
+
+        if (statsRes.error) throw statsRes.error;
+
+        // 4. RENDU DU TABLEAU
+        renderTable(statsRes.data, sportType);
+        
+        // 5. RENDU DE L'ARTICLE VEDETTE
+        if (articleRes.data) {
+            renderFeaturedArticle(articleRes.data);
+        } else {
+            articleContainer.innerHTML = `
+                <div class="no-article" style="text-align:center; padding:40px; border:1px dashed #ccc;">
+                    <p style="color:#999; font-style:italic;">Aucune actualité récente pour ce sport.</p>
+                </div>`;
+        }
+
+    } catch (error) {
+        console.error("❌ Erreur durant la navigation sport :", error);
+        tableContainer.innerHTML = "<p style='text-align:center;'>Erreur de chargement.</p>";
+    }
+};
+
+/**
+ * RENDU DU TABLEAU (Gère les points ou les médailles)
  */
 function renderTable(data, type) {
     const container = document.getElementById('sports-dynamic-content');
@@ -939,23 +974,38 @@ function renderTable(data, type) {
     let h = { c1: 'J', c2: 'V', c3: 'N', tot: 'PTS' };
     if (type === 'JO') h = { c1: '🥇', c2: '🥈', c3: '🥉', tot: 'TOT.' };
 
-    let html = `<table class="medal-table">
-        <thead><tr><th style="text-align:left;">ÉQUIPE</th><th>${h.c1}</th><th>${h.c2}</th><th>${h.c3}</th><th>${h.tot}</th></tr></thead>
-        <tbody>` + 
-        data.map(item => `
-            <tr>
-                <td class="team-cell">
-                    <img src="${item.logo_url}" class="flag-icon">
-                    <span class="team-name-text">${item.team_name}</span>
-                </td>
-                <td>${item.stat_j || 0}</td><td>${item.stat_v || 0}</td><td>${item.stat_n || 0}</td>
-                <td class="bold">${item.stat_total || 0}</td>
-            </tr>`).join('') + 
-        `</tbody></table>`;
+    let html = `
+        <table class="medal-table">
+            <thead>
+                <tr>
+                    <th style="text-align:left;">ÉQUIPE</th>
+                    <th>${h.c1}</th>
+                    <th>${h.c2}</th>
+                    <th>${h.c3}</th>
+                    <th>${h.tot}</th>
+                </tr>
+            </thead>
+            <tbody>` + 
+            data.map(item => `
+                <tr>
+                    <td class="team-cell">
+                        <img src="${item.logo_url || 'https://via.placeholder.com/20'}" class="flag-icon" onerror="this.src='https://via.placeholder.com/20'">
+                        <span class="team-name-text">${item.team_name}</span>
+                    </td>
+                    <td>${item.stat_j || 0}</td>
+                    <td>${item.stat_v || 0}</td>
+                    <td>${item.stat_n || 0}</td>
+                    <td class="bold">${item.stat_total || 0}</td>
+                </tr>`).join('') + 
+            `</tbody>
+        </table>`;
 
     container.innerHTML = html;
 }
 
+/**
+ * RENDU DE L'ARTICLE SPORTIF À LA UNE
+ */
 function renderFeaturedArticle(art) {
     const container = document.getElementById('sports-featured-article');
     if (!container) return;
@@ -964,65 +1014,17 @@ function renderFeaturedArticle(art) {
     
     container.innerHTML = `
         <div class="featured-card" onclick="window.location.href='redaction.html?id=${art.id}'" style="cursor:pointer;">
-            <div class="image-wrapper">
+            <div class="image-wrapper" style="position:relative;">
                 <img src="${art.image_url}" alt="${art.titre}" style="width:100%; height:350px; object-fit:cover; border-radius:4px;">
-                <div class="badge-new" style="position:absolute; top:10px; left:10px; background:red; color:white; padding:3px 8px; font-size:10px;">RÉCENT</div>
+                <div class="badge-new" style="position:absolute; top:10px; left:10px; background:red; color:white; padding:4px 8px; font-size:10px; font-weight:bold;">À LA UNE</div>
             </div>
-            <div class="article-meta">
-                <h2 style="margin:10px 0;">${art.titre}</h2>
-                <p style="color:#555; font-size:14px;">${cleanDesc}...</p>
-                <span style="color:red; font-weight:bold; font-size:12px;">LIRE LA SUITE →</span>
+            <div class="article-meta" style="padding:15px 0;">
+                <h2 style="margin:0 0 10px 0; font-family:'Playfair Display', serif;">${art.titre}</h2>
+                <p style="color:#555; font-size:14px; line-height:1.5;">${cleanDesc}...</p>
+                <span style="color:red; font-weight:bold; font-size:13px; text-transform:uppercase;">Lire le reportage →</span>
             </div>
         </div>`;
 }
-/* ==========================================================================
-   NAVIGATION & SCROLL
-   ========================================================================== */
-
-window.switchSport = async (sportType, btn) => {
-    console.log("Tentative de navigation vers :", sportType);
-
-    // 1. UI : Changement visuel immédiat
-    const allBtns = document.querySelectorAll('.tab-btn');
-    allBtns.forEach(b => b.classList.remove('active'));
-    
-    if (btn) {
-        btn.classList.add('active');
-    } else {
-        // Sélection auto par le sportType si btn est null
-        const target = document.querySelector(`.tab-btn[onclick*="${sportType}"]`);
-        if (target) target.classList.add('active');
-    }
-
-    // 2. Éléments cibles
-    const tableContainer = document.getElementById('sports-dynamic-content');
-    const articleContainer = document.getElementById('sports-featured-article');
-
-    // 3. Lancement des deux chargements en parallèle pour plus de vitesse
-    try {
-        console.log("Récupération des données Supabase pour :", sportType);
-        
-        // On lance les deux promesses en même temps
-        const [statsRes, articleRes] = await Promise.all([
-            supabaseClient.from('sports_stats').select('*').eq('category', sportType).order('display_order', { ascending: true }),
-            supabaseClient.from('articles').select('*').eq('category', sportType).eq('is_published', true).neq('author_name', 'MAKMUS_SPORT_RESUME').order('created_at', { ascending: false }).limit(1).maybeSingle()
-        ]);
-
-        if (statsRes.error) throw statsRes.error;
-
-        // 4. Rendu des résultats
-        renderTable(statsRes.data, sportType);
-        
-        if (articleRes.data) {
-            renderFeaturedArticle(articleRes.data);
-        } else {
-            articleContainer.innerHTML = `<p style="text-align:center; padding:20px; color:#999;">Pas d'article pour ${sportType}</p>`;
-        }
-
-    } catch (error) {
-        console.error("Erreur durant la navigation :", error);
-    }
-};
 /* ==========================================================================
    NAVIGATION DES ONGLETS (FLÈCHES)
    ========================================================================== */
@@ -1058,6 +1060,11 @@ window.updatePaginationDots = function() {
 
 document.addEventListener('DOMContentLoaded', () => {
     console.log("MAKMUS News : Démarrage du moteur...");
+    
+    // Ajoute ceci pour que la connexion fonctionne au démarrage
+    if (typeof window.checkUserStatus === 'function') {
+        window.checkUserStatus();
+    }
 
     // 1. MISE À JOUR DE LA DATE (Design Journal)
     const dateEl = document.getElementById('live-date');
@@ -1079,24 +1086,24 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 4. GESTION DU SCROLL & DOTS (Onglets Sports)
-    const container = document.getElementById('tabs-scroll-container');
+const container = document.getElementById('tabs-scroll-container');
     if (container && typeof window.updatePaginationDots === 'function') {
         container.addEventListener('scroll', () => {
-            // Utilisation d'un requestAnimationFrame pour plus de fluidité au lieu du timeout
             window.requestAnimationFrame(window.updatePaginationDots);
         }, { passive: true });
         
-        window.updatePaginationDots(); // Appel initial
+        window.updatePaginationDots(); // Appel initial corrigé ici
     }
-
-    // 5. GESTION DU TICKER (Bourse/Change)
-    if (typeof fetchMarketData === 'function') {
-        fetchMarketData().then(() => {
-            if (typeof updateTickerUI === 'function') {
-                updateTickerUI(); // Affiche la 1ère donnée immédiatement après le fetch
-                setInterval(updateTickerUI, 5000); // Lance la rotation
+        
+      if (typeof fetchMarketData === 'function') {
+        fetchMarketData().then(success => {
+            if (success && typeof updateTickerUI === 'function') {
+                updateTickerUI(); 
+                setInterval(updateTickerUI, 10000); 
             }
         });
+        
+        setInterval(fetchMarketData, 3600000); 
     }
 
     // 6. SERVICES SECONDAIRES
