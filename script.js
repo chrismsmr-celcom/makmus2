@@ -783,28 +783,65 @@ async function fetchVideosVerticaux() {
     }).join('');
 }
 let activeAds = [], currentAdIndex = 0;
+
 async function initAdSlider() {
-    const { data } = await supabaseClient.from('publicites').select('*').eq('est_active', true);
-    if (!data || data.length === 0) return;
+    // On récupère les pubs actives
+    const { data, error } = await supabaseClient
+        .from('publicites')
+        .select('*')
+        .eq('est_active', true);
+
+    if (error || !data || data.length === 0) {
+        console.warn("Aucune publicité active trouvée.");
+        return;
+    }
+
     activeAds = data;
-    showNextAd(); setInterval(showNextAd, 15000);
+    
+    // Affichage immédiat de la première pub
+    showNextAd(); 
+    
+    // Rotation toutes le 15 secondes
+    setInterval(showNextAd, 15000);
 }
 
 function showNextAd() {
     const zone = document.getElementById('ad-display-zone');
-    if (!zone || activeAds.length === 0) return;
+    if (!zone) return;
+
+    // Si pas de pub dans Supabase, on laisse vide (le fond gris restera visible)
+    if (!activeAds || activeAds.length === 0) return;
+
     const ad = activeAds[currentAdIndex];
-    const content = ad.type === 'video' ? `<video class="ad-media ad-fade" src="${ad.media_url}" autoplay muted loop playsinline></video>` : `<img class="ad-media ad-fade" src="${ad.media_url}">`;
-    zone.innerHTML = `<div onclick="trackAdClick('${ad.id}', '${ad.lien_clic}')" style="cursor:pointer">${content}</div>`;
+
+    // On crée l'élément média brut sans aucun texte autour
+    if (ad.type === 'video') {
+        zone.innerHTML = `
+            <video class="ad-raw-media" src="${ad.media_url}" 
+                   autoplay muted loop playsinline 
+                   onclick="window.open('${ad.lien_clic}', '_blank')">
+            </video>`;
+    } else {
+        zone.innerHTML = `
+            <img class="ad-raw-media" src="${ad.media_url}" 
+                 onclick="window.open('${ad.lien_clic}', '_blank')">`;
+    }
+
     currentAdIndex = (currentAdIndex + 1) % activeAds.length;
 }
-
 async function trackAdClick(id, url) {
-    if (url) window.open(url, '_blank');
+    // 1. On ouvre le lien immédiatement pour ne pas bloquer l'utilisateur
+    if (url && url !== '#') {
+        window.open(url, '_blank');
+    }
+
+    // 2. On incrémente le compteur proprement via RPC (évite les erreurs de calcul)
     try {
-        const { data: ad } = await supabaseClient.from('publicites').select('nb_clics').eq('id', id).single();
-        await supabaseClient.from('publicites').update({ nb_clics: (ad.nb_clics || 0) + 1 }).eq('id', id);
-    } catch (e) { console.error("Ad track error"); }
+        const { error } = await supabaseClient.rpc('increment_ad_clicks', { row_id: id });
+        if (error) throw error;
+    } catch (e) { 
+        console.error("Erreur tracking pub:", e.message); 
+    }
 }
 
 async function loadSportsResumes() {
@@ -1106,12 +1143,24 @@ const container = document.getElementById('tabs-scroll-container');
         setInterval(fetchMarketData, 3600000); 
     }
 
-    // 6. SERVICES SECONDAIRES
+       // 6. SERVICES SECONDAIRES
     if (typeof fetchVideosVerticaux === 'function') fetchVideosVerticaux();
-    if (typeof initAdSlider === 'function') initAdSlider();
-    if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
+    
+    // Modification ici pour la publicité
+    if (typeof initAdSlider === 'function') {
+        initAdSlider(); // Lance le premier chargement depuis Supabase
+        
+        // Optionnel : Si tu veux que la pub change toutes les 15 secondes
+        // sans recharger toute la page
+        setInterval(() => {
+            if (typeof showNextAd === 'function') showNextAd();
+        }, 15000); 
+    }
 
-    // 7. SYSTÈME DE RECHERCHE GLOBAL & NAVIGATION
+    if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
+    if (typeof loadSportsResumes === 'function') loadSportsResumes(); // Ajoute ceci si tu veux tes résumés de matchs
+    
+        // 7. SYSTÈME DE RECHERCHE GLOBAL & NAVIGATION
     // On l'attache à window pour être sûr qu'il soit accessible partout
     window.fetchAllContent = (query) => {
         if (typeof fetchMakmusNews === 'function') {
