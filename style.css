@@ -37,42 +37,49 @@ h1, h2, h3, .section-title {
 /* ==========================================================================
    2. PUBLICITÉ (ID: #ad-slider-wrapper)
    ========================================================================== */
-.top-ad-container { 
-    display: none; 
-    background: var(--bg-gray); 
-    padding: 0px 0; 
-    text-align: center; 
-    border-bottom: 1px solid var(--border-color); 
+@font-face {
+    font-family: 'Source Sans Pro';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url(https://fonts.gstatic.com/s/sourcesanspro/v23/6xK3dSBYKcSV-LCoeQqfX1RYOo3qNa7lqDY.woff2) format('woff2');
 }
 
-@media (min-width: 1024px) { .top-ad-container { display: block; } }
-
-#ad-slider-wrapper { 
-    max-width: 728px; 
-    height: 90px; 
-    margin: 0 ; 
-    overflow: hidden;
+.container {
+    max-width: 100%;
+    margin: 0 0;
+    font-family: 'Source Sans Pro', sans-serif;
+    -webkit-font-smoothing: antialiased;
     position: relative;
-    background: #eee; 
 }
 
 #ad-display-zone {
     width: 100%;
-    height: 100%;
+    min-height: 100%; /* Espace réservé */
+    background-color: #e2e8f0; /* Gris par défaut quand c'est vide */
+    border-radius: 0px;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
+    cursor: pointer;
+    position: relative;
 }
 
-.ad-media {
-    max-width: 100%;
-    max-height: 90px;
-    object-fit: contain;
+/* MÉDIA BRUT (MP4 ou JPG) */
+.ad-raw-media {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Remplit tout l'espace sans déformation */
+    display: block;
 }
 
-.ad-fade { animation: adFadeIn 0.8s ease-in-out; }
-@keyframes adFadeIn { from { opacity: 0.3; } to { opacity: 1; } }
-
+/* CACHER SUR MOBILE (Smartphone) */
+@media (max-width: 767px) {
+    .ad-main-wrapper {
+        display: none !important;
+    }
+}
 /* ==========================================================================
    3. BARRE SUPÉRIEURE & BOURSE
    ========================================================================== */
@@ -1142,12 +1149,6 @@ h1, h2, h3, .section-title {
         padding-left: 10px;
         border-left: 3px solid #e2e2e2; /* Petite barre décorative à gauche */
     }
-   .medal-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
-.medal-table th { background: #f8f8f8; color: #666; padding: 10px; text-align: center; font-weight: bold; border-bottom: 2px solid #eee; }
-.medal-table td { padding: 12px 8px; border-bottom: 1px solid #eee; text-align: center; }
-.team-cell { display: flex; align-items: center; text-align: left !important; gap: 10px; font-weight: 600; }
-.flag-icon { width: 24px; height: 24px; object-fit: contain; }
-.bold { font-weight: 800; color: #a30000; }
 }/* ==========================================================================
    8. FOOTER, MENU & MODALE
    ========================================================================== */
@@ -2034,8 +2035,3 @@ h1, h2, h3, .section-title {
     .main-article h1 { font-size: 1.8rem; text-align: left; }
     .footer-bottom { flex-direction: column; gap: 15px; text-align: center; }
 }
-
-
-
-
-
