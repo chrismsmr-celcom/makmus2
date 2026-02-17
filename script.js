@@ -1,22 +1,604 @@
-/* ==========================================================================
-   1. CONFIGURATION & CLIENTS
-   ========================================================================== */
+/* ---------------------------------------------------------
+   1. CONFIGURATION & INITIALISATION
+--------------------------------------------------------- */
 const SUPABASE_URL = 'https://logphtrdkpbfgtejtime.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio';
-const EXCHANGE_API_KEY = '4e4fee63bab6fce7ba7b39e8';
-const BACKEND_URL = 'https://makmus2-backend-api.onrender.com/api/news';
-
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxvZ3BodHJka3BiZmd0ZWp0aW1lIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAxNzY4MDYsImV4cCI6MjA4NTc1MjgwNn0.Uoxiax-whIdbB5oI3bof-hN0m5O9PDi96zmaUZ6BBio'; 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
+const params = new URLSearchParams(window.location.search);
+const articleId = params.get('id');
+
+let currentAudio = null;
+window.progressInterval = window.progressInterval || null;
+window.keepAliveInterval = window.keepAliveInterval || null;
+window.speechSynth = window.speechSynthesis;
+
+
+function toggleMenu(show) {
+    const menu = document.getElementById('fullMenu');
+    if (!menu) return;
+
+    // Si 'show' n'est pas passé, on inverse l'état (toggle)
+    const isOpen = (typeof show === 'boolean') ? show : !menu.classList.contains('active');
+
+    if (isOpen) {
+        menu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    } else {
+        menu.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+/* ---------------------------------------------------------
+   1. DÉFINITION DES FONCTIONS D'INTERFACE
+--------------------------------------------------------- */
+
+// Fonction pour le Menu
+function toggleMenu(show) {
+    const menu = document.getElementById('fullMenu');
+    if (!menu) return;
+    const isOpen = (typeof show === 'boolean') ? show : !menu.classList.contains('active');
+    
+    if (isOpen) {
+        menu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    } else {
+        menu.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Fonction pour les Modales (Commentaires, Partage)
+function toggleModal(id, show) {
+    const m = document.getElementById(id);
+    if (m) {
+        m.style.display = show ? 'flex' : 'none';
+        document.body.style.overflow = show ? 'hidden' : 'auto';
+    }
+}
+
+/* ---------------------------------------------------------
+   2. EXPOSITION GLOBALE (Pour les onclick du HTML)
+--------------------------------------------------------- */
+window.toggleMenu = toggleMenu;
+window.toggleModal = toggleModal;
+
+// On expose aussi les raccourcis
+window.openComments = () => toggleModal('commentModal', true);
+window.closeComments = () => toggleModal('commentModal', false);
+window.openShare = () => toggleModal('shareModal', true);
+window.closeShare = () => toggleModal('shareModal', false);
+// --- EXPOSITION GLOBALE (Obligatoire pour les onclick du HTML) ---
+window.toggleSpeech = toggleSpeech;
+window.toggleLike = toggleLike;
+window.openComments = openComments;
+window.closeComments = closeComments;
+window.openShare = openShare;
+window.closeShare = closeShare;
+window.toggleMenu = toggleMenu;
+window.toggleModal = toggleModal;
+window.socialShare = socialShare;
+window.copyLink = copyLink;
+window.postComment = postComment;
+window.showToast = showToast;
+
+document.addEventListener('DOMContentLoaded', () => {
+    updateLiveDate();
+    if (articleId) {
+        loadArticle();
+    } else {
+        const fullArt = document.getElementById('full-article');
+        if(fullArt) fullArt.innerHTML = "<p style='text-align:center; padding:100px; font-family:serif;'>ID de l'article manquant dans l'URL.</p>";
+    }
+    
+    // Initialisation de la barre de progression
+    if(!document.getElementById('audio-progress-container')) {
+        const pContainer = document.createElement('div');
+        pContainer.id = 'audio-progress-container';
+        pContainer.style.cssText = "display:none; position:fixed; top:0; left:0; width:100%; height:4px; background:rgba(0,0,0,0.1); z-index:10000;";
+        pContainer.innerHTML = '<div id="audio-progress-bar" style="width:0%; height:100%; background:#c00; transition:width 0.3s;"></div>';
+        document.body.prepend(pContainer);
+    }
+});
+
+/* ---------------------------------------------------------
+   2. CHARGEMENT DE L'ARTICLE
+--------------------------------------------------------- */
+async function loadArticle() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentArticleId = typeof articleId !== 'undefined' ? articleId : urlParams.get('id');
+
+    const { data: art, error } = await supabaseClient
+        .from('articles')
+        .select('*')
+        .eq('id', currentArticleId)
+        .single();
+
+    if (error || !art) {
+        document.getElementById('full-article').innerHTML = "<p class='error-msg'>Erreur de chargement de l'édition.</p>";
+        return;
+    }
+
+    document.title = `${art.titre} | MakMus`;
+
+    // --- LOGIQUE DE CONTENU ---
+    const paragraphs = art.description.split('</p>');
+    let finalContent = "";
+    const totalPara = paragraphs.length;
+
+    paragraphs.forEach((p, index) => {
+        if (p.trim() === "") return;
+        
+        // Ajout du paragraphe actuel
+        finalContent += p + '</p>';
+
+        // 1. Insertion Pub après le 2ème paragraphe
+        if (index === 1 && totalPara > 3) {
+            finalContent += `
+                <div class="in-article-ad">
+                    <span class="ad-label">PUBLICITÉ</span>
+                    <div class="ad-box">
+                        <h4>MakMus Direct</h4>
+                        <p>Rejoignez notre canal WhatsApp pour les alertes en direct.</p>
+                        <button class="btn-whatsapp">REJOINDRE</button>
+                    </div>
+                </div>`;
+        }
+
+        // 2. IMAGE SECONDAIRE (Après le 4ème paragraphe - index 3)
+        // Elle est injectée DANS le flux pour respecter les 680px
+        if (index === 3 && art.image_url_2) {
+            finalContent += `
+                <figure class="article-media-wrapper">
+                    <img src="${art.image_url_2}" loading="lazy">
+                    ${art.image_caption_2 ? `<figcaption class="media-caption">${art.image_caption_2}</figcaption>` : ''}
+                </figure>`;
+        }
+
+        // 3. VIDÉO (Juste après l'image secondaire ou un peu plus bas)
+        // On vérifie qu'elle n'est injectée qu'une seule fois
+        if (index === 5 && art.video_url) {
+            finalContent += `
+                <figure class="article-media-wrapper">
+                    <video controls playsinline preload="metadata">
+                        <source src="${art.video_url}" type="video/mp4">
+                    </video>
+                    <figcaption class="media-caption">Vidéo : Document exclusif MakMus</figcaption>
+                </figure>`;
+        }
+
+        // 4. Bloc "À LIRE AUSSI" (Au milieu de l'article)
+        if (index === Math.floor(totalPara / 2) && totalPara > 5) {
+            finalContent += `
+                <div class="inline-recommendations">
+                    <h4 class="grid-title">À LIRE AUSSI</h4>
+                    <div class="mini-grid" id="inline-grid-container">
+                        <div class="mini-card" id="card-1"><p id="inline-title-1">Chargement...</p></div>
+                        <div class="mini-card" id="card-2"><p id="inline-title-2">Chargement...</p></div>
+                    </div>
+                </div>`;
+            setTimeout(() => fillInlineGrid(art.category, currentArticleId), 200);
+        }
+    });
+
+    // --- RENDU STRUCTUREL ---
+    document.getElementById('full-article').innerHTML = `
+        <header class="article-header">
+            <div class="article-category-label">${art.category || 'Actualité'}</div>
+            <h1 class="article-main-title">${art.titre}</h1>
+            
+            <div class="article-actions-bar no-print">
+                <button class="action-btn" onclick="toggleLike()" id="like-btn">
+                    <div class="icon-circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
+                    <span id="nb-like" class="count-label">0</span>
+                </button>
+                <button class="action-btn" onclick="openShare()">
+                    <div class="icon-circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div>
+                </button>
+                <button class="action-btn" onclick="openComments()">
+                    <div class="icon-circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+                    <span id="nb-comm" class="count-label">0</span>
+                </button>
+                <button class="action-btn speech-trigger" onclick="toggleSpeech()" id="speech-btn">
+                    <div class="icon-circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+                    <span id="speech-text">ÉCOUTER</span>
+                </button>
+            </div>
+
+            <div class="article-byline">
+                <img src="${art.author_image || 'https://via.placeholder.com/40'}" class="author-avatar">
+                <div class="author-info">
+                    <div class="author-name">Par ${art.author_name || 'La Rédaction'}</div>
+                    <div class="publish-date">Le ${new Date(art.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})}</div>
+                </div>
+            </div>
+        </header>
+
+        <figure class="main-figure">
+            <img src="${art.image_url}" class="main-img">
+            <figcaption class="img-caption-style">${art.image_caption || ''}</figcaption>
+        </figure>
+
+        <div class="article-content" id="article-text-content">
+            ${finalContent}
+        </div>
+    `;
+
+    fetchLikes();
+    fetchComments();
+    fetchRelatedArticles(art.tags, art.category);
+}
+async function fillInlineGrid(category, currentId) {
+    const { data: related } = await supabaseClient
+        .from('articles')
+        .select('id, titre, image_url')
+        .eq('category', category)
+        .neq('id', currentId)
+        .limit(2);
+
+    if (related && related.length > 0) {
+        related.forEach((item, i) => {
+            const imgEl = document.getElementById(`inline-img-${i+1}`);
+            const titleEl = document.getElementById(`inline-title-${i+1}`);
+            if (imgEl) {
+                imgEl.src = item.image_url;
+                imgEl.style.display = "block";
+            }
+            if (titleEl) {
+                titleEl.innerHTML = `<a href="redaction.html?id=${item.id}" style="text-decoration:none; color:#121212; font-weight:bold; font-size:0.9rem;">${item.titre}</a>`;
+            }
+        });
+        if (related.length === 1) {
+            const card2 = document.getElementById('card-2');
+            if (card2) card2.style.display = 'none';
+        }
+    } else {
+        const container = document.querySelector('.inline-recommendations');
+        if (container) container.style.display = 'none';
+    }
+}
+async function loadAutoTrendingTags() {
+    const container = document.getElementById('tags-container');
+    if (!container) {
+        console.error("Le conteneur #tags-container est introuvable dans le HTML");
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('articles')
+            .select('tags')
+            .not('tags', 'is', null) // On ignore les vides
+            .limit(50);
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+            console.warn("Aucun tag trouvé dans la base de données.");
+            return;
+        }
+
+        const counts = {};
+        data.forEach(art => {
+            if (art.tags) {
+                const individualTags = art.tags.split(',').map(t => t.trim());
+                individualTags.forEach(tag => {
+                    if (tag.length > 1) counts[tag] = (counts[tag] || 0) + 1;
+                });
+            }
+        });
+
+        const topTags = Object.keys(counts)
+            .sort((a, b) => counts[b] - counts[a])
+            .slice(0, 6);
+
+        container.innerHTML = topTags.map((tag, index) => `
+            <span class="trending-link ${index === 0 ? 'is-live' : ''}" 
+                  onclick="filterByTag('${tag.replace(/'/g, "\\'")}')">
+                ${tag.toUpperCase()}
+            </span>
+        `).join('');
+
+    } catch (e) {
+        console.error("Erreur globale tags:", e);
+    }
+}
+
+// Lancement automatique
+loadAutoTrendingTags();
+/* ---------------------------------------------------------
+   3. LOGIQUE AUDIO (TEXT-TO-SPEECH)
+--------------------------------------------------------- */
+// Initialisation sécurisée des variables globales
+window.progressInterval = window.progressInterval || null;
+window.keepAliveInterval = window.keepAliveInterval || null;
+const synth = window.speechSynthesis;
+
+/**
+ * Récupère la meilleure voix française disponible
+ */
+function getBestFrenchVoice() {
+    const voices = synth.getVoices();
+    // Priorité : Google FR, puis n'importe quelle voix FR, puis la première voix système
+    return voices.find(v => v.lang.includes('fr') && v.name.includes('Google')) || 
+           voices.find(v => v.lang.includes('fr')) || 
+           voices[0];
+}
+
+// Recharger les voix si le navigateur les charge tardivement
+if (synth.onvoiceschanged !== undefined) {
+    synth.onvoiceschanged = getBestFrenchVoice;
+}
+
+/**
+ * Lance ou arrête la lecture vocale
+ */
+async function toggleSpeech() {
+    const btnText = document.getElementById('speech-text');
+    const pBar = document.getElementById('audio-progress-bar');
+    const pContainer = document.getElementById('audio-progress-container');
+
+    // Si le moteur est déjà en train de parler ou en attente, on arrête tout
+    if (synth.speaking || synth.pending) {
+        stopAllAudio();
+        return;
+    }
+
+    if (btnText) btnText.innerText = "PATIENTEZ...";
+
+    // 1. Nettoyage immédiat de la file d'attente
+    synth.cancel();
+
+    // 2. Petit délai pour stabiliser le moteur de synthèse
+    setTimeout(() => {
+        const title = document.querySelector('.article-main-title')?.innerText || "";
+        const body = document.getElementById('article-text-content')?.innerText || "";
+        
+        // Nettoyage : Retire les Emojis et les espaces insécables (&nbsp;)
+        const cleanText = (title + ". " + body)
+            .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+        if (!cleanText) {
+            if (btnText) btnText.innerText = "TEXTE VIDE";
+            return;
+        }
+
+        const utterance = new SpeechSynthesisUtterance(cleanText);
+        
+        // Paramètres de sécurité pour éviter le 'synthesis-failed'
+        utterance.lang = 'fr-FR';
+        utterance.volume = 1.0; 
+        utterance.rate = 1.0;   
+        utterance.pitch = 1.0;  
+
+        const selectedVoice = getBestFrenchVoice();
+        if (selectedVoice) {
+            utterance.voice = selectedVoice;
+        }
+
+        utterance.onstart = () => {
+            if (pContainer) pContainer.style.display = 'block';
+            if (btnText) btnText.innerText = "ARRÊTER";
+
+            // Fix Chrome : Empêche l'arrêt après 15 secondes
+            if (window.keepAliveInterval) clearInterval(window.keepAliveInterval);
+            window.keepAliveInterval = setInterval(() => {
+                if (synth.speaking) {
+                    synth.pause();
+                    synth.resume();
+                }
+            }, 7000); 
+
+            // Barre de progression
+            if (window.progressInterval) clearInterval(window.progressInterval);
+            let start = Date.now();
+            let estimated = cleanText.length * 75; // ~75ms par caractère
+            window.progressInterval = setInterval(() => {
+                let elapsed = Date.now() - start;
+                let pct = Math.min((elapsed / estimated) * 100, 99);
+                if (pBar) pBar.style.width = pct + "%";
+            }, 500);
+        };
+
+        utterance.onend = () => stopAllAudio();
+        utterance.onerror = (event) => {
+            console.error("Erreur de synthèse:", event.error);
+            stopAllAudio();
+        };
+
+        // Lancement de la voix
+       // On s'assure que le moteur n'est pas en pause avant de parler
+if (synth.paused) {
+    synth.resume();
+}
+synth.speak(utterance);
+
+    }, 300); 
+}
+
+/**
+ * Arrête tout proprement (Son + Intervalles + UI)
+ */
+function stopAllAudio() {
+    // 1. Arrêt du moteur
+    synth.cancel();
+    
+    // 2. Nettoyage des timers
+    if (window.progressInterval) clearInterval(window.progressInterval);
+    if (window.keepAliveInterval) clearInterval(window.keepAliveInterval);
+    
+    // 3. Réinitialisation de l'interface
+    const btnText = document.getElementById('speech-text');
+    const pContainer = document.getElementById('audio-progress-container');
+    const pBar = document.getElementById('audio-progress-bar');
+
+    if (btnText) btnText.innerText = "ÉCOUTER";
+    if (pContainer) pContainer.style.display = 'none';
+    if (pBar) pBar.style.width = "0%";
+}
+/* ---------------------------------------------------------
+   4. COMMENTAIRES, LIKES & TOASTS
+--------------------------------------------------------- */
+function showToast(message) {
+    const oldToast = document.querySelector('.makmus-toast');
+    if (oldToast) oldToast.remove();
+    const toast = document.createElement('div');
+    toast.className = 'makmus-toast';
+    toast.innerHTML = `<span>${message}</span>`;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add('show'), 100);
+    setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
+
+async function toggleLike() {
+    const btn = document.getElementById('like-btn');
+    if (!btn || btn.classList.contains('liked')) return;
+    const { error } = await supabaseClient.from('article_likes').insert([{ article_id: articleId }]);
+    if (!error) {
+        btn.classList.add('liked');
+        btn.style.color = "#c00";
+        fetchLikes();
+        showToast("Ajouté à vos favoris");
+    }
+}
+
+async function fetchLikes() {
+    const { count } = await supabaseClient.from('article_likes').select('*', { count: 'exact', head: true }).eq('article_id', articleId);
+    if (document.getElementById('nb-like')) document.getElementById('nb-like').innerText = count || 0;
+}
+
+async function fetchComments() {
+    const { data } = await supabaseClient.from('article_comments').select('*').eq('article_id', articleId).order('created_at', { ascending: false });
+    if (data) {
+        const list = document.getElementById('comments-list');
+        if(list) list.innerHTML = data.map(c => `<div style="border-bottom:1px solid #eee; padding:15px 0;"><b>${c.nom}</b><br>${c.message}</div>`).join('');
+        if(document.getElementById('nb-comm')) document.getElementById('nb-comm').innerText = data.length;
+    }
+}
+
+async function postComment() {
+    const nomInput = document.getElementById('comm-name');
+    const msgInput = document.getElementById('comm-text');
+    const nom = nomInput.value.trim();
+    const msg = msgInput.value.trim();
+
+    if (!nom || !msg) {
+        showToast("Veuillez remplir les deux champs.");
+        return;
+    }
+
+    const { error } = await supabaseClient.from('article_comments').insert([{ article_id: articleId, nom: nom, message: msg }]);
+    if (!error) {
+        msgInput.value = "";
+        fetchComments();
+        showToast("Commentaire publié !");
+    }
+}
+
+/* ---------------------------------------------------------
+   5. NAVIGATION, MODALS & PARTAGE
+--------------------------------------------------------- */
+function openComments() { toggleModal('commentModal', true); }
+function closeComments() { toggleModal('commentModal', false); }
+function openShare() { toggleModal('shareModal', true); }
+function closeShare() { toggleModal('shareModal', false); }
+
+function copyLink() {
+    navigator.clipboard.writeText(window.location.href);
+    showToast("Lien de l'article copié");
+}
+
+function socialShare(platform) {
+    const url = encodeURIComponent(window.location.href);
+    const title = encodeURIComponent(document.title);
+    let shareUrl = '';
+    if(platform==='facebook') shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+    if(platform==='x') shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${title}`;
+    if(platform==='whatsapp') shareUrl = `https://wa.me/?text=${title}%20${url}`;
+    if(shareUrl) window.open(shareUrl, '_blank', 'width=600,height=450');
+}
+
+function updateLiveDate() {
+    const el = document.getElementById('live-date');
+    if (el) el.innerText = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
+}
+
+/* ---------------------------------------------------------
+   CHARGEMENT DES ARTICLES SIMILAIRES
+--------------------------------------------------------- */
+async function fetchRelatedArticles(currentTags, category) {
+    const grid = document.getElementById('recommendations-grid');
+    const box = document.getElementById('recommendations-box');
+    
+    if (!grid) return;
+
+    // On récupère 6 articles pour remplir la grille (2 lignes de 3)
+    const { data: related, error } = await supabaseClient
+        .from('articles')
+        .select('id, titre, image_url, category')
+        .eq('category', category)
+        .neq('id', typeof articleId !== 'undefined' ? articleId : null) 
+        .limit(6);
+
+    if (error || !related || related.length === 0) {
+        if (box) box.style.display = 'none';
+        return;
+    }
+
+    if (box) box.style.display = 'block';
+
+    // Injection avec la structure exacte de la capture
+    grid.innerHTML = related.map(art => `
+        <a href="redaction.html?id=${art.id}" class="rec-card">
+            <div class="rec-image-container">
+                <img src="${art.image_url}" alt="${art.titre.replace(/"/g, '&quot;')}" loading="lazy">
+                <div class="ad-badge">Recommandé</div>
+            </div>
+            <div class="rec-source">${art.category || 'MakMus'}</div>
+            <h4 class="rec-title">${art.titre}</h4>
+        </a>
+    `).join('');
+}
+function filterByTag(tagName) {
+    // Si tu es sur la page d'accueil avec fetchHybridNews :
+    if (typeof fetchHybridNews === 'function') {
+        fetchHybridNews('top', tagName);
+    } else {
+        // Sinon, redirige vers l'accueil avec le tag en paramètre
+        window.location.href = `index.html?tag=${encodeURIComponent(tagName)}`;
+    }
+}
+function filterByTag(tagName) {
+    // Si tu es sur la page d'accueil avec fetchHybridNews :
+    if (typeof fetchHybridNews === 'function') {
+        fetchHybridNews('top', tagName);
+    } else {
+        // Sinon, redirige vers l'accueil avec le tag en paramètre
+        window.location.href = `index.html?tag=${encodeURIComponent(tagName)}`;
+    }
+}
 /* ==========================================================================
    2. INTERFACE : MENU & MODALES
    ========================================================================== */
-// 1. GESTION DU MENU PRINCIPAL (Navigation)
+/* ---------------------------------------------------------
+   GESTION UNIQUE DU MENU
+--------------------------------------------------------- */
 window.toggleMenu = (show) => {
     const menu = document.getElementById('fullMenu');
-    if (!menu) return;
-    
-    if (show) {
+    if (!menu) {
+        console.error("Erreur : L'élément #fullMenu est introuvable dans le HTML");
+        return;
+    }
+
+    // Si 'show' n'est pas fourni (clic simple), on inverse l'état actuel
+    const shouldOpen = (typeof show === 'boolean') ? show : !menu.classList.contains('active');
+
+    if (shouldOpen) {
         menu.classList.add('active');
         document.body.style.overflow = 'hidden';
     } else {
@@ -225,949 +807,4 @@ window.loadUserActivity = async function() {
 // Lancer la vérification au démarrage
 document.addEventListener('DOMContentLoaded', window.checkUserStatus);
 
-/* ==========================================================================
-   3. ANALYTICS & TRACKING
-   ========================================================================== */
-const tracker = {
-    getVisitorId: () => {
-        let id = sessionStorage.getItem('makmus_visitor_id') || 'v-' + Math.random().toString(36).substr(2, 9);
-        sessionStorage.setItem('makmus_visitor_id', id);
-        return id;
-    },
-    log: async (type, data = {}) => {
-        try {
-            await supabaseClient.from('stats').insert([{
-                event_type: type,
-                article_title: data.title || 'Page Accueil',
-                path: window.location.pathname,
-                visitor_id: tracker.getVisitorId(),
-                created_at: new Date().toISOString()
-            }]);
-        } catch (e) { console.warn("Tracking error ignored"); }
-    }
-};
 
-window.captureAction = async (encodedTitle, category, url) => {
-    const title = decodeURIComponent(encodedTitle); // On retrouve le vrai texte ici
-    await tracker.log('click_article', { title, category });
-    if (url) window.location.href = url;
-};
-/* ==========================================================================
-   4. BOURSE & TICKER
-   ========================================================================== */
-// 1. Définition des données initiales
-let marketData = [
-    { label: "USD/CDF", value: "2,850 FC", change: "LIVE", trend: "up" }, // Valeur fallback réaliste
-    { label: "BTC/USD", value: "98,450", change: "+1.2%", trend: "up" },
-    { label: "OR (oz)", value: "2,150", change: "-0.5%", trend: "down" }
-];
-
-// 2. Récupération des données (API)
-async function fetchMarketData() {
-    // Vérifie si la clé existe pour éviter de bloquer le script
-    if (typeof EXCHANGE_API_KEY === 'undefined' || !EXCHANGE_API_KEY) {
-        console.warn("Ticker: EXCHANGE_API_KEY manquante.");
-        return false;
-    }
-
-    try {
-        const res = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/latest/USD`);
-        const data = await res.json();
-        
-        if (data.result === "success") {
-            const rate = data.conversion_rates.CDF;
-            // Mise à jour de la valeur avec formatage local
-            marketData[0].value = Math.round(rate).toLocaleString('fr-FR') + " FC";
-            console.log("Ticker: Taux USD/CDF mis à jour.");
-            return true;
-        }
-    } catch (e) { 
-        console.error("Ticker: Erreur API", e); 
-        return false;
-    }
-}
-
-// 3. Gestion de l'affichage cyclique
-let currentTickerIndex = 0;
-
-function updateTickerUI() {
-    const wrapper = document.getElementById('ticker-content');
-    if (!wrapper) return;
-    
-    // Animation de sortie (Fade out)
-    wrapper.style.transition = "opacity 0.3s ease";
-    wrapper.style.opacity = "0";
-    
-    setTimeout(() => {
-        const item = marketData[currentTickerIndex];
-        
-        // Construction du HTML sécurisé
-        wrapper.innerHTML = `
-            <span class="ticker-item">
-                <strong style="color: #333;">${item.label}:</strong> ${item.value} 
-                <small style="color:${item.trend === 'up' ? '#27ae60' : '#e74c3c'}; font-weight: bold; margin-left: 5px;">
-                    ${item.trend === 'up' ? '▲' : '▼'} ${item.change}
-                </small>
-            </span>
-        `;
-        
-        // Animation d'entrée (Fade in)
-        wrapper.style.opacity = "1";
-        
-        // Incrémentation de l'index
-        currentTickerIndex = (currentTickerIndex + 1) % marketData.length;
-    }, 300);
-}
-/* ==========================================================================
-   5. MOTEUR HYBRIDE (NEWS)
-   ========================================================================== */
-async function fetchMakmusNews(querySearch = '') {
-    const status = document.getElementById('status-line');
-    if (status) status.textContent = "CHARGEMENT...";
-
-    try {
-        let query = supabaseClient
-            .from('articles')
-            .select('*')
-            .eq('is_published', true)
-            .order('created_at', { ascending: false });
-
-        // --- NOUVEAU : FILTRAGE SI RECHERCHE ---
-        // Si querySearch n'est pas vide et n'est pas 'top', on filtre
-        if (querySearch && querySearch !== 'top') {
-            // On cherche si le mot est dans la catégorie OU le titre
-            query = query.or(`category.ilike.%${querySearch}%,titre.ilike.%${querySearch}%`);
-        }
-
-        let { data: allArticles, error } = await query;
-        if (error) throw error;
-
-        // Si on est en mode "Recherche", on change l'affichage du titre
-        if (querySearch && querySearch !== 'top') {
-            if (status) status.textContent = `RÉSULTATS POUR : ${querySearch.toUpperCase()}`;
-            
-            // En mode recherche, on affiche tout dans la grille principale
-            renderUI(allArticles[0], allArticles.slice(1, 13));
-            return; // On s'arrête ici pour ne pas écraser les autres sections (Opinions, etc.)
-        }
-
-        // --- LOGIQUE PAR DÉFAUT (ÉDITION DU JOUR) ---
-        
-        // Hero & Grille
-        const mainStream = allArticles.filter(a => 
-            !['OPINION', 'MAKMUS_SPORT_RESUME', 'AUTRE_INFO', 'LIFESTYLE'].includes(a.category)
-        );
-        const heroArticle = allArticles.find(a => a.is_priority === true) || mainStream[0];
-        const gridArticles = mainStream.filter(a => a.id !== heroArticle?.id).slice(0, 6);
-
-        // Autres Sections
-        const autreInfos = allArticles.filter(a => a.category === 'AUTRE_INFO').slice(0, 6);
-        const opinions = allArticles.filter(a => a.category === 'OPINION').slice(0, 3);
-        const lifestyle = allArticles.filter(a => a.category === 'LIFESTYLE').slice(0, 4);
-        const sportResumes = allArticles.filter(a => a.category === 'MAKMUS_SPORT_RESUME' || a.author_name === 'MAKMUS_SPORT_RESUME').slice(0, 6);
-
-        // Distribution
-        renderUI(heroArticle, gridArticles);
-        if (typeof renderAutreInfoSlider === 'function') renderAutreInfoSlider(autreInfos);
-        if (typeof renderOpinions === 'function') renderOpinions(opinions);
-        if (typeof renderLifestyle === 'function') renderLifestyle(lifestyle);
-        if (typeof renderSportsSlider === 'function') renderSportsSlider(sportResumes);
-        
-        renderMoreNews(allArticles.slice(15)); 
-
-        if (status) status.textContent = "ÉDITION DU JOUR — MAKMUS";
-    } catch (e) {
-        console.error("Erreur moteur:", e);
-        if (status) status.textContent = "ERREUR DE CONNEXION";
-    }
-}
-// --- RENDU LIFESTYLE ---
-function renderLifestyle(articles) {
-    const container = document.getElementById('lifestyle-grid');
-    if (!container || articles.length === 0) return;
-
-    container.innerHTML = articles.map(art => `
-        <div class="lifestyle-card" onclick="window.location.href='redaction.html?id=${art.id}'">
-            <div class="lifestyle-img-wrapper">
-                <img src="${art.image_url}" onerror="this.src='https://via.placeholder.com/400x600'">
-                <span class="lifestyle-tag">LIFESTYLE</span>
-            </div>
-            <h4>${art.titre}</h4>
-        </div>
-    `).join('');
-}
-
-// --- RENDU RÉSUMÉS SPORTIFS ---
-
-function renderSportsSlider(resumes) {
-    const track = document.getElementById('sports-resume-track');
-    if (!track || resumes.length === 0) return;
-
-    track.innerHTML = resumes.map(match => `
-        <div class="match-card" onclick="window.location.href='redaction.html?id=${match.id}'">
-            <div class="match-status">RÉSUMÉ</div>
-            <img src="${match.image_url}" onerror="this.src='https://via.placeholder.com/300x200'">
-            <div class="match-info">
-                <small>${match.image_caption || 'MATCH TERMINÉ'}</small>
-                <h3>${match.titre}</h3>
-                <span class="view-link">VOIR LES BUTS →</span>
-            </div>
-        </div>`).join('');
-}
-function renderSportsDashboard(data, type = 'JO') {
-    const container = document.getElementById('sports-dynamic-content');
-    if (!container) return;
-
-    let headerHtml = '';
-    let rowsHtml = '';
-
-    if (type === 'JO') {
-        // En-tête type Médailles (Ta capture image_18df5e)
-        headerHtml = `
-            <tr class="table-header">
-                <th class="col-team">NATION</th>
-                <th><span style="color:#FFD700">●</span></th>
-                <th><span style="color:#C0C0C0">●</span></th>
-                <th><span style="color:#CD7F32">●</span></th>
-                <th class="col-total">TOTAL</th>
-            </tr>`;
-            
-        rowsHtml = data.map(item => `
-            <tr class="score-row">
-                <td>
-                    <div class="team-info">
-                        <img src="${item.flag_url}" class="team-logo">
-                        ${item.name}
-                    </div>
-                </td>
-                <td>${item.gold}</td>
-                <td>${item.silver}</td>
-                <td>${item.bronze}</td>
-                <td class="col-total">${item.gold + item.silver + item.bronze}</td>
-            </tr>`).join('');
-
-    } else {
-        // En-tête type Football / Basket
-        headerHtml = `
-            <tr class="table-header">
-                <th class="col-team">EQUIPE</th>
-                <th>M</th>
-                <th>V</th>
-                <th>N</th>
-                <th class="col-total">PTS</th>
-            </tr>`;
-
-        rowsHtml = data.map(item => `
-            <tr class="score-row">
-                <td>
-                    <div class="team-info">
-                        <img src="${item.logo_url}" class="team-logo">
-                        ${item.name}
-                    </div>
-                </td>
-                <td>${item.played}</td>
-                <td>${item.win}</td>
-                <td>${item.draw}</td>
-                <td class="col-total">${item.points}</td>
-            </tr>`).join('');
-    }
-
-    container.innerHTML = `
-        <table class="sports-table">
-            <thead>${headerHtml}</thead>
-            <tbody>${rowsHtml}</tbody>
-        </table>
-        <a href="#" class="footer-link">Voir le classement complet →</a>
-    `;
-}
-// --- RENDU AUTRE INFO (SLIDER) ---
-function renderAutreInfoSlider(trending) {
-    const sidebarList = document.getElementById('sidebar-list');
-    if (!sidebarList || trending.length === 0) return;
-
-    sidebarList.innerHTML = trending.map(art => `
-        <div class="trending-slide-card" onclick="window.location.href='redaction.html?id=${art.id}'">
-            <img src="${art.image_url}" class="slide-cover">
-            <h4 class="playfair">${art.titre}</h4>
-            <span class="read-time-small">${art.read_time || '5'} MIN READ</span>
-        </div>`).join('');
-    
-    // Initialise les dots si pas encore fait
-    setupSliderControls(trending.length);
-}
-
-// --- RENDU OPINIONS ---
-function renderOpinions(opinions) {
-    const opinionList = document.getElementById('opinion-list');
-    if (!opinionList) return;
-
-    opinionList.innerHTML = opinions.map(op => `
-        <div class="opinion-container-box">
-            <div class="opinion-author-row">
-                <span class="author-name">${op.author_name || 'RÉDACTION'}</span>
-                <img class="author-avatar" src="${op.author_image || 'https://via.placeholder.com/42'}">
-            </div>
-            <h4 class="opinion-text-title" onclick="window.location.href='redaction.html?id=${op.id}'">${op.titre}</h4>
-            <span class="read-time-small">${op.read_time || '4'} MIN READ</span>
-            <img class="opinion-main-cover" src="${op.image_url}" onclick="window.location.href='redaction.html?id=${op.id}'">
-        </div>`).join('');
-}
-function renderUI(heroArticle, gridArticles = []) {
-    const heroZone = document.getElementById('hero-zone');
-    const grid = document.getElementById('news-grid');
-
-    // 1. Rendu du HERO (La Une)
-    if (heroZone && heroArticle) {
-        const h = heroArticle;
-        const displayTitle = h.titre || "";
-        const displayLink = `redaction.html?id=${h.id}`;
-        const safeTitle = encodeURIComponent(displayTitle);
-
-        heroZone.innerHTML = `
-            <div class="main-article">
-                <h1 onclick="window.location.href='${displayLink}'" style="cursor:pointer;">${displayTitle}</h1>
-                <div class="hero-content">
-                    <div class="hero-text">
-                        <p class="hero-description" onclick="window.location.href='${displayLink}'" style="cursor:pointer;">
-                            ${(h.description || "").replace(/<[^>]*>/g, '').substring(0, 160)}...
-                        </p>
-                        <div class="hero-sub-news-wrapper">
-                            ${gridArticles.slice(0, 2).map(sub => `
-                                <div class="sub-news-item" onclick="window.location.href='redaction.html?id=${sub.id}'">
-                                    <h4>${sub.titre}</h4>
-                                    <span class="read-time">2 MIN READ</span>
-                                </div>`).join('')}
-                        </div>
-                        <span class="read-more-btn" onclick="window.location.href='${displayLink}'">LIRE L'ARTICLE COMPLET →</span>
-                    </div>
-                    <div class="hero-image">
-                        <img src="${h.image_url || 'https://via.placeholder.com/800x500'}" onerror="this.src='https://via.placeholder.com/800x500'">
-                        ${h.image_caption ? `<div class="photo-credit">${h.image_caption}</div>` : ''}
-                    </div>
-                </div>
-            </div>`;
-    }
-
-    // 2. Rendu de la GRILLE (Sous le Hero)
-    if (grid) {
-        const finalGridItems = gridArticles.slice(2, 8);
-        grid.innerHTML = finalGridItems.map(art => `
-            <div class="article-card" onclick="window.location.href='redaction.html?id=${art.id}'">
-                <div class="card-img-wrapper">
-                    <img src="${art.image_url || 'https://via.placeholder.com/400x250'}">
-                </div>
-                <div style="padding:12px;">
-                    <h3 style="font-size:1rem; margin-bottom:8px; line-height:1.3; font-weight:800;">${art.titre}</h3>
-                </div>
-            </div>`).join('');
-    }
-}
-function setupSliderControls(count) {
-    const sidebarList = document.getElementById('sidebar-list');
-    if (!sidebarList || count === 0) return;
-
-    // Supprimer l'ancien contrôleur s'il existe pour éviter les doublons
-    const oldControls = document.getElementById('slider-controls');
-    if (oldControls) oldControls.remove();
-
-    const controls = document.createElement('div');
-    controls.id = 'slider-controls';
-    controls.className = 'slider-controls-wrapper';
-    
-    // Générer les points (dots)
-    const dotsHtml = Array.from({ length: count }, (_, i) => 
-        `<div class="dot ${i === 0 ? 'active' : ''}"></div>`
-    ).join('');
-    
-    controls.innerHTML = `
-        <div class="slider-dots">${dotsHtml}</div>
-        <div class="slider-arrows">
-            <button class="nav-btn" onclick="slideMore(-1)">❮</button>
-            <button class="nav-btn" onclick="slideMore(1)">❯</button>
-        </div>
-    `;
-    
-    sidebarList.after(controls);
-
-    // Écouter le scroll pour mettre à jour les dots
-    sidebarList.addEventListener('scroll', updateSliderDots);
-}
-function renderOpinions(opinions) {
-    const opinionList = document.getElementById('opinion-list');
-    if (!opinionList) {
-        console.warn("Conteneur 'opinion-list' introuvable dans le HTML");
-        return;
-    }
-
-    if (!opinions || opinions.length === 0) {
-        opinionList.innerHTML = "<p style='font-size:12px; color:#666;'>Aucune opinion disponible pour le moment.</p>";
-        return;
-    }
-
-    opinionList.innerHTML = opinions.map(op => `
-        <div class="opinion-container-box">
-            <div class="opinion-author-row">
-                <span class="author-name">${op.author_name || 'CHRONIQUEUR'}</span>
-                <img class="author-avatar" src="${op.author_image || 'https://via.placeholder.com/42'}" onerror="this.src='https://via.placeholder.com/42'">
-            </div>
-            <h4 class="opinion-text-title" onclick="window.location.href='redaction.html?id=${op.id}'">${op.titre}</h4>
-            <span class="read-time-small">${op.read_time || '4'} MIN READ</span>
-            <img class="opinion-main-cover" src="${op.image_url}" onclick="window.location.href='redaction.html?id=${op.id}'" onerror="this.style.display='none'">
-        </div>
-    `).join('');
-}
-// Fonction pour mettre à jour l'état des points (dots) lors du défilement
-function updateSliderDots() {
-    const container = document.getElementById('sidebar-list');
-    const dots = document.querySelectorAll('.dot');
-    
-    if (!container || dots.length === 0) return;
-
-    // On calcule l'index de l'article visible
-    // (Largeur scrollée / Largeur d'une carte)
-    const scrollLeft = container.scrollLeft;
-    const itemWidth = container.offsetWidth;
-    const index = Math.round(scrollLeft / itemWidth);
-    
-    // On met à jour la classe 'active' sur le bon point
-    dots.forEach((dot, i) => {
-        if (i === index) {
-            dot.classList.add('active');
-        } else {
-            dot.classList.remove('active');
-        }
-    });
-}
-function renderMoreNews(allArticles) {
-    const container = document.getElementById('more-info-grid');
-    if (!container) return;
-
-    // On définit les catégories qu'on veut afficher dans cette grille
-    const sections = ['World News', 'U.S. Politics', 'Technology', 'Science', 'Health'];
-    
-    // On peut aussi les récupérer dynamiquement depuis les articles
-    const categories = [...new Set(allArticles.map(a => a.category))].slice(0, 5);
-
-    container.innerHTML = categories.map(cat => {
-        // Filtrer les articles pour cette colonne
-        const articlesInCat = allArticles.filter(a => a.category === cat).slice(0, 4);
-        if (articlesInCat.length === 0) return '';
-
-        const main = articlesInCat[0];
-        const subs = articlesInCat.slice(1);
-
-        return `
-            <div class="info-category-block">
-                <span class="category-label">${cat.replace('_', ' ')}</span>
-                <img src="${main.image_url}" class="info-main-img" onclick="window.location.href='redaction.html?id=${main.id}'">
-                <h4 class="info-main-title" onclick="window.location.href='redaction.html?id=${main.id}'">${main.titre}</h4>
-                
-                <div class="info-sub-list">
-                    ${subs.map(s => `
-                        <p class="info-sub-title" onclick="window.location.href='redaction.html?id=${s.id}'">
-                            ${s.titre}
-                        </p>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-window.slideMore = (direction) => {
-    const container = document.getElementById('sidebar-list');
-    if (container) {
-        // On calcule le déplacement (largeur du conteneur)
-        const scrollAmount = container.offsetWidth;
-        container.scrollBy({ 
-            left: direction * scrollAmount, 
-            behavior: 'smooth' 
-        });
-    } else {
-        console.error("Conteneur 'sidebar-list' introuvable pour le scroll");
-    }
-};
-/* ==========================================================================
-   6. VIDÉOS & PUBS
-   ========================================================================== */
-const ICONS = {
-    LIKE: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
-    LIKE_FILLED: `<svg width="22" height="22" viewBox="0 0 24 24" fill="#ff4757"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>`,
-    MUTE: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6"></path></svg>`,
-    VOL: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.08"></path></svg>`,
-    FULL: `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path></svg>`
-};
-
-window.toggleMute = (e, btn) => {
-    e.stopPropagation();
-    const video = btn.closest('.video-card').querySelector('video');
-    video.muted = !video.muted;
-    btn.innerHTML = video.muted ? ICONS.MUTE : ICONS.VOL;
-};
-
-window.toggleFullscreen = (e, btn) => {
-    e.stopPropagation();
-    const video = btn.closest('.video-card').querySelector('video');
-    if (video.requestFullscreen) video.requestFullscreen();
-    else if (video.webkitRequestFullscreen) video.webkitRequestFullscreen();
-};
-
-window.handleLike = async (e, btn, id) => {
-    e.stopPropagation();
-    const likedVideos = JSON.parse(localStorage.getItem('makmus_liked_videos') || '[]');
-    if (likedVideos.includes(id)) return;
-    btn.innerHTML = ICONS.LIKE_FILLED;
-    likedVideos.push(id);
-    localStorage.setItem('makmus_liked_videos', JSON.stringify(likedVideos));
-    try { await supabaseClient.rpc('increment_likes', { row_id: id }); } catch(err) { console.error(err); }
-};
-
-window.updateProgress = (video, index) => {
-    const bar = document.getElementById(`bar-${index}`);
-    if (bar && video.duration) {
-        bar.style.width = (video.currentTime / video.duration) * 100 + "%";
-    }
-};
-
-window.autoScrollNext = (currentIndex) => {
-    const nextCard = document.getElementById(`vcard-${currentIndex + 1}`);
-    if (nextCard) {
-        nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-        const v = nextCard.querySelector('video'); if (v) v.play().catch(e => {});
-    }
-};
-
-async function fetchVideosVerticaux() {
-    const { data } = await supabaseClient.from('videos_du_jour').select('*').eq('is_published', true);
-    const slider = document.getElementById('video-slider');
-    if (!slider || !data) return;
-    
-    const likedVideos = JSON.parse(localStorage.getItem('makmus_liked_videos') || '[]');
-    
-    slider.innerHTML = data.map((vid, index) => {
-        const isLiked = likedVideos.includes(vid.id);
-        
-        // On ne met l'attribut 'autoplay' que si index est égal à 0
-        const autoplayAttr = index === 0 ? 'autoplay' : '';
-        
-        return `
-        <div class="video-card" id="vcard-${index}">
-            <div class="video-controls-top">
-                <button class="control-btn" onclick="handleLike(event, this, '${vid.id}')">
-                    ${isLiked ? ICONS.LIKE_FILLED : ICONS.LIKE}
-                </button>
-                <button class="control-btn" onclick="toggleMute(event, this)">
-                    ${ICONS.MUTE}
-                </button>
-                <button class="control-btn" onclick="toggleFullscreen(event, this)">
-                    ${ICONS.FULL}
-                </button>
-            </div>
-            
-            <video src="${vid.video_url}" 
-                   playsinline 
-                   muted 
-                   ${autoplayAttr} 
-                   onclick="this.paused ? this.play() : this.pause()" 
-                   ontimeupdate="window.updateProgress(this, ${index})" 
-                   onended="window.autoScrollNext(${index})">
-            </video>
-            
-            <div class="progress-bar-container">
-                <div class="progress-fill" id="bar-${index}"></div>
-            </div>
-            
-            <div class="video-overlay-bottom">
-                <h4>${vid.titre}</h4>
-            </div>
-        </div>`;
-    }).join('');
-}
-let activeAds = [], currentAdIndex = 0;
-
-async function initAdSlider() {
-    // On récupère les pubs actives
-    const { data, error } = await supabaseClient
-        .from('publicites')
-        .select('*')
-        .eq('est_active', true);
-
-    if (error || !data || data.length === 0) {
-        console.warn("Aucune publicité active trouvée.");
-        return;
-    }
-
-    activeAds = data;
-    
-    // Affichage immédiat de la première pub
-    showNextAd(); 
-    
-    // Rotation toutes le 15 secondes
-    setInterval(showNextAd, 15000);
-}
-
-function showNextAd() {
-    const zone = document.getElementById('ad-display-zone');
-    if (!zone) return;
-
-    // Si pas de pub dans Supabase, on laisse vide (le fond gris restera visible)
-    if (!activeAds || activeAds.length === 0) return;
-
-    const ad = activeAds[currentAdIndex];
-
-    // On crée l'élément média brut sans aucun texte autour
-    if (ad.type === 'video') {
-        zone.innerHTML = `
-            <video class="ad-raw-media" src="${ad.media_url}" 
-                   autoplay muted loop playsinline 
-                   onclick="window.open('${ad.lien_clic}', '_blank')">
-            </video>`;
-    } else {
-        zone.innerHTML = `
-            <img class="ad-raw-media" src="${ad.media_url}" 
-                 onclick="window.open('${ad.lien_clic}', '_blank')">`;
-    }
-
-    currentAdIndex = (currentAdIndex + 1) % activeAds.length;
-}
-async function trackAdClick(id, url) {
-    // 1. On ouvre le lien immédiatement pour ne pas bloquer l'utilisateur
-    if (url && url !== '#') {
-        window.open(url, '_blank');
-    }
-
-    // 2. On incrémente le compteur proprement via RPC (évite les erreurs de calcul)
-    try {
-        const { error } = await supabaseClient.rpc('increment_ad_clicks', { row_id: id });
-        if (error) throw error;
-    } catch (e) { 
-        console.error("Erreur tracking pub:", e.message); 
-    }
-}
-
-async function loadSportsResumes() {
-    const track = document.getElementById('sports-resume-track');
-    if (!track) return;
-    const { data } = await supabaseClient.from('articles').select('*').eq('author_name', 'MAKMUS_SPORT_RESUME').order('created_at', { ascending: false });
-    if (data && data.length > 0) {
-        track.innerHTML = data.map(match => `
-            <div class="match-card">
-                <img src="${match.image_url}" alt="match" style="width:100%; height:180px; object-fit:cover;">
-                <div style="padding:15px;">
-                    <small style="color:#a30000; font-weight:800; text-transform:uppercase;">${match.image_caption}</small>
-                    <h3 style="margin:10px 0; font-family:'Inter'; font-weight:900; color:#fff;">${match.titre}</h3>
-                    <a href="redaction.html?id=${match.id}" style="text-decoration:none; font-size:0.8rem; font-weight:700; color:#a30000;">VOIR LE RÉSUMÉ →</a>
-                </div>
-            </div>`).join('');
-    }
-}
-
-let slideIndex = 0;
-window.moveSlide = (direction) => {
-    const track = document.getElementById('sports-resume-track');
-    const cards = document.querySelectorAll('.match-card');
-    if(cards.length === 0) return;
-    const cardWidth = cards[0].offsetWidth + 20;
-    slideIndex = Math.max(0, Math.min(slideIndex + direction, cards.length - 1));
-    track.style.transform = `translateX(${-slideIndex * cardWidth}px)`;
-};
-
-async function loadAutoTrendingTags() {
-    const container = document.getElementById('tags-container');
-    if (!container) return;
-
-    try {
-        // 1. Récupération des tags des articles publiés
-        const { data, error } = await supabaseClient
-            .from('articles')
-            .select('tags')
-            .eq('is_published', true)
-            .not('tags', 'is', null)
-            .limit(30);
-
-        if (error) throw error;
-
-        // 2. Comptage des occurrences de chaque tag
-        const counts = data.reduce((acc, art) => {
-            // Sécurité : on vérifie que art.tags est bien une chaîne avant le split
-            const tagList = typeof art.tags === 'string' ? art.tags.split(',') : [];
-            tagList.forEach(tag => { 
-                const t = tag.trim(); 
-                if (t) acc[t] = (acc[t] || 0) + 1; 
-            });
-            return acc;
-        }, {});
-
-        // 3. Tri et sélection des 6 meilleurs tags
-        const topTags = Object.keys(counts)
-            .sort((a, b) => counts[b] - counts[a])
-            .slice(0, 6);
-
-        // 4. Rendu HTML avec l'appel à la NOUVELLE fonction fetchMakmusNews
-        container.innerHTML = topTags.map((tag, index) => {
-            // On utilise fetchMakmusNews pour filtrer par tag au clic
-            return `<span class="trending-link ${index === 0 ? 'is-live' : ''}" 
-                          onclick="fetchMakmusNews('${tag}')">
-                        ${tag.toUpperCase()}
-                    </span>`;
-        }).join('');
-
-    } catch (e) { 
-        console.warn("Erreur chargement tags:", e); 
-    }
-}
-/* ==========================================================================
-   FONCTION GLOBALE : DASHBOARD SPORTS
-   ========================================================================== */
-
-/* ==========================================================================
-   SECTION RÉSUMÉ SPORTIF (STATS & ARTICLES)
-   ========================================================================== */
-
-/**
- * PONT : Cette fonction permet au moteur global (fetchMakmusNews) 
- * d'afficher le classement sans erreur.
- */
-function renderSportsRanking(sportsData) {
-    console.log("📊 Moteur : Affichage du classement sportif");
-    if (typeof renderTable === 'function') {
-        // On affiche la Ligue 1 par défaut lors du premier chargement global
-        renderTable(sportsData, 'LIGUE1');
-    }
-}
-
-/**
- * FONCTION UNIQUE : Gère le basculement entre les sports (Boutons)
- */
-window.switchSport = async function(sportType, btn) {
-    console.log("🏆 Navigation vers :", sportType);
-
-    // 1. UI : Gestion de l'état actif des boutons
-    const allBtns = document.querySelectorAll('.tab-btn');
-    allBtns.forEach(b => b.classList.remove('active'));
-    
-    if (btn && btn.classList) {
-        btn.classList.add('active');
-    } else {
-        // Si chargé auto, on cherche le bouton correspondant
-        const target = document.querySelector(`.tab-btn[onclick*="'${sportType}'"]`);
-        if (target) target.classList.add('active');
-    }
-
-    // 2. Éléments cibles
-    const tableContainer = document.getElementById('sports-dynamic-content');
-    const articleContainer = document.getElementById('sports-featured-article');
-    if (!tableContainer || !articleContainer) return;
-
-    // Loader visuel
-    tableContainer.innerHTML = `<div style="text-align:center; padding:30px;"><div class="spinner"></div></div>`;
-    articleContainer.innerHTML = `<div class="skeleton-loader" style="height:300px; background:#f0f0f0; border-radius:8px;"></div>`;
-
-    try {
-        // 3. CHARGEMENT PARALLÈLE (Vitesse maximale)
-        const [statsRes, articleRes] = await Promise.all([
-            supabaseClient.from('sports_stats')
-                .select('*')
-                .eq('category', sportType)
-                .order('display_order', { ascending: true }),
-            
-            supabaseClient.from('articles')
-                .select('*')
-                .eq('category', sportType)
-                .eq('is_published', true)
-                .neq('author_name', 'MAKMUS_SPORT_RESUME')
-                .order('created_at', { ascending: false })
-                .limit(1)
-                .maybeSingle()
-        ]);
-
-        if (statsRes.error) throw statsRes.error;
-
-        // 4. RENDU DU TABLEAU
-        renderTable(statsRes.data, sportType);
-        
-        // 5. RENDU DE L'ARTICLE VEDETTE
-        if (articleRes.data) {
-            renderFeaturedArticle(articleRes.data);
-        } else {
-            articleContainer.innerHTML = `
-                <div class="no-article" style="text-align:center; padding:40px; border:1px dashed #ccc;">
-                    <p style="color:#999; font-style:italic;">Aucune actualité récente pour ce sport.</p>
-                </div>`;
-        }
-
-    } catch (error) {
-        console.error("❌ Erreur durant la navigation sport :", error);
-        tableContainer.innerHTML = "<p style='text-align:center;'>Erreur de chargement.</p>";
-    }
-};
-
-/**
- * RENDU DU TABLEAU (Gère les points ou les médailles)
- */
-function renderTable(data, type) {
-    const container = document.getElementById('sports-dynamic-content');
-    if (!container || !data) return;
-
-    let h = { c1: 'J', c2: 'V', c3: 'N', tot: 'PTS' };
-    if (type === 'JO') h = { c1: '🥇', c2: '🥈', c3: '🥉', tot: 'TOT.' };
-
-    let html = `
-        <table class="medal-table">
-            <thead>
-                <tr>
-                    <th style="text-align:left;">ÉQUIPE</th>
-                    <th>${h.c1}</th>
-                    <th>${h.c2}</th>
-                    <th>${h.c3}</th>
-                    <th>${h.tot}</th>
-                </tr>
-            </thead>
-            <tbody>` + 
-            data.map(item => `
-                <tr>
-                    <td class="team-cell">
-                        <img src="${item.logo_url || 'https://via.placeholder.com/20'}" class="flag-icon" onerror="this.src='https://via.placeholder.com/20'">
-                        <span class="team-name-text">${item.team_name}</span>
-                    </td>
-                    <td>${item.stat_j || 0}</td>
-                    <td>${item.stat_v || 0}</td>
-                    <td>${item.stat_n || 0}</td>
-                    <td class="bold">${item.stat_total || 0}</td>
-                </tr>`).join('') + 
-            `</tbody>
-        </table>`;
-
-    container.innerHTML = html;
-}
-
-/**
- * RENDU DE L'ARTICLE SPORTIF À LA UNE
- */
-function renderFeaturedArticle(art) {
-    const container = document.getElementById('sports-featured-article');
-    if (!container) return;
-
-    const cleanDesc = art.description ? art.description.replace(/<[^>]*>/g, '').substring(0, 160) : "";
-    
-    container.innerHTML = `
-        <div class="featured-card" onclick="window.location.href='redaction.html?id=${art.id}'" style="cursor:pointer;">
-            <div class="image-wrapper" style="position:relative;">
-                <img src="${art.image_url}" alt="${art.titre}" style="width:100%; height:350px; object-fit:cover; border-radius:4px;">
-                <div class="badge-new" style="position:absolute; top:10px; left:10px; background:red; color:white; padding:4px 8px; font-size:10px; font-weight:bold;">À LA UNE</div>
-            </div>
-            <div class="article-meta" style="padding:15px 0;">
-                <h2 style="margin:0 0 10px 0; font-family:'Playfair Display', serif;">${art.titre}</h2>
-                <p style="color:#555; font-size:14px; line-height:1.5;">${cleanDesc}...</p>
-                <span style="color:red; font-weight:bold; font-size:13px; text-transform:uppercase;">Lire le reportage →</span>
-            </div>
-        </div>`;
-}
-/* ==========================================================================
-   NAVIGATION DES ONGLETS (FLÈCHES)
-   ========================================================================== */
-window.scrollTabs = function(distance) {
-    const container = document.getElementById('tabs-scroll-container');
-    if (container) {
-        console.log("Défilement de :", distance); // Pour vérifier dans la console
-        container.scrollBy({
-            left: distance,
-            behavior: 'smooth'
-        });
-    } else {
-        console.error("Erreur : Le conteneur tabs-scroll-container est introuvable.");
-    }
-};
-
-/* --- Fonction optionnelle pour mettre à jour les points --- */
-window.updatePaginationDots = function() {
-    const container = document.getElementById('tabs-scroll-container');
-    const dots = document.querySelectorAll('.dot');
-    if (!container || dots.length === 0) return;
-
-    const scrollPercent = container.scrollLeft / (container.scrollWidth - container.clientWidth);
-    const activeIndex = Math.round(scrollPercent * (dots.length - 1));
-
-    dots.forEach((dot, idx) => {
-        dot.classList.toggle('active', idx === activeIndex);
-    });
-};
-/* ==========================================================================
-   INITIALISATION UNIQUE DU SYSTÈME MAKMUS NEWS
-   ========================================================================== */
-
-document.addEventListener('DOMContentLoaded', () => {
-    console.log("MAKMUS News : Démarrage du moteur...");
-    
-    // Ajoute ceci pour que la connexion fonctionne au démarrage
-    if (typeof window.checkUserStatus === 'function') {
-        window.checkUserStatus();
-    }
-
-    // 1. MISE À JOUR DE LA DATE (Design Journal)
-    const dateEl = document.getElementById('live-date');
-    if (dateEl) {
-        const options = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
-        // .replace('.', '') pour éviter "oct." au lieu de "octobre" sur certains navigateurs
-        dateEl.textContent = new Date().toLocaleDateString('fr-FR', options).toUpperCase();
-    }
-
-    // 2. CHARGEMENT DU CONTENU ÉDITORIAL (Priorité haute)
-    if (typeof fetchMakmusNews === 'function') {
-        fetchMakmusNews(); 
-    }
-
-    // 3. INITIALISATION DU DASHBOARD SPORTIF
-    if (typeof window.switchSport === 'function') {
-        // On charge 'JO' par défaut au démarrage
-        window.switchSport('JO', null); 
-    }
-
-    // 4. GESTION DU SCROLL & DOTS (Onglets Sports)
-const container = document.getElementById('tabs-scroll-container');
-    if (container && typeof window.updatePaginationDots === 'function') {
-        container.addEventListener('scroll', () => {
-            window.requestAnimationFrame(window.updatePaginationDots);
-        }, { passive: true });
-        
-        window.updatePaginationDots(); // Appel initial corrigé ici
-    }
-        
-      if (typeof fetchMarketData === 'function') {
-        fetchMarketData().then(success => {
-            if (success && typeof updateTickerUI === 'function') {
-                updateTickerUI(); 
-                setInterval(updateTickerUI, 10000); 
-            }
-        });
-        
-        setInterval(fetchMarketData, 3600000); 
-    }
-
-       // 6. SERVICES SECONDAIRES
-    if (typeof fetchVideosVerticaux === 'function') fetchVideosVerticaux();
-    
-    // Modification ici pour la publicité
-    if (typeof initAdSlider === 'function') {
-        initAdSlider(); // Lance le premier chargement depuis Supabase
-        
-        // Optionnel : Si tu veux que la pub change toutes les 15 secondes
-        // sans recharger toute la page
-        setInterval(() => {
-            if (typeof showNextAd === 'function') showNextAd();
-        }, 15000); 
-    }
-
-    if (typeof loadAutoTrendingTags === 'function') loadAutoTrendingTags();
-    if (typeof loadSportsResumes === 'function') loadSportsResumes(); // Ajoute ceci si tu veux tes résumés de matchs
-    
-        // 7. SYSTÈME DE RECHERCHE GLOBAL & NAVIGATION
-    // On l'attache à window pour être sûr qu'il soit accessible partout
-    window.fetchAllContent = (query) => {
-        if (typeof fetchMakmusNews === 'function') {
-            fetchMakmusNews(query);
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-    };
-
-    console.log("MAKMUS News : Système initialisé avec succès.");
-});
