@@ -13,6 +13,61 @@ window.progressInterval = window.progressInterval || null;
 window.keepAliveInterval = window.keepAliveInterval || null;
 window.speechSynth = window.speechSynthesis;
 
+
+function toggleMenu(show) {
+    const menu = document.getElementById('fullMenu');
+    if (!menu) return;
+
+    // Si 'show' n'est pas passé, on inverse l'état (toggle)
+    const isOpen = (typeof show === 'boolean') ? show : !menu.classList.contains('active');
+
+    if (isOpen) {
+        menu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    } else {
+        menu.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+/* ---------------------------------------------------------
+   1. DÉFINITION DES FONCTIONS D'INTERFACE
+--------------------------------------------------------- */
+
+// Fonction pour le Menu
+function toggleMenu(show) {
+    const menu = document.getElementById('fullMenu');
+    if (!menu) return;
+    const isOpen = (typeof show === 'boolean') ? show : !menu.classList.contains('active');
+    
+    if (isOpen) {
+        menu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    } else {
+        menu.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Fonction pour les Modales (Commentaires, Partage)
+function toggleModal(id, show) {
+    const m = document.getElementById(id);
+    if (m) {
+        m.style.display = show ? 'flex' : 'none';
+        document.body.style.overflow = show ? 'hidden' : 'auto';
+    }
+}
+
+/* ---------------------------------------------------------
+   2. EXPOSITION GLOBALE (Pour les onclick du HTML)
+--------------------------------------------------------- */
+window.toggleMenu = toggleMenu;
+window.toggleModal = toggleModal;
+
+// On expose aussi les raccourcis
+window.openComments = () => toggleModal('commentModal', true);
+window.closeComments = () => toggleModal('commentModal', false);
+window.openShare = () => toggleModal('shareModal', true);
+window.closeShare = () => toggleModal('shareModal', false);
 // --- EXPOSITION GLOBALE (Obligatoire pour les onclick du HTML) ---
 window.toggleSpeech = toggleSpeech;
 window.toggleLike = toggleLike;
@@ -50,7 +105,6 @@ document.addEventListener('DOMContentLoaded', () => {
    2. CHARGEMENT DE L'ARTICLE
 --------------------------------------------------------- */
 async function loadArticle() {
-    // On s'assure de récupérer l'ID depuis l'URL si articleId n'est pas défini
     const urlParams = new URLSearchParams(window.location.search);
     const currentArticleId = typeof articleId !== 'undefined' ? articleId : urlParams.get('id');
 
@@ -61,125 +115,109 @@ async function loadArticle() {
         .single();
 
     if (error || !art) {
-        document.getElementById('full-article').innerHTML = "<p style='text-align:center; padding:100px;'>Erreur de chargement.</p>";
+        document.getElementById('full-article').innerHTML = "<p class='error-msg'>Erreur de chargement de l'édition.</p>";
         return;
     }
 
     document.title = `${art.titre} | MakMus`;
 
-    // --- LOGIQUE D'INJECTION DYNAMIQUE ---
+    // --- LOGIQUE DE CONTENU ---
     const paragraphs = art.description.split('</p>');
     let finalContent = "";
     const totalPara = paragraphs.length;
 
     paragraphs.forEach((p, index) => {
         if (p.trim() === "") return;
+        
+        // Ajout du paragraphe actuel
         finalContent += p + '</p>';
 
-        // 1. Première PUB après le 2ème paragraphe
+        // 1. Insertion Pub après le 2ème paragraphe
         if (index === 1 && totalPara > 3) {
             finalContent += `
                 <div class="in-article-ad">
                     <span class="ad-label">PUBLICITÉ</span>
                     <div class="ad-box">
-                        <h4 style="margin:0; color:#c00;">MakMus Direct</h4>
-                        <p style="margin:5px 0; font-size:0.9rem;">Ne manquez aucune alerte. Rejoignez notre canal WhatsApp.</p>
-                        <button style="background:#25D366; color:#fff; border:none; padding:8px 15px; border-radius:5px; cursor:pointer; font-weight:bold;">REJOINDRE</button>
+                        <h4>MakMus Direct</h4>
+                        <p>Rejoignez notre canal WhatsApp pour les alertes en direct.</p>
+                        <button class="btn-whatsapp">REJOINDRE</button>
                     </div>
                 </div>`;
         }
 
-        // 2. IMAGE SECONDAIRE
+        // 2. IMAGE SECONDAIRE (Après le 4ème paragraphe - index 3)
+        // Elle est injectée DANS le flux pour respecter les 680px
         if (index === 3 && art.image_url_2) {
             finalContent += `
-                <div style="margin:30px 0;">
-                    <img src="${art.image_url_2}" style="width:100%; border-radius:2px; display:block;">
-                    ${art.image_caption_2 ? `<p style="font-size:0.75rem; color:#777; font-style:italic; margin-top:5px; text-align:right;">${art.image_caption_2}</p>` : ''}
-                </div>`;
+                <figure class="article-media-wrapper">
+                    <img src="${art.image_url_2}" loading="lazy">
+                    ${art.image_caption_2 ? `<figcaption class="media-caption">${art.image_caption_2}</figcaption>` : ''}
+                </figure>`;
         }
 
-        // 3. Bloc "À LIRE AUSSI" en GRILLE (au milieu)
+        // 3. VIDÉO (Juste après l'image secondaire ou un peu plus bas)
+        // On vérifie qu'elle n'est injectée qu'une seule fois
+        if (index === 5 && art.video_url) {
+            finalContent += `
+                <figure class="article-media-wrapper">
+                    <video controls playsinline preload="metadata">
+                        <source src="${art.video_url}" type="video/mp4">
+                    </video>
+                    <figcaption class="media-caption">Vidéo : Document exclusif MakMus</figcaption>
+                </figure>`;
+        }
+
+        // 4. Bloc "À LIRE AUSSI" (Au milieu de l'article)
         if (index === Math.floor(totalPara / 2) && totalPara > 5) {
             finalContent += `
                 <div class="inline-recommendations">
                     <h4 class="grid-title">À LIRE AUSSI</h4>
                     <div class="mini-grid" id="inline-grid-container">
-                        <div class="mini-card" id="card-1">
-                            <img src="" class="mini-card-img" id="inline-img-1" style="display:none;">
-                            <p id="inline-title-1">Chargement...</p>
-                        </div>
-                        <div class="mini-card" id="card-2">
-                            <img src="" class="mini-card-img" id="inline-img-2" style="display:none;">
-                            <p id="inline-title-2">Chargement...</p>
-                        </div>
+                        <div class="mini-card" id="card-1"><p id="inline-title-1">Chargement...</p></div>
+                        <div class="mini-card" id="card-2"><p id="inline-title-2">Chargement...</p></div>
                     </div>
                 </div>`;
             setTimeout(() => fillInlineGrid(art.category, currentArticleId), 200);
         }
-
-        // 4. Deuxième PUB vers la fin
-        if (index === totalPara - 3 && totalPara > 8) {
-            finalContent += `
-                <div class="in-article-ad" style="background: #121212; color: white; border: none;">
-                    <span class="ad-label" style="color: #666;">PROMOTION</span>
-                    <div class="ad-box">
-                        <h4 style="margin:0; color:#fff;">Soutenez MakMus</h4>
-                        <p style="margin:5px 0; font-size:0.9rem; color:#ccc;">Le journalisme de qualité a un coût. Aidez-nous à continuer.</p>
-                        <button onclick="openShare()" style="background:#fff; color:#000; border:none; padding:8px 15px; cursor:pointer; font-weight:bold; margin-top:10px;">PARTAGER</button>
-                    </div>
-                </div>`;
-        }
     });
 
-    // --- RENDU FINAL ---
+    // --- RENDU STRUCTUREL ---
     document.getElementById('full-article').innerHTML = `
-        <header class="article-header" style="max-width:850px; margin: 0 auto; padding: 20px 10px;">
-            <div style="color:#c00; font-weight:bold; font-size:0.75rem; text-transform:uppercase; margin-bottom:10px; letter-spacing:1px;">
-                ${art.category || 'Actualité'}
-            </div>
+        <header class="article-header">
+            <div class="article-category-label">${art.category || 'Actualité'}</div>
             <h1 class="article-main-title">${art.titre}</h1>
             
-            <div class="article-actions-bar no-print" style="display:flex; align-items:center; flex-wrap:wrap; gap:20px; padding:15px 0; margin:20px 0; border-top:1px solid #eee; border-bottom:1px solid #eee;">
-                <button class="action-btn" onclick="toggleLike()" id="like-btn" style="display:flex; align-items:center; gap:8px; background:none; border:none; cursor:pointer; color:#555; padding:0;">
-                    <div style="width:36px; height:36px; border:1px solid #ccc; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
-                    </div>
-                    <span id="nb-like" style="font-weight:bold;">0</span>
+            <div class="article-actions-bar no-print">
+                <button class="action-btn" onclick="toggleLike()" id="like-btn">
+                    <div class="icon-circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.78-8.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg></div>
+                    <span id="nb-like" class="count-label">0</span>
                 </button>
-                <button class="action-btn" onclick="openShare()" style="background:none; border:none; cursor:pointer; color:#555; padding:0;">
-                    <div style="width:36px; height:36px; border:1px solid #ccc; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
-                    </div>
+                <button class="action-btn" onclick="openShare()">
+                    <div class="icon-circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg></div>
                 </button>
-                <button class="action-btn" onclick="openComments()" style="display:flex; align-items:center; gap:8px; background:none; border:none; cursor:pointer; color:#555; padding:0;">
-                    <div style="width:36px; height:36px; border:1px solid #ccc; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
-                    </div>
-                    <span id="nb-comm" style="font-weight:bold;">0</span>
+                <button class="action-btn" onclick="openComments()">
+                    <div class="icon-circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg></div>
+                    <span id="nb-comm" class="count-label">0</span>
                 </button>
-                <button class="action-btn" onclick="toggleSpeech()" id="speech-btn" style="display:flex; align-items:center; gap:8px; background:none; border:none; cursor:pointer; color:#555; padding:0; margin-left:auto;">
-                    <div class="icon-circle" style="width:36px; height:36px; border:1px solid #ccc; border-radius:50%; display:flex; align-items:center; justify-content:center;">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                            <path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-                        </svg>
-                    </div>
-                    <span id="speech-text" style="text-transform:uppercase; font-size:0.7rem; letter-spacing:1px; font-weight:bold;">Écouter</span>
+                <button class="action-btn speech-trigger" onclick="toggleSpeech()" id="speech-btn">
+                    <div class="icon-circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M11 5L6 9H2v6h4l5 4V5zM19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
+                    <span id="speech-text">ÉCOUTER</span>
                 </button>
             </div>
 
-            <div style="margin-bottom:30px; display:flex; align-items:center; gap:12px;">
-                <img src="${art.author_image || 'https://via.placeholder.com/40'}" style="width:42px; height:42px; border-radius:50%; object-fit:cover;">
-                <div>
-                    <div style="font-weight:bold;">Par ${art.author_name || 'La Rédaction'}</div>
-                    <div style="font-size:0.8rem; color:#666;">Publié le ${new Date(art.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})}</div>
+            <div class="article-byline">
+                <img src="${art.author_image || 'https://via.placeholder.com/40'}" class="author-avatar">
+                <div class="author-info">
+                    <div class="author-name">Par ${art.author_name || 'La Rédaction'}</div>
+                    <div class="publish-date">Le ${new Date(art.created_at).toLocaleDateString('fr-FR', {day:'numeric', month:'long', year:'numeric'})}</div>
                 </div>
             </div>
         </header>
 
-        <div style="max-width:1000px; margin: 0 auto; padding: 0 10px;">
-            <img src="${art.image_url}" style="width:100%; border-radius:2px;">
-            <p style="text-align:right; font-size:0.75rem; color:#777; margin-top:10px; font-style:italic;">${art.image_caption || ''}</p>
-        </div>
+        <figure class="main-figure">
+            <img src="${art.image_url}" class="main-img">
+            <figcaption class="img-caption-style">${art.image_caption || ''}</figcaption>
+        </figure>
 
         <div class="article-content" id="article-text-content">
             ${finalContent}
@@ -190,7 +228,6 @@ async function loadArticle() {
     fetchComments();
     fetchRelatedArticles(art.tags, art.category);
 }
-
 async function fillInlineGrid(category, currentId) {
     const { data: related } = await supabaseClient
         .from('articles')
@@ -466,25 +503,6 @@ async function postComment() {
 /* ---------------------------------------------------------
    5. NAVIGATION, MODALS & PARTAGE
 --------------------------------------------------------- */
-function toggleMenu(show) {
-    const menu = document.getElementById('fullMenu');
-    if (menu) {
-        if (show) {
-            menu.classList.add('is-active');
-            document.body.style.overflow = 'hidden';
-        } else {
-            menu.classList.remove('is-active');
-            document.body.style.overflow = 'auto';
-        }
-    }
-}
-window.toggleMenu = toggleMenu;
-
-function toggleModal(id, show) {
-    const m = document.getElementById(id);
-    if(m) m.style.display = show ? 'flex' : 'none';
-}
-
 function openComments() { toggleModal('commentModal', true); }
 function closeComments() { toggleModal('commentModal', false); }
 function openShare() { toggleModal('shareModal', true); }
@@ -510,20 +528,41 @@ function updateLiveDate() {
     if (el) el.innerText = new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
 }
 
-async function fetchRelatedArticles(tags, category) {
-    const box = document.getElementById('recommendations-box');
+/* ---------------------------------------------------------
+   CHARGEMENT DES ARTICLES SIMILAIRES
+--------------------------------------------------------- */
+async function fetchRelatedArticles(currentTags, category) {
     const grid = document.getElementById('recommendations-grid');
-    if(!grid) return;
-    const { data } = await supabaseClient.from('articles').select('id, titre, image_url, category').neq('id', articleId).limit(3);
-    if(data && data.length > 0) {
-        box.style.display = 'block';
-        grid.innerHTML = data.map(r => `
-            <a href="redaction.html?id=${r.id}" style="text-decoration:none; color:inherit;">
-                <img src="${r.image_url}" style="width:100%; height:160px; object-fit:cover; border-radius:2px;">
-                <div style="color:#c00; font-size:0.7rem; font-weight:bold; margin-top:10px;">${r.category}</div>
-                <div style="font-family:serif; font-weight:bold; font-size:1rem; margin-top:5px;">${r.titre}</div>
-            </a>`).join('');
+    const box = document.getElementById('recommendations-box');
+    
+    if (!grid) return;
+
+    // On récupère 6 articles pour remplir la grille (2 lignes de 3)
+    const { data: related, error } = await supabaseClient
+        .from('articles')
+        .select('id, titre, image_url, category')
+        .eq('category', category)
+        .neq('id', typeof articleId !== 'undefined' ? articleId : null) 
+        .limit(6);
+
+    if (error || !related || related.length === 0) {
+        if (box) box.style.display = 'none';
+        return;
     }
+
+    if (box) box.style.display = 'block';
+
+    // Injection avec la structure exacte de la capture
+    grid.innerHTML = related.map(art => `
+        <a href="redaction.html?id=${art.id}" class="rec-card">
+            <div class="rec-image-container">
+                <img src="${art.image_url}" alt="${art.titre.replace(/"/g, '&quot;')}" loading="lazy">
+                <div class="ad-badge">Recommandé</div>
+            </div>
+            <div class="rec-source">${art.category || 'MakMus'}</div>
+            <h4 class="rec-title">${art.titre}</h4>
+        </a>
+    `).join('');
 }
 function filterByTag(tagName) {
     // Si tu es sur la page d'accueil avec fetchHybridNews :
@@ -543,3 +582,229 @@ function filterByTag(tagName) {
         window.location.href = `index.html?tag=${encodeURIComponent(tagName)}`;
     }
 }
+/* ==========================================================================
+   2. INTERFACE : MENU & MODALES
+   ========================================================================== */
+/* ---------------------------------------------------------
+   GESTION UNIQUE DU MENU
+--------------------------------------------------------- */
+window.toggleMenu = (show) => {
+    const menu = document.getElementById('fullMenu');
+    if (!menu) {
+        console.error("Erreur : L'élément #fullMenu est introuvable dans le HTML");
+        return;
+    }
+
+    // Si 'show' n'est pas fourni (clic simple), on inverse l'état actuel
+    const shouldOpen = (typeof show === 'boolean') ? show : !menu.classList.contains('active');
+
+    if (shouldOpen) {
+        menu.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    } else {
+        menu.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+};
+
+/* ==========================================================================
+   1. GESTION DU PANNEAU LATÉRAL (SIDE ACCOUNT)
+   ========================================================================== */
+
+// Ouvrir ou fermer le panneau
+window.toggleSidePanel = (isOpen) => {
+    const panel = document.getElementById('sideAccount');
+    if (!panel) return;
+    
+    panel.classList.toggle('active', isOpen);
+    document.body.style.overflow = isOpen ? 'hidden' : 'auto';
+};
+
+// Fermeture automatique au clic sur l'overlay (le fond sombre)
+window.addEventListener('click', (event) => {
+    if (event.target.classList.contains('side-panel-overlay')) {
+        window.toggleSidePanel(false);
+    }
+    // Gestion des anciens modals si présents
+    if (event.target.classList.contains('modal-overlay')) {
+        event.target.style.display = 'none';
+        document.body.style.overflow = 'auto';
+    }
+});
+
+/* ==========================================================================
+   2. NAVIGATION VERS "MON ACTIVITÉ"
+   ========================================================================== */
+
+/* ==========================================================================
+   3. AUTHENTIFICATION (CONNEXION / INSCRIPTION / STATUS)
+   ========================================================================== */
+
+window.navigateToAccountOption = function(option) {
+    console.log("🚀 Navigation vers la section :", option);
+    if (typeof window.toggleSidePanel === 'function') window.toggleSidePanel(false);
+    window.location.href = `mon-activite.html?section=${option}`;
+};
+
+// Mettre à jour l'affichage selon si l'utilisateur est connecté ou non
+window.checkUserStatus = async function() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        const loggedOutView = document.getElementById('logged-out-view');
+        const loggedInView = document.getElementById('logged-in-view');
+        const emailDisplay = document.getElementById('user-email-display');
+        const btnText = document.querySelector('.account-text');
+        const avatar = document.querySelector('.user-avatar');
+
+        if (user) {
+            // Mode Connecté
+            if (loggedOutView) loggedOutView.style.display = 'none';
+            if (loggedInView) loggedInView.style.display = 'block';
+            if (emailDisplay) emailDisplay.textContent = user.email;
+            if (btnText) btnText.textContent = "MON ESPACE";
+            if (avatar) avatar.textContent = user.email.charAt(0).toUpperCase();
+            
+            // Charger l'aperçu sans bloquer le reste du script
+            window.loadUserActivity().catch(err => console.warn("Activité différée:", err));
+        } else {
+            // Mode Déconnecté
+            if (loggedOutView) loggedOutView.style.display = 'block';
+            if (loggedInView) loggedInView.style.display = 'none';
+            if (btnText) btnText.textContent = "MON COMPTE";
+        }
+    } catch (error) {
+        console.error("Erreur checkUserStatus:", error);
+    }
+};
+
+// Gérer l'inscription et la connexion
+window.handleAuth = async function(type) {
+    const email = document.getElementById('auth-email')?.value;
+    const password = document.getElementById('auth-password')?.value;
+
+    if (!email || !password) return alert("Veuillez remplir tous les champs.");
+
+    try {
+        let result;
+        if (type === 'signup') {
+            result = await supabaseClient.auth.signUp({ email, password });
+            if (!result.error) alert("Inscription réussie ! Vérifiez vos emails.");
+        } else {
+            result = await supabaseClient.auth.signInWithPassword({ email, password });
+        }
+
+        if (result.error) throw result.error;
+
+        if (result.data.session) {
+            await window.checkUserStatus();
+            if (typeof window.toggleSidePanel === 'function') window.toggleSidePanel(false); 
+        }
+    } catch (error) {
+        alert("Erreur : " + error.message);
+    }
+};
+
+// Déconnexion
+window.handleLogout = async function() {
+    if (!confirm("Voulez-vous vraiment vous déconnecter ?")) return;
+    try {
+        const { error } = await supabaseClient.auth.signOut();
+        if (error) throw error;
+        window.location.href = "index.html"; 
+    } catch (error) {
+        alert("Erreur lors de la déconnexion : " + error.message);
+    }
+};
+
+/* ==========================================================================
+   4. ACTIONS UTILISATEUR (FAVORIS & COMMENTAIRES)
+   ========================================================================== */
+
+// Sauvegarder un article
+window.toggleFavorite = async function(articleId, title) {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        
+        if (!user) {
+            alert("Connectez-vous pour sauvegarder cet article !");
+            if (typeof window.toggleSidePanel === 'function') window.toggleSidePanel(true);
+            return;
+        }
+
+        const { error } = await supabaseClient
+            .from('favorites')
+            .insert([{ user_id: user.id, article_id: articleId, article_title: title }]);
+
+        if (error) {
+            if (error.code === '23505') alert("Déjà dans vos favoris !");
+            else throw error;
+        } else {
+            alert("Article sauvegardé !");
+            window.loadUserActivity();
+        }
+    } catch (error) {
+        console.error("Erreur toggleFavorite:", error);
+        alert("Erreur lors de la sauvegarde.");
+    }
+};
+
+// Poster un commentaire
+window.postComment = async function(articleId, text) {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return alert("Connectez-vous pour commenter.");
+
+        const { error } = await supabaseClient
+            .from('comments')
+            .insert([{ 
+                user_id: user.id, 
+                user_email: user.email, 
+                article_id: articleId, 
+                content: text 
+            }]);
+
+        if (error) throw error;
+        alert("Commentaire publié !");
+        location.reload(); 
+    } catch (error) {
+        alert("Erreur lors de la publication : " + error.message);
+    }
+};
+
+// Charger un aperçu (5 derniers) dans le sidepanel
+window.loadUserActivity = async function() {
+    try {
+        const { data: { user } } = await supabaseClient.auth.getUser();
+        if (!user) return;
+
+        const { data: favs, error } = await supabaseClient
+            .from('favorites')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(5);
+
+        if (error) throw error;
+
+        const favContainer = document.getElementById('user-favorites-list');
+        if (favContainer && favs) {
+            if (favs.length === 0) {
+                favContainer.innerHTML = '<p style="font-size:12px;color:gray;padding:10px;">Aucun favori.</p>';
+                return;
+            }
+            favContainer.innerHTML = favs.map(f => `
+                <div class="mini-fav-item">
+                    <a href="redaction.html?id=${f.article_id}">${f.article_title}</a>
+                </div>
+            `).join('');
+        }
+    } catch (error) {
+        console.warn("Table favorites inaccessible ou vide.");
+    }
+};
+
+// Lancer la vérification au démarrage
+document.addEventListener('DOMContentLoaded', window.checkUserStatus);
+
+
