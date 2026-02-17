@@ -1,54 +1,202 @@
-/* Layout Desktop */
+/* --- Conteneur Principal --- */
 .newspaper-body {
-    max-width: 850px;
+    max-width: 100%;
     margin: 0 auto;
     padding: 20px;
     background: #fff;
 }
 
-/* Typographie Article */
-.article-header h1 {
+.status-line {
+    font-family: Arial, sans-serif;
+    font-size: 11px;
+    color: #121212;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 40px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+}
+
+/* --- Header de l'Article (Titre & Meta) --- */
+.article-main-title {
     font-family: 'Libre Baskerville', serif;
-    font-size: 3.2rem;
+    font-size: 3rem;
     line-height: 1.1;
-    margin-top: 10px;
     font-weight: 700;
+    color: #121212;
+    max-width: 800px;
+    margin: 0 auto 25px auto;
+    text-align: left; /* Alignement gauche pur */
+}
+
+.article-meta {
+    max-width: 800px;
+    margin: 0 auto 30px auto;
+    font-family: Arial, sans-serif;
+    font-size: 0.9rem;
+    border-top: 1px solid #eee;
+    padding-top: 15px;
+    color: #333;
+}
+
+/* --- Médias (Images et Légendes) --- */
+.main-figure {
+    max-width: 1000px;
+    margin: 40px auto;
+}
+
+.main-figure img {
+    width: 100%;
+    height: auto;
+    display: block;
 }
 
 .img-caption-style {
+    font-family: Arial, sans-serif;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    color: #727272;
+    margin-top: 10px;
+    text-align: left; /* Alignement gauche pur */
+    max-width: 1000px;
+}
+
+.img-credit {
+    font-size: 0.7rem;
+    color: #999;
+    text-transform: uppercase;
+    margin-left: 5px;
+}
+
+/* --- Corps de l'Article (Lisibilité Maximale) --- */
+/* Le conteneur principal du texte */
+#article-text-content {
+    max-width: 680px;
+    margin: 0 auto;
+    text-align: left; /* Alignement gauche pur */
+    font-family: Arial, sans-serif; /* Plus lisible en petite taille */
+    font-size: 16px; /* Taille demandée */
+    color: #363636; /* Gris moyen, pas trop clair pour rester lisible */
+    line-height: 1.15; /* Interligne demandé */
+}
+
+/* Supprimer les marges et décalages par défaut des paragraphes */
+#article-text-content p {
+    margin-bottom: 15px;
+    padding: 0;
+}
+
+/* Gérer les listes (Bullets, Numbering, Multilevel) pour qu'elles restent sur la même ligne */
+#article-text-content ul, 
+#article-text-content ol {
+    list-style-position: inside; /* Force la puce/numéro à être à l'intérieur du texte, pas dans la marge */
+    padding-left: 0;
+    margin-left: 0;
+    margin-bottom: 15px;
+}
+
+#article-text-content li {
+    margin-bottom: 5px;
+    padding-left: 0;
+}
+
+/* Citations entre guillemets (« ») sans retrait */
+#article-text-content blockquote {
+    margin: 20px 0;
+    padding: 0;
+    font-style: italic;
+    border: none; /* On enlève la barre latérale qui casse la hiérarchie */
+}
+
+/* Gestion du gras pour garder de la lisibilité malgré la petite taille */
+#article-text-content strong {
+    color: #333; /* Un gris plus foncé pour le gras */
+    font-weight: 700;
+}
+/* --- Recommandations (Style épuré) --- */
+./* Grille principale */
+.recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px 15px; /* Espace vertical et horizontal */
+    margin-top: 20px;
+}
+
+/* Carte individuelle */
+.rec-card {
+    text-decoration: none;
     display: block;
+}
+
+/* Conteneur Image + Badge */
+.rec-image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10; /* Ratio rectangulaire capture */
+    background: #f0f0f0;
+    margin-bottom: 8px;
+}
+
+.rec-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+/* Badge PUBLICITÉ identique à la capture */
+.ad-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.9);
+    color: #888;
+    font-size: 9px;
+    padding: 2px 6px;
+    font-family: Arial, sans-serif;
+    letter-spacing: 0.5px;
+}
+
+/* Nom du média/catégorie en gris */
+.rec-source {
     font-family: Arial, sans-serif;
     font-size: 11px;
-    color: #727272;
-    text-align: right;
-    margin-top: 6px;
+    color: #999;
+    margin-bottom: 4px;
+    text-transform: capitalize;
 }
 
-/* Recommandations en bas */
-.related-section {
-    max-width: 850px;
-    margin: 60px auto;
-    padding: 40px 20px;
-    border-top: 4px solid #121212;
+/* Titre noir, gras, aligné à gauche */
+.rec-title {
+    font-family: Arial, sans-serif; /* Style plus "pub" que le corps de l'article */
+    font-size: 13px;
+    line-height: 1.3;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin: 0;
+    text-align: left;
 }
 
-.related-title {
-    font-family: Arial, sans-serif;
-    font-weight: 900;
-    font-size: 1.2rem;
-    text-transform: uppercase;
-    margin-bottom: 25px;
+/* Responsive tablette/mobile */
+@media (max-width: 900px) {
+    .recommendation-grid { grid-template-columns: repeat(2, 1fr); }
 }
-
-.related-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr); /* 3 colonnes sur desktop */
-    gap: 30px;
+@media (max-width: 600px) {
+    .recommendation-grid { grid-template-columns: 1fr; }
 }
+/* --- Ajustements Mobiles --- */
+@media (max-width: 768px) {
+    .article-main-title {
+        font-size: 2.2rem;
+        padding: 0 10px;
+    }
 
-.related-card { text-decoration: none; color: inherit; }
-.related-card img { width: 100%; height: 160px; object-fit: cover; margin-bottom: 12px; border: 1px solid #eee; }
-.related-card h4 { font-family: 'Libre Baskerville'; font-size: 1rem; line-height: 1.3; }
+    .article-content {
+        font-size: 1.15rem;
+        padding: 0 15px;
+    }
+}
 
 /* Styles Partage & Modals (issus de ton script) */
 .share-grid-modern { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
@@ -459,3 +607,732 @@
     50% { opacity: 0; }
     100% { opacity: 1; }
 }
+/* --- Bouton Compte --- */
+#openModal {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+}
+
+/* --- Ajustements Responsive --- */
+
+/* Écrans Larges (PC) : On affiche le Ticker */
+@media (min-width: 1024px) {
+    .market-ticker-container {
+        display: block; 
+    }
+}
+
+/* Mobiles (Smartphones) */
+@media (max-width: 768px) {
+    #live-date {
+        font-size: 0.7rem; 
+        letter-spacing: 0.5px;
+    }
+    
+    .account-text {
+        display: none; /* Cache le texte "MON COMPTE" pour ne garder que l'icône sur mobile */
+    }
+
+    #openModal {
+        padding: 5px;
+    }
+}
+/* --- Style général du bouton --- */
+#openModal {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    color: #333;
+    padding: 5px;
+    transition: opacity 0.2s;
+}
+
+/* Style de l'icône utilisateur */
+#openModal img {
+    width: 22px;
+    height: 22px;
+    display: block;
+}
+
+/* --- Transformation Mobile (max-width: 768px) --- */
+@media (max-width: 768px) {
+    /* On cache uniquement le texte */
+    .account-text {
+        display: none; 
+    }
+
+    /* On s'assure que le bouton reste bien à droite */
+    #openModal {
+        padding: 0;
+    }
+}
+
+/* --- Style PC --- */
+@media (min-width: 769px) {
+    /* Sur PC, on peut ajouter une petite bordure ou un style plus bouton si tu veux */
+    #openModal {
+        border: 1px solid #eee;
+        padding: 5px 12px;
+        border-radius: 2px;
+    }
+    #openModal:hover {
+        background: #f9f9f9;
+    }
+}
+.modal-overlay {
+    z-index: 9999; /* Doit être le plus haut possible */
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8);
+    display: none; /* Changé par le JS */
+    align-items: center;
+    justify-content: center;
+}
+.close-modal {
+    cursor: pointer;          /* Force la main (curseur de clic) */
+    user-select: none;        /* Empêche de surligner le X comme du texte */
+    -webkit-user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+}
+
+.close-modal:hover {
+    transform: scale(1.1);    /* Petit effet visuel au survol */
+}
+/* --- Base du Panneau Latéral --- */
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: -100%; /* Caché à droite */
+    width: 100%;
+    max-width: 400px; /* Largeur sur PC */
+    height: 100vh;
+    background: #fff;
+    z-index: 9999;
+    transition: right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: -5px 0 15px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.side-panel.active {
+    right: 0; /* Affiche le menu */
+}
+
+/* --- Overlay sombre derrière --- */
+.side-panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0,0,0,0.5);
+    z-index: 9998;
+    display: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.side-panel.active + .side-panel-overlay {
+    display: block;
+    opacity: 1;
+}
+
+/* --- Design Interne (Style NYT) --- */
+.side-panel-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-small { font-family: 'Playfair Display'; font-weight: 900; letter-spacing: -1px; }
+.close-panel { font-size: 30px; cursor: pointer; color: #666; }
+
+.side-panel-body { padding: 30px 20px; overflow-y: auto; }
+
+.premium-title { font-family: 'Playfair Display'; font-size: 2.5rem; margin-bottom: 5px; }
+.premium-subtitle { font-size: 0.9rem; color: #666; margin-bottom: 30px; line-height: 1.4; }
+.user-profile-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding-bottom: 25px;
+    border-bottom: 2px solid #121212;
+    margin-bottom: 20px;
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    background: #121212;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    font-weight: bold;
+    font-size: 20px;
+}
+
+.user-meta { display: flex; flex-direction: column; }
+.user-email { font-weight: 700; font-size: 14px; color: #121212; }
+.user-status { font-size: 12px; color: #a30000; font-weight: 600; text-transform: uppercase; }
+
+.nav-item img { margin-right: 10px; opacity: 0.7; }
+
+.btn-logout-link {
+    background: none;
+    border: none;
+    color: #666;
+    text-decoration: underline;
+    font-size: 13px;
+    margin-top: 40px;
+    cursor: pointer;
+    padding: 0;
+}
+.btn-logout-link:hover { color: #000; }
+.article-actions {
+    display: flex;
+    gap: 20px;
+    padding: 15px 0;
+    border-top: 1px solid #eee;
+    margin-top: 20px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-weight: 600;
+    color: #444;
+    transition: 0.2s;
+}
+
+.action-btn:hover { color: #a30000; }
+.action-btn img { width: 20px; }
+
+/* --- Inputs & Boutons --- */
+.premium-input {
+    width: 100%;
+    padding: 12px 0;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    margin-bottom: 20px;
+    font-size: 1rem;
+    outline: none;
+}
+
+.btn-black-full {
+    width: 100%;
+    background: #000;
+    color: #fff;
+    border: none;
+    padding: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.nav-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px 0;
+    border-bottom: 1px solid #f5f5f5;
+    text-decoration: none;
+    color: #121212;
+    font-size: 0.95rem;
+}
+
+.nav-group-label {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #999;
+    margin-top: 25px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+}
+.btn-outline-full {
+    width: 100%;
+    background: transparent;
+    color: #121212;
+    border: 1px solid #121212;
+    padding: 14px 20px;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    margin-top: 10px;
+    border-radius: 2px; /* Coins très légèrement arrondis pour le style moderne */
+}
+
+/* Effet au passage de la souris */
+.btn-outline-full:hover {
+    background-color: #f9f9f9;
+    border-color: #000;
+    transform: translateY(-1px); /* Petit effet de levier */
+}
+
+/* Effet au clic */
+.btn-outline-full:active {
+    background-color: #eee;
+    transform: translateY(0);
+}
+
+/* Optionnel : Le séparateur "OU" entre les boutons */
+.auth-divider {
+    text-align: center;
+    position: relative;
+    margin: 20px 0;
+    color: #999;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.auth-divider::before, .auth-divider::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    width: 42%;
+    height: 1px;
+    background: #eee;
+}
+
+.auth-divider::before { left: 0; }
+.auth-divider::after { right: 0; }
+.nav-item {
+    cursor: pointer !important; /* Force le curseur "main" */
+    transition: background 0.2s;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+.nav-item:hover {
+    background-color: #f5f5f5; /* Change de couleur au survol */
+}
+
+.btn-logout-link {
+    cursor: pointer;
+    background: none;
+    border: none;
+    color: #a30000;
+    font-weight: bold;
+    margin-top: 20px;
+    padding: 10px;
+    text-align: left;
+    width: 100%;
+}
+/* --- Structure de la Top Bar --- */
+.top-bar { 
+    background: #fff; 
+    border-bottom: 1px solid var(--border-color, #eee); 
+    padding: 8px 0; /* Padding vertical uniquement ici */
+}
+
+.top-bar-content { 
+    max-width: 1200px; 
+    margin: 0 auto; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 0 20px; /* Padding horizontal pour protéger les bords */
+}
+
+/* --- Ticker Market (Masqué par défaut sur mobile) --- */
+.market-ticker-container {
+    display: none; /* Cache le ticker sur mobile/tablette */
+    flex-grow: 1;
+    margin: 0 20px;
+    overflow: hidden;
+    height: 20px;
+    text-align: center; /* Centre le ticker entre la date et le bouton */
+}
+
+#ticker-content {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    transition: opacity 0.3s ease;
+    text-transform: uppercase;
+    white-space: nowrap;
+    font-weight: 600;
+}
+
+#ticker-content small { 
+    margin-left: 5px; 
+    font-weight: 800; 
+}
+
+/* --- Date Live --- */
+#live-date {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #333;
+    white-space: nowrap;
+    flex-shrink: 0; /* Empêche la date de s'écraser */
+}
+/* Conteneur de la section */
+.related-section {
+    max-width: 1000px;
+    margin: 60px auto;
+    padding: 20px 10px;
+    border-top: 1px solid #e2e2e2;
+}
+
+.related-title {
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+/* Grille de 3 colonnes */
+.recommendation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px 15px;
+}
+
+/* Carte individuelle */
+.rec-card {
+    text-decoration: none;
+    display: block;
+    text-align: left; /* Force l'alignement gauche */
+}
+
+/* Image et Badge */
+.rec-image-container {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 10;
+    margin-bottom: 8px;
+    background: #f0f0f0;
+}
+
+.rec-image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.ad-badge {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.9);
+    color: #999;
+    font-size: 8px;
+    padding: 2px 5px;
+    font-family: Arial, sans-serif;
+}
+
+/* Style du texte (Tes contraintes) */
+.rec-source {
+    font-family: Arial, sans-serif;
+    font-size: 10px; /* Taille demandée */
+    color: #888; /* Gris moyen */
+    margin-bottom: 4px;
+    text-transform: capitalize;
+}
+
+.rec-title {
+    font-family: Arial, sans-serif;
+    font-size: 10px; /* Taille demandée */
+    line-height: 1.15; /* Interligne demandé */
+    font-weight: 700;
+    color: #444; /* Gris foncé (pas noir pur) */
+    margin: 0;
+    /* Gestion du texte sur 3 lignes max pour rester propre */
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Mobile : 1 seule colonne pour éviter que ce soit trop petit */
+@media (max-width: 500px) {
+    .recommendation-grid { grid-template-columns: 1fr; }
+}
+/* 1. Largeur de référence pour le texte */
+.article-content {
+    max-width: 680px; 
+    margin: 0 auto;
+    text-align: left;
+}
+
+/* 2. Alignement strict de tous les médias sur la largeur du texte */
+.article-content img, 
+.article-content video, 
+.article-content iframe,
+.article-media-wrapper {
+    width: 100% !important; /* Occupe toute la ligne du texte */
+    max-width: 680px;
+    margin: 30px 0; /* Espacement vertical entre les paragraphes */
+    display: block;
+    padding: 0;
+}
+
+/* 3. Vidéos : On laisse le ratio d'origine (Suppression de 16/9) */
+.article-content video {
+    height: auto !important; /* La hauteur s'adapte au format du fichier */
+    background: transparent; /* Pas de bloc noir forcé */
+    object-fit: contain; /* Sécurité anti-déformation */
+}
+
+/* 4. Légendes médias (10px gris, alignées à gauche) */
+.media-caption {
+    font-family: Arial, sans-serif;
+    font-size: 10px;
+    color: #888;
+    line-height: 1.15;
+    margin-top: 8px;
+    text-align: left;
+    width: 100%;
+}
+.full-menu {
+    position: fixed;
+    top: 0;
+    left: -100%; /* Caché par défaut à gauche */
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    z-index: 9999;
+    transition: left 0.4s cubic-bezier(0.77, 0, 0.175, 1);
+    overflow-y: auto;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Quand le menu est actif */
+.full-menu.active {
+    left: 0;
+}
+
+/* Header du Menu */
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    border-bottom: 1px solid #eee;
+}
+
+.menu-logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.close-menu {
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.close-menu:hover {
+    color: #a30000;
+}
+
+/* Contenu du Menu */
+.menu-content {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 40px;
+}
+
+/* Barre de recherche dans le menu */
+.menu-search {
+    display: flex;
+    margin-bottom: 50px;
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+}
+
+.menu-search input {
+    flex: 1;
+    border: none;
+    outline: none;
+    font-size: 1.5rem;
+    font-family: 'Source Serif 4', serif;
+    background: transparent;
+}
+
+.menu-search button {
+    background: #333;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background 0.2s;
+}
+
+.menu-search button:hover {
+    background: #a30000;
+}
+
+/* Grille des sections */
+.menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 40px;
+}
+
+.menu-section h3 {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    color: #a30000;
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
+
+.menu-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.menu-section ul li {
+    margin-bottom: 12px;
+}
+
+.menu-section ul li a {
+    text-decoration: none;
+    color: #121212;
+    font-size: 1.1rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.menu-section ul li a:hover {
+    color: #a30000;
+    text-decoration: underline;
+}
+
+/* Liens en rouge (Jeux, etc.) */
+.nav-red {
+    color: #a30000 !important;
+    font-weight: 700 !important;
+}
+/* --- Conteneur du Logo dans le Menu --- */
+.menu-logo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+/* --- Style de l'image PNG --- */
+.menu-logo img {
+    height: 30px;       /* Ajuste cette valeur selon tes goûts */
+    width: auto;        /* Garde les proportions de ton PNG */
+    object-fit: contain;
+    filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.1)); /* Donne un aspect premium */
+    transition: transform 0.3s ease;
+}
+
+.menu-logo img:hover {
+    transform: scale(1.05); /* Petit effet élégant au survol */
+}
+
+/* --- Ajustement du Header du Menu --- */
+.menu-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 25px 40px;
+    background: #ffffff;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+/* --- Le bouton Fermer à côté --- */
+.close-menu {
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #333;
+    letter-spacing: 1px;
+    border: 1.5px solid #333;
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.close-menu:hover {
+    background: #333;
+    color: #fff;
+}
+
+/* --- Adaptabilité Mobile (Responsive) --- */
+@media (max-width: 768px) {
+    .menu-logo img {
+        height: 45px; /* Plus petit sur téléphone */
+    }
+    .menu-header {
+        padding: 15px 20px;
+    }
+}
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .menu-header { padding: 15px 20px; }
+    .menu-grid { grid-template-columns: 1fr 1fr; gap: 20px; }
+    .menu-search input { font-size: 1.1rem; }
+}
+
+/* --- Bouton Compte --- */
+/* --- Header & Byline --- */
+.article-header { max-width: 800px; margin: 0 auto; padding: 20px 15px; }
+.article-category-label { color: #a30000; font-weight: 800; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
+.article-byline { display: flex; align-items: center; gap: 12px; margin-bottom: 30px; border-top: 1px solid #eee; padding-top: 20px; }
+.author-avatar { width: 42px; height: 42px; border-radius: 50%; object-fit: cover; }
+.author-name { 
+    font-weight: 600; 
+    font-size: 0.870rem; 
+    color: var(--color-content-secondary, #363636); 
+    text-transform: none; /* Force le respect des minuscules */
+}
+.publish-date { font-size: 0.85rem; color: #666; }
+
+/* --- Images --- */
+.main-figure { max-width: 1000px; margin: 0 auto 40px; }
+.main-img { width: 100%; display: block; }
+.secondary-figure { margin: 40px 0; }
+.secondary-figure img { width: 100%; border-radius: 2px; }
+
+/* --- Pubs --- */
+.btn-whatsapp { background: #25D366; color: #fff; border: none; padding: 10px 20px; cursor: pointer; font-weight: 700; margin-top: 10px; }
+
+/* --- Speech & Actions --- */
+.speech-trigger { margin-left: auto; }
+#speech-text { font-size: 0.7rem; font-weight: 800; letter-spacing: 1px; }
