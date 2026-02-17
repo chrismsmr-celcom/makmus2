@@ -4,54 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rédaction | MakMus</title>
+    <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
+    <link rel="apple-touch-icon" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
+
     <link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="redaction.css">
-    <link rel="stylesheet" href="style.css"> </head>
+<link rel="stylesheet" href="style.css">
+
+<link rel="stylesheet" href="redaction.css">    
     <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#a30000">
-<link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="theme-color" content="#a30000">
+    <meta name="description" content="L'excellence du journalisme en République Démocratique du Congo.">
+    <link rel="apple-touch-icon" href="icon-192.png">
+</head>
 <body>
 
-<div class="full-menu" id="fullMenu">
+   <div class="full-menu" id="fullMenu">
     <div class="menu-header">
         <div class="menu-logo">
-            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MakMus">
+            <img src="https://logphtrdkpbfgtejtime.supabase.co/storage/v1/object/public/Photo,%20Image/Untitled%20folder/MAK_MUS__1_-removebg-preview.png" alt="MakMus">
         </div>
-        <span class="close-menu" id="closeMenu" onclick="toggleMenu(false)" style="cursor:pointer;">&times; FERMER</span>
+        <span class="close-menu" id="closeMenu" onclick="toggleMenu(false)">&times; FERMER</span>
     </div>
+    
     <div class="menu-content">
         <div class="menu-search">
             <input type="text" id="menuSearchInput" placeholder="RECHERCHER DANS LES ARCHIVES...">
-            <button onclick="fetchAllContent('top', document.getElementById('menuSearchInput').value); toggleMenu(false);">OK</button>
+            <button onclick="fetchMakmusNews(document.getElementById('menuSearchInput').value); toggleMenu(false);">OK</button>
         </div>
+
         <div class="menu-grid">
             <div class="menu-section">
                 <h3>ACTUALITÉS</h3>
                 <ul>
-                    <li><a href="index.html">À la une</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('top', 'RDC Congo'); toggleMenu(false); return false;">RDC</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('politics'); toggleMenu(false); return false;">Politique</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('world'); toggleMenu(false); return false;">International</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('environment'); toggleMenu(false); return false;">Environnement</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('top'); toggleMenu(false); return false;">À la une</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('RDC Congo'); toggleMenu(false); return false;">RDC</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('politics'); toggleMenu(false); return false;">Politique</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('world'); toggleMenu(false); return false;">International</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('environment'); toggleMenu(false); return false;">Environnement</a></li>
                 </ul>
             </div>
+
             <div class="menu-section">
                 <h3>ÉCONOMIE & TECH</h3>
                 <ul>
-                    <li><a href="#" onclick="fetchHybridNews('business'); toggleMenu(false); return false;">Business</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('technology'); toggleMenu(false); return false;">Technologies</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('science'); toggleMenu(false); return false;">Sciences</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('top', 'crypto'); toggleMenu(false); return false;">Crypto-monnaie</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('business'); toggleMenu(false); return false;">Business</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('technology'); toggleMenu(false); return false;">Technologies</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('science'); toggleMenu(false); return false;">Sciences</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('crypto'); toggleMenu(false); return false;">Crypto-monnaie</a></li>
                 </ul>
             </div>
+
             <div class="menu-section">
                 <h3>LOISIRS & SOCIÉTÉ</h3>
                 <ul>
-                    <li><a href="#" onclick="fetchHybridNews('sports'); toggleMenu(false); return false;">Sports</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('entertainment'); toggleMenu(false); return false;">Culture & Musique</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('health'); toggleMenu(false); return false;">Santé</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('lifestyle'); toggleMenu(false); return false;">Style de vie / Food</a></li>
-                    <li><a href="#" onclick="fetchHybridNews('tourism'); toggleMenu(false); return false;">Voyages</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('sports'); toggleMenu(false); return false;">Sports</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('entertainment'); toggleMenu(false); return false;">Culture & Musique</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('health'); toggleMenu(false); return false;">Santé</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('lifestyle'); toggleMenu(false); return false;">Style de vie / Food</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('tourism'); toggleMenu(false); return false;">Voyages</a></li>
                     <li><a href="jeux.html" class="nav-red">Jeux & Puzzles</a></li>
                 </ul>
             </div>
@@ -60,17 +70,17 @@
 </div>
 
 <div class="top-bar">
-    <div class="top-bar-content">
-        <div id="live-date">---</div>
-        <div class="market-ticker-container">
-            <div id="ticker-content"></div>
+        <div class="top-bar-content">
+            <div id="live-date">---</div>
+            <div class="market-ticker-container">
+                <div id="ticker-content"></div>
+            </div>
+           <button id="openModal" onclick="toggleSidePanel(true)">
+    <img src="https://img.icons8.com/material-outlined/24/user-male-circle.png" alt="Compte">
+    <span class="account-text">MON COMPTE</span>
+</button>
         </div>
-        <button id="openModal" onclick="toggleModal('modalAccount', true)">
-            <img src="https://img.icons8.com/material-outlined/24/user-male-circle.png" alt="Compte">
-            <span class="account-text">MON COMPTE</span>
-        </button>
     </div>
-</div>
 
 <header class="main-header">
     <div class="menu-toggle" onclick="toggleMenu(true)" style="cursor:pointer;">
@@ -89,84 +99,98 @@
 
 <nav class="nav-compact">
     <ul>
-        <li><a href="index.html" class="active">À LA UNE</a></li>
-        <li><a href="#">RDC</a></li>
-        <li><a href="#">POLITIQUE</a></li>
-        <li><a href="#">ÉCONOMIE</a></li>
-        <li><a href="#">SPORT</a></li>
+        <li><a href="index.html">À LA UNE</a></li>
+        <li><a href="#" onclick="filterByTag('RDC')">RDC</a></li>
+        <li><a href="#" onclick="filterByTag('politique')">POLITIQUE</a></li>
+        <li><a href="#" onclick="filterByTag('economie')">ÉCONOMIE</a></li>
         <li><a href="jeux.html" class="nav-red">JEUX</a></li>
     </ul>
 </nav>
 
 <div id="trending-tags">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; overflow-x: auto;">
-        <span style="font-weight: 800; font-size: 0.7rem; text-transform: uppercase; border-right: 1px solid #ddd; padding-right: 12px; flex-shrink: 0;">En ce moment</span>
+    <div class="trending-inner" style="max-width: 1200px; margin: 0 auto; padding: 12px 20px; display: flex; align-items: center; gap: 12px; overflow-x: auto;">
+        <span class="tag-label" style="font-weight: 800; font-size: 0.7rem; text-transform: uppercase; border-right: 1px solid #ddd; padding-right: 12px; flex-shrink: 0;">En ce moment</span>
         <div id="tags-container" style="display: flex; gap: 15px;"></div>
     </div>
 </div>
 
 <main class="newspaper-body" id="full-article">
-    <div id="status-line" class="status-line no-print">ÉDITION NATIONALE — ACTUALISATION EN TEMPS RÉEL</div>
-    <div id="article-placeholder" style="text-align:center; padding: 100px; font-family: serif; font-style: italic;">
-        <p>Chargement de l'édition numérique...</p>
-    </div>
+    <div id="status-line" class="status-line no-print"></div>
+
+    <article class="premium-article">
+        <header id="article-header-injection"></header>
+        
+        <figure class="main-figure" id="main-image-injection"></figure>
+
+        <div class="article-content" id="article-text-content">
+            </div>
+    </article>
 </main>
-
-<div id="recommendations-box" class="no-print" style="max-width:850px; margin: 0 auto; display:none; padding-bottom: 50px;">
-    <h3 style="font-family: Arial, sans-serif; text-transform: uppercase; font-weight: 900; border-top: 4px solid #000; padding-top: 20px; margin-bottom: 25px;">À lire aussi</h3>
-    <div id="recommendations-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 30px;"></div>
-</div>
-
+<section class="related-section" id="recommendations-box">
+    <h4 class="related-title">D'autres contenus pour vous</h4>
+    <div class="recommendation-grid" id="recommendations-grid">
+        </div>
+</section>
 <footer class="nyt-footer">
     <div class="footer-container">
         <div class="footer-brand">
-            <img src="https://i.postimg.cc/7ZWdGrQc/Screenshot_2025_12_24_21_32_24_removebg_preview.png" alt="MAKMUS">
+            <img src="https://logphtrdkpbfgtejtime.supabase.co/storage/v1/object/public/Photo,%20Image/Untitled%20folder/MAK_MUS__1_-removebg-preview.png" alt="MAKMUS">
             <p>La vérité pour mémoire. L'excellence du journalisme en République Démocratique du Congo.</p>
         </div>
+
         <div class="footer-links-grid">
             <div class="footer-col">
                 <h4>SECTIONS</h4>
                 <ul>
-                    <li><a href="index.html">À LA UNE</a></li>
-                    <li><a href="#">RDC</a></li>
-                    <li><a href="#">POLITIQUE</a></li>
-                    <li><a href="#">ÉCONOMIE</a></li>
-                    <li><a href="#">SPORT</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('top'); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">À LA UNE</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('RDC Congo'); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">RDC</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('politics'); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">POLITIQUE</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('business'); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">ÉCONOMIE</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('sports'); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">SPORT</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('health'); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">SANTÉ</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('environment'); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">CLIMAT</a></li>
+                    <li><a href="#" onclick="fetchMakmusNews('tourism'); window.scrollTo({top: 0, behavior: 'smooth'}); return false;">VOYAGES</a></li>
                     <li><a href="jeux.html" class="nav-red">JEUX</a></li>
                 </ul>
             </div>
+
             <div class="footer-col">
                 <h4>AIDE</h4>
                 <ul>
                     <li><a href="#">Abonnements</a></li>
                     <li><a href="#">Contact</a></li>
                     <li><a href="#">Publicité</a></li>
+                    <li><a href="#">Emploi</a></li>
                     <li><a href="#">Makmus magazine</a></li>
+                    <li><a href="#">Makila Emmanuel Heritage</a></li>
+                    <li><a href="#">Météo</a></li>
+                    <li><a href="#">Makem screen Studio</a></li>
                 </ul>
             </div>
+
             <div class="footer-col">
                 <h4>SUIVEZ-NOUS</h4>
                 <div class="social-links">
-                    <a href="#">FB</a> <a href="#">X</a> <a href="#">IG</a> <a href="#">YT</a>
+                    <a href="#" title="Facebook">FB</a> 
+                    <a href="#" title="X (Twitter)">X</a> 
+                    <a href="#" title="Instagram">IG</a> 
+                    <a href="#" title="YouTube">YT</a>
                 </div>
             </div>
         </div>
+
         <div class="footer-bottom">
             <p>&copy; 2026 MAKMUS MEDIA GROUP. Tous droits réservés.</p>
+            <div class="bottom-legal">
+                <a href="#">Mentions Légales</a>
+                <a href="#">Confidentialité</a>
+                <a href="#">CGU</a>
+            </div>
         </div>
     </div>
 </footer>
 
-<div class="modal" id="modalAccount">
-    <div class="modal-box">
-        <span class="close-modal" onclick="toggleModal('modalAccount', false)" style="position: absolute; top: 20px; right: 20px; font-size: 30px; font-weight: bold; color: #333; cursor:pointer;">&times;</span>
-        <div class="modal-header">MAKMUS</div>
-        <p>Accès réservé aux abonnés.</p>
-        <input type="email" placeholder="Email">
-        <input type="password" placeholder="Mot de passe">
-        <button class="btn-submit">SE CONNECTER</button>
-    </div>
-</div>
+
 <div id="shareModal" class="modal-overlay" onclick="closeShare()">
     <div class="share-dialog" onclick="event.stopPropagation()">
         <div class="share-header">
@@ -174,43 +198,73 @@
             <button class="close-btn" onclick="closeShare()">&times;</button>
         </div>
         <div class="share-list">
-            <button onclick="copyLink()"><i class="icon-link"></i> Copier le lien</button>
-            <button onclick="socialShare('facebook')"><i class="icon-fb"></i> Facebook</button>
-            <button onclick="socialShare('x')"><i class="icon-x"></i> X (Twitter)</button>
-            <button onclick="socialShare('whatsapp')"><i class="icon-wa"></i> WhatsApp</button>
-            <button onclick="socialShare('linkedin')"><i class="icon-li"></i> LinkedIn</button>
+            <button onclick="copyLink()">Copier le lien</button>
+            <button onclick="socialShare('facebook')">Facebook</button>
+            <button onclick="socialShare('whatsapp')">WhatsApp</button>
         </div>
     </div>
 </div>
 
-<div id="commentModal" class="comment-sidebar-overlay" onclick="closeComments()">
-    <div class="comment-sidebar" onclick="event.stopPropagation()">
-        <div class="comment-header">
-            <h3>Commentaires <span id="nb-comm-header">0</span></h3>
-            <button class="close-btn" onclick="closeComments()">&times;</button>
-        </div>
-        
-        <div class="comment-form">
-            <input type="text" id="comm-name" placeholder="Votre nom (ex: Jean D.)">
-            <textarea id="comm-text" placeholder="Ajouter un commentaire..."></textarea>
-            <button onclick="postComment()" class="post-btn">Publier</button>
+<div id="commentModal" class="modal-overlay" onclick="closeComments()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-header">COMMENTAIRES</div>
+        <div id="comments-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 20px;"></div>
+        <input type="text" id="comm-name" placeholder="Votre nom" class="premium-input">
+        <textarea id="comm-text" placeholder="Votre commentaire..." class="premium-input"></textarea>
+        <button class="btn-black-full" onclick="window.postComment()">PUBLIER</button>
+    </div>
+</div>
+
+<div id="sideAccount" class="side-panel">
+    <div class="side-panel-overlay" onclick="window.toggleSidePanel(false)"></div>
+    <div class="side-panel-content">
+        <div class="side-panel-header">
+            <div class="logo-small">MAKMUS</div>
+            <span class="close-panel" onclick="window.toggleSidePanel(false)">&times;</span>
         </div>
 
-        <div id="comments-list" class="comments-scroll-area">
-            <p style="text-align:center; color:#999; padding-top:20px;">Chargement...</p>
+        <div class="side-panel-body">
+            <div id="logged-out-view">
+                <h2 class="premium-title">Bonjour.</h2>
+                <p class="premium-subtitle">Connectez-vous pour sauvegarder des articles.</p>
+                <div class="auth-form">
+                    <input type="email" id="auth-email" placeholder="Email" class="premium-input">
+                    <input type="password" id="auth-password" placeholder="Mot de passe" class="premium-input">
+                    <button class="btn-black-full" onclick="window.handleAuth('login')">CONTINUER</button>
+                    <p class="auth-divider"><span>OU</span></p>
+                    <button class="btn-outline-full" onclick="window.handleAuth('signup')">CRÉER UN COMPTE</button>
+                </div>
+            </div>
+
+            <div id="logged-in-view" style="display: none;">
+                <div class="user-profile-header">
+                    <div class="user-avatar">M</div>
+                    <div class="user-meta">
+                        <span id="user-email-display" class="user-email">...</span>
+                        <span class="user-status">Membre Premium</span>
+                    </div>
+                </div>
+                <nav class="side-nav">
+                    <div class="nav-group-label">VOTRE ACTIVITÉ</div>
+                    <a href="javascript:void(0)" class="nav-item" onclick="window.navigateToAccountOption('favoris')">Articles favoris</a>
+                    <a href="javascript:void(0)" class="nav-item" onclick="window.navigateToAccountOption('commentaires')">Vos commentaires</a>
+                    <div class="nav-group-label">VOS FAVORIS RECENTS</div>
+                    <div id="user-favorites-list"></div>
+                    <button class="btn-logout-link" onclick="window.handleLogout()" style="margin-top:30px;">Se déconnecter</button>
+                </nav>
+            </div>
         </div>
     </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="redaction.js"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js')
-        .then(reg => console.log('PWA prête !'))
-        .catch(err => console.log('Erreur PWA', err));
+      navigator.serviceWorker.register('/sw.js').catch(err => console.log('Erreur PWA', err));
     });
   }
 </script>
 </body>
-</html>                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            
+</html>
