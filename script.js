@@ -358,7 +358,7 @@ async function fetchMakmusNews(querySearch = '') {
             !['OPINION', 'MAKMUS_SPORT_RESUME', 'AUTRE_INFO', 'LIFESTYLE'].includes(a.category)
         );
         const heroArticle = allArticles.find(a => a.is_priority === true) || mainStream[0];
-        const gridArticles = mainStream.filter(a => a.id !== heroArticle?.id).slice(0, 6);
+        const gridArticles = mainStream.filter(a => a.id !== heroArticle?.id).slice(0, 15);
 
         // Autres Sections
         const autreInfos = allArticles.filter(a => a.category === 'AUTRE_INFO').slice(0, 6);
@@ -382,21 +382,60 @@ async function fetchMakmusNews(querySearch = '') {
     }
 }
 // --- RENDU LIFESTYLE ---
-function renderLifestyle(articles) {
-    const container = document.getElementById('lifestyle-grid');
-    if (!container || articles.length === 0) return;
-
-    container.innerHTML = articles.map(art => `
-        <div class="lifestyle-card" onclick="window.location.href='redaction.html?id=${art.id}'">
-            <div class="lifestyle-img-wrapper">
-                <img src="${art.image_url}" onerror="this.src='https://via.placeholder.com/400x600'">
-                <span class="lifestyle-tag">LIFESTYLE</span>
-            </div>
-            <h4>${art.titre}</h4>
-        </div>
-    `).join('');
+/**
+ * Calcule le temps de lecture dynamique en français
+ */
+function calculerTempsLecture(texte) {
+    if (!texte) return "1 MIN DE LECTURE";
+    const motsParMinute = 200; 
+    // Nettoyage du HTML pour un comptage précis
+    const textePropre = texte.replace(/<[^>]*>/g, '');
+    const nombreMots = textePropre.split(/\s+/).filter(word => word.length > 0).length;
+    const minutes = Math.ceil(nombreMots / motsParMinute);
+    return `${minutes} MIN DE LECTURE`;
 }
 
+/**
+ * Rendu de la section Lifestyle style Magazine (NYT)
+ */
+function renderLifestyle(articles) {
+    const container = document.getElementById('lifestyle-grid');
+    if (!container || !articles || articles.length === 0) return;
+
+    // L'article principal (Le premier)
+    const topArt = articles[0];
+    // Les articles suivants (limité à 3 pour la sous-grille)
+    const subArticles = articles.slice(1, 4);
+
+    container.innerHTML = `
+        <div class="lifestyle-main" onclick="window.location.href='redaction.html?id=${topArt.id}'">
+            <div class="ls-main-text">
+                <h2 class="ls-main-title">${topArt.titre}</h2>
+                <p class="ls-excerpt">
+                    ${(topArt.description || "").replace(/<[^>]*>/g, '').substring(0, 160)}...
+                </p>
+                <span class="ls-read-time">${calculerTempsLecture(topArt.description)}</span>
+            </div>
+            <div class="ls-main-img">
+                <img src="${topArt.image_url}" onerror="this.src='https://via.placeholder.com/800x500'">
+            </div>
+        </div>
+
+        <div class="lifestyle-sub-grid">
+            ${subArticles.map(art => `
+                <div class="ls-sub-card" onclick="window.location.href='redaction.html?id=${art.id}'">
+                    <div class="ls-sub-text">
+                        <h4>${art.titre}</h4>
+                        <span class="ls-read-time">${calculerTempsLecture(art.description)}</span>
+                    </div>
+                    <div class="ls-sub-img-container">
+                        <img src="${art.image_url}" onerror="this.src='https://via.placeholder.com/150x150'" class="ls-sub-img">
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
 // --- RENDU RÉSUMÉS SPORTIFS ---
 
 function renderSportsSlider(resumes) {
@@ -489,11 +528,20 @@ function renderAutreInfoSlider(trending) {
         <div class="trending-slide-card" onclick="window.location.href='redaction.html?id=${art.id}'">
             <img src="${art.image_url}" class="slide-cover">
             <h4 class="playfair">${art.titre}</h4>
-            <span class="read-time-small">${art.read_time || '5'} MIN READ</span>
+            <span class="read-time-small">${calculerTempsLecture(art.description)}</span>
         </div>`).join('');
     
-    // Initialise les dots si pas encore fait
     setupSliderControls(trending.length);
+}
+
+// --- FONCTION DE CALCUL (À placer avant tes fonctions de rendu) ---
+function calculerTempsLecture(texte) {
+    if (!texte) return "1 MIN DE LECTURE";
+    const motsParMinute = 200; 
+    const textePropre = texte.replace(/<[^>]*>/g, ''); // Enlève le HTML
+    const nombreMots = textePropre.split(/\s+/).filter(word => word.length > 0).length;
+    const minutes = Math.ceil(nombreMots / motsParMinute);
+    return `${minutes} MIN DE LECTURE`;
 }
 
 // --- RENDU OPINIONS ---
@@ -505,23 +553,22 @@ function renderOpinions(opinions) {
         <div class="opinion-container-box">
             <div class="opinion-author-row">
                 <span class="author-name">${op.author_name || 'RÉDACTION'}</span>
-                <img class="author-avatar" src="${op.author_image || 'https://via.placeholder.com/42'}">
+                <img class="author-avatar" src="${op.author_image || 'https://via.placeholder.com/42'}" onerror="this.src='https://via.placeholder.com/42'">
             </div>
             <h4 class="opinion-text-title" onclick="window.location.href='redaction.html?id=${op.id}'">${op.titre}</h4>
-            <span class="read-time-small">${op.read_time || '4'} MIN READ</span>
-            <img class="opinion-main-cover" src="${op.image_url}" onclick="window.location.href='redaction.html?id=${op.id}'">
+            <span class="read-time-small">${calculerTempsLecture(op.description)}</span>
+            <img class="opinion-main-cover" src="${op.image_url}" onclick="window.location.href='redaction.html?id=${op.id}'" onerror="this.style.display='none'">
         </div>`).join('');
 }
 function renderUI(heroArticle, gridArticles = []) {
     const heroZone = document.getElementById('hero-zone');
     const grid = document.getElementById('news-grid');
 
-    // 1. Rendu du HERO (La Une)
+    // 1. RENDU DU HERO (La Une)
     if (heroZone && heroArticle) {
         const h = heroArticle;
         const displayTitle = h.titre || "";
         const displayLink = `redaction.html?id=${h.id}`;
-        const safeTitle = encodeURIComponent(displayTitle);
 
         heroZone.innerHTML = `
             <div class="main-article">
@@ -532,15 +579,14 @@ function renderUI(heroArticle, gridArticles = []) {
                             ${(h.description || "").replace(/<[^>]*>/g, '').substring(0, 160)}...
                         </p>
                         <div class="hero-sub-news-wrapper">
-                            ${gridArticles.slice(0, 2).map(sub => `
+                            ${gridArticles.slice(0, 3).map(sub => `
                                 <div class="sub-news-item" onclick="window.location.href='redaction.html?id=${sub.id}'">
                                     <h4>${sub.titre}</h4>
-                                    <span class="read-time">2 MIN READ</span>
                                 </div>`).join('')}
                         </div>
                         <span class="read-more-btn" onclick="window.location.href='${displayLink}'">LIRE L'ARTICLE COMPLET →</span>
                     </div>
-                    <div class="hero-image">
+                    <div class="hero-image" onclick="window.location.href='${displayLink}'" style="cursor:pointer;">
                         <img src="${h.image_url || 'https://via.placeholder.com/800x500'}" onerror="this.src='https://via.placeholder.com/800x500'">
                         ${h.image_caption ? `<div class="photo-credit">${h.image_caption}</div>` : ''}
                     </div>
@@ -548,13 +594,15 @@ function renderUI(heroArticle, gridArticles = []) {
             </div>`;
     }
 
-    // 2. Rendu de la GRILLE (Sous le Hero)
+    // 2. RENDU DE LA GRILLE (12 articles)
     if (grid) {
-        const finalGridItems = gridArticles.slice(2, 8);
+        // On commence à l'index 3 pour éviter les doublons avec les 3 sous-titres du hero
+        const finalGridItems = gridArticles.slice(3, 15); 
+
         grid.innerHTML = finalGridItems.map(art => `
             <div class="article-card" onclick="window.location.href='redaction.html?id=${art.id}'">
                 <div class="card-img-wrapper">
-                    <img src="${art.image_url || 'https://via.placeholder.com/400x250'}">
+                    <img src="${art.image_url || 'https://via.placeholder.com/400x250'}" onerror="this.src='https://via.placeholder.com/400x250'">
                 </div>
                 <div style="padding:12px;">
                     <h3 style="font-size:1rem; margin-bottom:8px; line-height:1.3; font-weight:800;">${art.titre}</h3>
@@ -592,30 +640,7 @@ function setupSliderControls(count) {
     // Écouter le scroll pour mettre à jour les dots
     sidebarList.addEventListener('scroll', updateSliderDots);
 }
-function renderOpinions(opinions) {
-    const opinionList = document.getElementById('opinion-list');
-    if (!opinionList) {
-        console.warn("Conteneur 'opinion-list' introuvable dans le HTML");
-        return;
-    }
 
-    if (!opinions || opinions.length === 0) {
-        opinionList.innerHTML = "<p style='font-size:12px; color:#666;'>Aucune opinion disponible pour le moment.</p>";
-        return;
-    }
-
-    opinionList.innerHTML = opinions.map(op => `
-        <div class="opinion-container-box">
-            <div class="opinion-author-row">
-                <span class="author-name">${op.author_name || 'CHRONIQUEUR'}</span>
-                <img class="author-avatar" src="${op.author_image || 'https://via.placeholder.com/42'}" onerror="this.src='https://via.placeholder.com/42'">
-            </div>
-            <h4 class="opinion-text-title" onclick="window.location.href='redaction.html?id=${op.id}'">${op.titre}</h4>
-            <span class="read-time-small">${op.read_time || '4'} MIN READ</span>
-            <img class="opinion-main-cover" src="${op.image_url}" onclick="window.location.href='redaction.html?id=${op.id}'" onerror="this.style.display='none'">
-        </div>
-    `).join('');
-}
 // Fonction pour mettre à jour l'état des points (dots) lors du défilement
 function updateSliderDots() {
     const container = document.getElementById('sidebar-list');
@@ -638,6 +663,36 @@ function updateSliderDots() {
         }
     });
 }
+
+function renderAudio(articles) {
+    const container = document.getElementById('audio-grid');
+    if (!container || !articles || articles.length === 0) return;
+
+    // On affiche les 4 derniers contenus audio
+    const audioArticles = articles.slice(0, 4);
+
+    container.innerHTML = audioArticles.map(art => `
+        <div class="audio-card" onclick="window.location.href='redaction.html?id=${art.id}'">
+            <div class="audio-image-wrapper">
+                <img src="${art.image_url}" onerror="this.src='https://via.placeholder.com/150'">
+            </div>
+            <div class="audio-info">
+                <div class="audio-label-group">
+                    <span class="audio-tag">${art.tags || 'REPORTAGE'}</span>
+                    <span class="audio-type">AUDIO</span>
+                </div>
+                <h4 class="audio-title">${art.titre}</h4>
+                <div class="audio-player-bar">
+                    <button class="play-circle">
+                        <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    </button>
+                    <span class="read-time-small">${calculerTempsLecture(art.description)} D'ÉCOUTE</span>
+                </div>
+            </div>
+        </div>
+    `).join('');
+}
+
 function renderMoreNews(allArticles) {
     const container = document.getElementById('more-info-grid');
     if (!container) return;
@@ -731,7 +786,7 @@ window.updateProgress = (video, index) => {
 window.autoScrollNext = (currentIndex) => {
     const nextCard = document.getElementById(`vcard-${currentIndex + 1}`);
     if (nextCard) {
-        nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        nextCard.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
         const v = nextCard.querySelector('video'); if (v) v.play().catch(e => {});
     }
 };
@@ -745,45 +800,72 @@ async function fetchVideosVerticaux() {
     
     slider.innerHTML = data.map((vid, index) => {
         const isLiked = likedVideos.includes(vid.id);
-        
-        // On ne met l'attribut 'autoplay' que si index est égal à 0
         const autoplayAttr = index === 0 ? 'autoplay' : '';
         
         return `
-        <div class="video-card" id="vcard-${index}">
-            <div class="video-controls-top">
-                <button class="control-btn" onclick="handleLike(event, this, '${vid.id}')">
-                    ${isLiked ? ICONS.LIKE_FILLED : ICONS.LIKE}
-                </button>
-                <button class="control-btn" onclick="toggleMute(event, this)">
-                    ${ICONS.MUTE}
-                </button>
-                <button class="control-btn" onclick="toggleFullscreen(event, this)">
-                    ${ICONS.FULL}
-                </button>
+        <div class="video-magazine-item" data-index="${index}">
+            <div class="video-card" id="vcard-${index}">
+                <div class="video-controls-top">
+                    <button class="control-btn" onclick="handleLike(event, this, '${vid.id}')">
+                        ${isLiked ? ICONS.LIKE_FILLED : ICONS.LIKE}
+                    </button>
+                    <button class="control-btn" onclick="toggleMute(event, this)">
+                        ${ICONS.MUTE}
+                    </button>
+                    <button class="control-btn" onclick="toggleFullscreen(event, this)">
+                        ${ICONS.FULL}
+                    </button>
+                </div>
+                
+                <video src="${vid.video_url}" 
+                    playsinline 
+                    muted 
+                    ${autoplayAttr} 
+                    onclick="this.paused ? this.play() : this.pause()" 
+                    ontimeupdate="window.updateProgress(this, ${index})" 
+                    onended="window.autoScrollNext(${index})">
+                </video>
+
+                <div class="progress-bar-container">
+                    <div class="progress-fill" id="bar-${index}"></div>
+                </div>
             </div>
-            
-            <video src="${vid.video_url}" 
-                   playsinline 
-                   muted 
-                   ${autoplayAttr} 
-                   onclick="this.paused ? this.play() : this.pause()" 
-                   ontimeupdate="window.updateProgress(this, ${index})" 
-                   onended="window.autoScrollNext(${index})">
-            </video>
-            
-            <div class="progress-bar-container">
-                <div class="progress-fill" id="bar-${index}"></div>
-            </div>
-            
-            <div class="video-overlay-bottom">
-                <h4>${vid.titre}</h4>
+
+            <div class="video-meta-content">
+                <h4 class="video-mag-title">${vid.titre}</h4>
+                <div class="video-mag-source"></div>
             </div>
         </div>`;
     }).join('');
-}
-let activeAds = [], currentAdIndex = 0;
 
+    setupVideoDots(data.length);
+    attachScrollListener();
+}
+
+function scrollVideoSlider(distance) {
+    const slider = document.getElementById('video-slider');
+    slider.scrollBy({ left: distance, behavior: 'smooth' });
+}
+
+function setupVideoDots(count) {
+    const dotContainer = document.getElementById('video-dots');
+    if (!dotContainer) return;
+    dotContainer.innerHTML = Array.from({ length: count }).map((_, i) => `
+        <div class="dot ${i === 0 ? 'active' : ''}" data-index="${i}"></div>
+    `).join('');
+}
+
+// Gère l'activation des dots pendant le scroll
+function attachScrollListener() {
+    const slider = document.getElementById('video-slider');
+    slider.addEventListener('scroll', () => {
+        const index = Math.round(slider.scrollLeft / (slider.offsetWidth / 3)); // Ajusté pour 3 items
+        const dots = document.querySelectorAll('.dot');
+        dots.forEach((dot, i) => {
+            dot.classList.toggle('active', i === index);
+        });
+    });
+}
 async function initAdSlider() {
     // On récupère les pubs actives
     const { data, error } = await supabaseClient
