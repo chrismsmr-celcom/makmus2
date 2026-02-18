@@ -8,8 +8,8 @@
     <link rel="icon" type="image/png" href="https://i.postimg.cc/x88LbhZp/2_20251224_213424_0001.png">
     <link rel="apple-touch-icon" href="https://i.postimg.cc/FzQ6Jf8K/2-20251224-213424-0001-removebg-preview.png">
     
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Source+Serif+4:wght@400;600&family=Inter:wght@400;600&family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<link href="https://fonts.googleapis.com/css2?family=Libre+Franklin:wght@500;700&family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
       <link rel="manifest" href="/manifest.json">
@@ -28,6 +28,52 @@
         .tag-item { font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 500; color: #333; text-decoration: none; cursor: pointer; transition: color 0.2s; padding: 2px 0; }
         .tag-item:hover { color: #a30000; text-decoration: underline; }
         .tag-item:not(:last-child)::after { content: ""; margin-left: 15px; border-right: 1px solid #eee; }
+        /* --- COMPORTEMENT STICKY (Fixe au scroll) --- */
+#trending-tags {
+    position: -webkit-sticky; /* Pour Safari */
+    position: sticky;
+    top: 0;                   /* Se colle en haut de l'écran */
+    background-color: #ffffff; /* Fond blanc obligatoire pour ne pas voir l'article dessous */
+    z-index: 1000;            /* Passe au-dessus du contenu de l'article */
+    border-bottom: 1px solid #eee;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); /* Ombre légère pour le relief */
+    width: 100%;
+}
+
+/* --- TA GESTION ACTUELLE DES TAGS (Optimisée) --- */
+#trending-tags div {
+    display: flex;
+    align-items: center;
+    scrollbar-width: none; /* Cache la scrollbar sur Firefox */
+}
+
+#trending-tags div::-webkit-scrollbar { 
+    display: none; /* Cache la scrollbar sur Chrome/Safari */
+}
+
+.tag-item { 
+    font-family: 'Inter', sans-serif; 
+    font-size: 0.85rem; 
+    font-weight: 500; 
+    color: #333; 
+    text-decoration: none; 
+    cursor: pointer; 
+    transition: color 0.2s; 
+    padding: 2px 0; 
+    white-space: nowrap; /* Force les tags à rester sur une ligne */
+}
+
+.tag-item:hover { 
+    color: #a30000; 
+    text-decoration: underline; 
+}
+
+.tag-item:not(:last-child)::after { 
+    content: ""; 
+    margin-left: 15px; 
+    padding-right: 15px; /* Ajoute de l'espace après la barre de séparation */
+    border-right: 1px solid #eee; 
+}
     </style>
 </head>
 <body>
@@ -158,11 +204,21 @@
 </div>
     </div>
 
-<section id="video-section" class="no-print">
-    <div class="video-container-main">
-        <h2 class="video-heading">VIDÉOS DU JOUR</h2>
-        <div id="video-slider" class="video-grid-vertical">
+<section id="video-section">
+    <div class="standard-section-header">
+        <h2 class="section-label">Vidéos du jour</h2>
+    </div> <div class="video-slider-wrapper">
+        <div id="video-slider">
             </div>
+
+        <div class="slider-controls-container">
+            <div class="slider-dots" id="video-dots">
+                </div>
+            <div class="slider-nav-arrows">
+                <button class="nav-arrow-btn" onclick="scrollVideoSlider(-300)">❮</button>
+                <button class="nav-arrow-btn" onclick="scrollVideoSlider(300)">❯</button>
+            </div>
+        </div>
     </div>
 </section>
     <section id="lifestyle-section" class="magazine-section">
@@ -239,6 +295,15 @@
 
     </div>
 </section>
+
+<section class="audio-section">
+    <div class="section-header">
+        <h2 class="section-title">Audio <span class="subtitle">Podcasts et articles lus</span></h2>
+    </div>
+    <div id="audio-grid" class="audio-grid">
+        </div>
+</section>
+
 <section class="more-info-section">
     <div class="section-divider-double"></div>
     <h2 class="section-main-title">PLUS D'INFO</h2>
