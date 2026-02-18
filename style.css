@@ -2,34 +2,57 @@
    1. VARIABLES & BASE
    ========================================================================== */
 :root {
-    --primary-red: #a30000;
-    --nyt-black: #000;
-    --nyt-gray: #666;
+    --makmus-red: #a30000;
+    --makmus-black: #000;
+    --mAkmus-gray: #666;
     --border-color: #ddd;
     --bg-gray: #f8f8f8;
-    --nyt-blue: #567b95;
-    --font-ui: 'Inter', sans-serif;
+    --makmus-blue: #567b95;
+    --font-editorial: 'Lora', serif;
+    --font-ui: 'Libre Franklin', sans-serif;
     --trend-up: #27ae60;
     --trend-down: #e74c3c;
 }
 
 * { box-sizing: border-box; }
-
+.ls-read-time {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #888;
+}
 body { 
     margin: 0;
-    font-family: var(--font-ui); 
+    font-family: var(--font-editorial); 
     background: #fff; 
-    color: #333; 
-    line-height: 1.5;
+    font-size: 18px; /* Ton choix de 18px */
+    font-weight: 400;
+    line-height: 1.7; /* Indispensable pour le confort de lecture papier */
+    color: #222;
 }
-
 h1, h2, h3, .section-title {
-    font-family: 'Playfair Display', serif;
+    font-family: var(--font-editorial);
     font-weight: 700;
-    color: var(--nyt-black);
-    margin-top: 0;
+    color: var(--makmus-black);
+    line-height: 1.2;
+}
+/* --- MENUS & RUBRIQUES --- */
+.nav-links, .lifestyle-tag, .category-label {
+    font-family: var(--font-ui);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em; /* Un peu d'espace entre les lettres pour l'aspect Pro */
+    font-size: 0.85rem;
 }
 
+/* --- LIENS / BOUTONS --- */
+.read-more-btn, .view-link {
+    font-family: var(--font-ui);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+}
 @media (min-width: 1024px) {
     body { padding: 0 5%; }
 }
@@ -485,7 +508,7 @@ h1, h2, h3, .section-title {
 }
 
 .logo-container { flex: 1; display: flex; justify-content: center; }
-.logo-container img { height: 60px; transition: transform 0.3s; }
+.logo-container img { height: 30px; transition: transform 0.3s; }
 
 .menu-toggle { cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 11px; text-transform: uppercase; }
 .menu-toggle span:not(.menu-label) { display: block; width: 18px; height: 2px; background: #000; margin: 3px 0; }
@@ -545,160 +568,382 @@ h1, h2, h3, .section-title {
 .hero-image img { width: 100%; height: auto; object-fit: cover; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 .main-article h1 { font-size: clamp(1.8rem, 4vw, 3rem); line-height: 1.1; margin-bottom: 15px; }
 
-.newspaper-layout { display: grid; grid-template-columns: 3fr 1fr; gap: 40px; }
-
-#news-grid { 
-    display: grid; 
+.newspaper-layout {
+    display: grid;
+    /* 3 parts pour les articles, 1 part pour la sidebar */
+    grid-template-columns: 3fr 1.2fr; 
+    gap: 40px;
+    align-items: start;
+}
+#news-grid {
+    display: grid;
+    /* CHANGE CECI : force deux colonnes égales */
     grid-template-columns: repeat(2, 1fr); 
-    gap: 30px; 
+    gap: 30px;
     padding-top: 20px;
     border-top: 1px solid #eee;
+    width: 100%;
 }
 
-.article-card img { width: 100%; height: 200px; object-fit: cover; margin-bottom: 10px; }
+/* Ajoute ceci pour être sûr que les images ne déforment pas la grille */
+.article-card {
+    width: 100%;
+    overflow: hidden;
+}
+
+.article-card img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
 .article-card h3 { font-size: 1.2rem; margin: 10px 0; line-height: 1.3; }
 
 /* ==========================================================================
    6. VIDÉOS VERTICALES (Format Instagram Reels)
    ========================================================================== */
-#video-section { 
-    background: #fff; 
-    padding: 30px 0; 
-}
-
-.video-heading { 
-    background: #000; 
-    color: #fff; 
-    padding: 6px 15px; 
-    font-size: 13px; 
-    font-weight: 800;
-    text-transform: uppercase; 
-    margin-bottom: 20px; 
-    display: inline-block; 
-}
-
-#video-slider { 
-    display: flex; 
-    gap: 10px; /* Espace plus serré comme sur Insta */
-    overflow-x: auto; 
-    scroll-snap-type: x mandatory; 
-    padding: 0 15px 20px;
-    scrollbar-width: none;
-}
-
-#video-slider::-webkit-scrollbar { display: none; }
-
-.video-card { 
-    position: relative; 
-    /* Largeur Réduite pour l'effet élancé */
-    flex: 0 0 250px; 
-    aspect-ratio: 9 / 16; 
-    height: 440px; 
-    background: #000; 
-    border-radius: 18px; /* Bords très arrondis style smartphone */
-    overflow: hidden; 
-    scroll-snap-align: center; /* Centre la vidéo au scroll */
-    box-shadow: 0 8px 15px rgba(0,0,0,0.1);
-}
-
-.video-card video { 
-    width: 100% !important; 
-    height: 100% !important; 
-    object-fit: cover !important; 
-}
-
-/* --- AJUSTEMENT MOBILE REELS --- */
-@media (max-width: 768px) {
-    .video-card { 
-        /* Sur mobile, on réduit à 65% pour voir nettement les voisines */
-        flex: 0 0 65vw; 
-        height: auto; 
-        border-radius: 15px;
-    }
-}
-
-/* Style des icônes façon Insta */
-.video-controls-top { 
-    position: absolute; 
-    top: 15px; 
-    right: 12px; 
-    display: flex; 
-    flex-direction: column; 
-    gap: 15px; 
-    z-index: 10; 
-}
-
-.control-btn { 
-    background: transparent; 
-    color: white; 
-    width: 32px; 
-    height: 32px; 
-    border: none; 
-    cursor: pointer; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center;
-    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); /* Ombre portée sur l'icône */
-}
-
-.video-overlay-bottom { 
-    position: absolute; 
-    bottom: 0; 
-    left: 0; 
-    right: 0; 
-    padding: 40px 15px 20px; 
-    background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%); 
-    color: white; 
-    pointer-events: none; 
-}
-/* Barre de progression style Reels */
-.progress-bar-container {
-    position: absolute;
-    bottom: 0;
-    left: 0;
+.standard-section-header {
     width: 100%;
-    height: 4px; /* Très fine */
-    background: rgba(255, 255, 255, 0.2);
-    display: none; /* Cachée par défaut */
-    z-index: 20;
+    /* La ligne noire fine au-dessus du texte */
+    border-top: 1px solid #000; 
+    margin-bottom: 25px;
+    padding-top: 8px;
+    /* Aligné avec le padding latéral de tes vidéos (ex: 25px) */
+    padding-left: 25px; 
+    padding-right: 25px;
 }
 
-.progress-fill {
-    height: 100%;
-    background: var(--makmus-red);
-    width: 0%;
-    transition: width 0.1s linear;
+.section-label {
+    font-family: 'Playfair Display', serif; /* Ou ta police serif pour Lifestyle */
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
+    text-transform: lowercase; /* Pour correspondre à "lifestyle et bien-être" */
 }
 
-/* Affichage uniquement sur Mobile */
-@media (max-width: 768px) {
-    .video-card:focus-within .progress-bar-container,
-    .video-card:active .progress-bar-container {
-        display: block;
-    }
+/* On force la première lettre en majuscule si tu veux "Vidéos du jour" */
+.section-label::first-letter {
+    text-transform: uppercase;
 }
+
+/* On supprime l'ancien style noir */
+.video-heading {
+    display: none !important;
+}
+#video-slider-container {
+    position: relative;
+    padding: 0 40px; /* Espace pour les flèches */
+}
+
+#video-slider {
+    display: flex;
+    gap: 0;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    padding: 20px 0;
+}
+
+/* Item Magazine : Respiration et Ligne séparatrice */
+.video-magazine-item {
+    flex: 0 0 33.333%; /* 3 vidéos par écran */
+    padding: 0 25px; /* Espacement intérieur qui crée le vide blanc */
+    border-right: 1px solid #f0f0f0; 
+    box-sizing: border-box;
+    scroll-snap-align: start;
+}
+
+.video-magazine-item:last-child { border-right: none; }
+
 .video-card {
-    /* ... tes propriétés actuelles ... */
-    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    width: 100%;
+    aspect-ratio: 9 / 16;
+    background: #000;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+}
+
+.video-card video { width: 100%; height: 100%; object-fit: cover; }
+
+/* Contrôles Navigation (Dots et Flèches en bas) */
+.slider-controls-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1150px;
+    margin: 20px auto;
+    padding: 0 25px;
+}
+
+.slider-dots { display: flex; gap: 8px; }
+.dot { width: 7px; height: 7px; background: #ddd; border-radius: 50%; transition: 0.3s; }
+.dot.active { background: #000; transform: scale(1.3); }
+
+.nav-arrow-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%;
+    border: 1px solid #eee;
+    background: #fff;
+    cursor: pointer;
+    transition: 0.3s;
+}
+.nav-arrow-btn:hover { background: #000; color: #fff; border-color: #000; }
+
+/* Contrôles Vidéo (Top Right) */
+.video-controls-top {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    z-index: 10;
+    opacity: 0;
+    transition: 0.3s;
+}
+.video-card:hover .video-controls-top { opacity: 1; }
+
+.control-btn {
+    background: rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.2);
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+}
+
+/* Texte sous la vidéo */
+.video-mag-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin: 15px 0 5px;
+    color: #1a1a1a;
+    line-height: 1.3;
+}
+.video-mag-source {
+    font-size: 0.65rem;
+    font-weight: 800;
+    color: #999;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+    .video-magazine-item { flex: 0 0 85%; padding: 0 15px; }
+    .video-controls-top { opacity: 1; }
+}
+/* Style pour le temps de lecture (Opinion & Autre Info) */
+.read-time-small {
+    display: block;
+    font-family: 'Libre Franklin', sans-serif; /* Ta police UI Premium */
+    font-size: 0.65rem; /* Taille réduite pour l'élégance */
+    font-weight: 700;
+    color: #888; /* Gris moyen pour ne pas voler la vedette au titre */
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+/* Ajustement spécifique pour la section OPINION */
+.opinion-card .read-time-small {
+    margin-top: 5px;
+    border-top: none; /* Nettoyage si une bordure traîne */
+}
+
+/* Ajustement spécifique pour AUTRE INFO */
+.autre-info-card h2 + .read-time-small {
+    margin-top: 10px;
+}
+/* --- SECTION OPINION SIDEBAR --- */
+.opinion-list {
+    display: flex;
+    flex-direction: column;
+    gap: 25px; /* Espace entre chaque bloc d'opinion */
+    padding: 15px 0;
+}
+
+.opinion-container-box {
+    border-bottom: 1px solid #eee; /* Ligne de séparation fine */
+    padding-bottom: 20px;
+}
+
+.opinion-container-box:last-child {
+    border-bottom: none;
+}
+
+/* Ligne Auteur (Nom + Avatar) */
+.opinion-author-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.author-name {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #1a1a1a;
+    text-transform: uppercase;
+}
+
+.author-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+/* Titre de l'opinion */
+.opinion-text-title {
+    font-family: 'Playfair Display', serif; /* Ou ta police de titre */
+    font-size: 1.1rem;
+    line-height: 1.3;
+    font-weight: 700;
+    margin: 0 0 5px 0;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.opinion-text-title:hover {
+    color: #a30000;
+}
+
+/* Temps de lecture (Le correctif que tu attendais) */
+.read-time-small {
+    display: block;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: #888;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+}
+
+/* Image de couverture de l'opinion */
+.opinion-main-cover {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Footer (Devenir chroniqueur) */
+.opinion-footer {
+    padding-top: 15px;
+    border-top: 2px solid #000;
+    margin-top: 10px;
+}
+
+.discreet-link {
+    text-decoration: none;
+    color: #1a1a1a;
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.discreet-link:hover .arrow {
+    padding-left: 5px;
+    transition: 0.2s;
 }
 /* ==========================================================================
    7. MAGAZINE (LIFESTYLE & SPORTS)
    ========================================================================== */
-/* 1. SECTIONS DE MISE EN PAGE GÉNÉRALE */
-.magazine-section { 
-    max-width: 1200px; 
-    margin: 40px auto; 
-    padding: 0 20px; 
-    border-top: 1px solid #000; 
+/* --- SECTION LIFESTYLE --- */
+.magazine-section {
+    max-width: 1200px; /* Largeur max pour ne pas que ça s'étale trop sur grand écran */
+    margin: 40px auto; /* Centre la section */
+    padding: 0 20px;   /* AJOUTE DE L'AIR SUR LES CÔTÉS (Tablette & Mobile) */
+    box-sizing: border-box;
 }
 
-.lifestyle-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); 
-    gap: 30px; 
-    margin-top: 20px; 
+/* --- ARTICLE PRINCIPAL --- */
+.lifestyle-main {
+    display: flex;
+    gap: 40px;
+    margin-bottom: 40px;
+    cursor: pointer;
+    align-items: center;
 }
 
+.ls-main-text { flex: 1; }
+.ls-main-img { flex: 1.5; }
+
+.ls-main-img img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.ls-main-title {
+    font-family: 'Lora', serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 15px;
+    line-height: 1.1;
+}
+
+.ls-excerpt {
+    font-family: 'Lora', serif;
+    color: #555;
+    font-size: 1.1rem;
+    line-height: 1.5;
+}
+
+/* --- PETITS ARTICLES EN DESSOUS --- */
+.lifestyle-sub-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+}
+
+.ls-sub-card {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    cursor: pointer;
+    border-right: 1px solid #eee;
+    padding-right: 15px;
+}
+
+.ls-sub-card:last-child { border-right: none; }
+
+.ls-sub-text h4 {
+    font-family: 'Lora', serif;
+    font-size: 1rem;
+    margin: 0 0 10px 0;
+    line-height: 1.3;
+}
+
+.ls-sub-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+}
+
+.ls-read-time {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #888;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .lifestyle-main { flex-direction: column-reverse; }
+    .lifestyle-sub-grid { grid-template-columns: 1fr; }
+    .ls-sub-card { border-right: none; border-bottom: 1px solid #eee; padding-bottom: 15px; }
+}
 /* 2. DASHBOARD SPORTS (HEADER & NAV UI) */
 .sports-dashboard {
     background: #fff;
@@ -1806,11 +2051,55 @@ h1, h2, h3, .section-title {
 /* Container principal style Journal */
 #news-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr); /* Deux colonnes pour les petits articles */
+    grid-template-columns: repeat(2, 1fr) !important; /* Force 2 colonnes égales */
+    gap: 30px;
+    width: 100%;
+}
+/* 1. RÉGLAGE PAR DÉFAUT (Mobile : 1 seule colonne pour la lisibilité) */
+#news-grid {
+    display: grid;
+    grid-template-columns: 1fr; 
     gap: 20px;
-    padding: 20px 0;
+    width: 100%;
+    padding-top: 20px;
+    border-top: 1px solid #eee;
 }
 
+/* 2. TABLETTE (à partir de 600px / 768px : on passe à 2 colonnes égales) */
+@media (min-width: 600px) {
+    #news-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 30px;
+    }
+}
+
+/* 3. DESKTOP (Optionnel : si tu veux 3 colonnes sur très grand écran) */
+@media (min-width: 1200px) {
+    #news-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+    }
+}
+
+/* 4. AJUSTEMENT DES CARTES (Pour éviter les déformations) */
+.article-card {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.article-card img {
+    width: 100%;
+    height: 200px; /* Hauteur fixe pour que toutes les cartes soient alignées */
+    object-fit: cover;
+    border-radius: 4px;
+}
+/* Sur écran très large, tu peux même passer à 3 colonnes pour les 12 articles */
+@media (min-width: 1200px) {
+    #news-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
 /* Style de la grande actu (Hero) */
 .main-article {
     border-bottom: 1px solid #ddd;
@@ -2015,6 +2304,127 @@ h1, h2, h3, .section-title {
     display: block;
     margin-top: 10px;
 }
+/* --- SECTION AUDIO --- */
+.audio-section {
+    max-width: 1200px;
+    margin: 40px auto;
+    padding: 0 20px;
+    border-top: 1px solid #000;
+}
+
+.audio-section .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    margin: 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.audio-section .subtitle {
+    font-family: 'Lora', serif;
+    font-style: italic;
+    font-size: 1rem;
+    font-weight: 400;
+    color: #555;
+}
+
+/* Grille à 2 colonnes */
+.audio-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid #eee;
+}
+
+.audio-card {
+    display: flex;
+    padding: 20px;
+    gap: 20px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+/* Bordure verticale pour la colonne de gauche */
+.audio-card:nth-child(odd) {
+    border-right: 1px solid #eee;
+}
+
+.audio-card:hover {
+    background: #fcfcfc;
+}
+
+/* Image carrée */
+.audio-image-wrapper {
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+}
+
+.audio-image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Texte et Labels */
+.audio-label-group {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.audio-tag {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+.audio-type {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.audio-title {
+    font-family: 'Lora', serif;
+    font-size: 1.1rem;
+    margin: 0 0 15px 0;
+    line-height: 1.3;
+}
+
+/* Bouton Play et Temps */
+.audio-player-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.play-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 1px solid #ddd;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.play-circle svg {
+    width: 16px;
+    fill: #000;
+    margin-left: 2px;
+}
+
+/* Responsive Mobile */
+@media (max-width: 768px) {
+    .audio-grid { grid-template-columns: 1fr; }
+    .audio-card:nth-child(odd) { border-right: none; }
+    .audio-image-wrapper { width: 80px; height: 80px; }
+}
 /* ==========================================================================
    9. RESPONSIVE MOBILE
    ========================================================================== */
@@ -2035,4 +2445,5 @@ h1, h2, h3, .section-title {
     .main-article h1 { font-size: 1.8rem; text-align: left; }
     .footer-bottom { flex-direction: column; gap: 15px; text-align: center; }
 }
+
 
