@@ -1,0 +1,140 @@
+:root {
+    --primary-red: #a30000;
+    --dark-bg: #121212;
+    --light-gray: #f9f9f9;
+}
+
+body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background-color: #fff;
+    color: var(--dark-bg);
+    margin: 0;
+    line-height: 1.6;
+}
+
+/* Header simple */
+.sub-header {
+    padding: 20px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+.sub-logo { height: 40px; }
+
+/* Titres */
+.subscription-wrapper {
+    max-width: 1100px;
+    margin: 60px auto;
+    padding: 0 20px;
+    text-align: center;
+}
+
+.main-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.8rem;
+    margin-bottom: 10px;
+}
+
+.subtitle {
+    color: #666;
+    font-size: 1.1rem;
+    margin-bottom: 50px;
+}
+
+/* Grille de prix */
+.pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.price-card {
+    border: 1px solid #e0e0e0;
+    padding: 40px 30px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+}
+
+.price-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.05);
+}
+
+/* Mise en avant de l'offre Premium */
+.price-card.featured {
+    border: 2px solid var(--primary-red);
+    background-color: #fff;
+    scale: 1.05;
+}
+
+.badge {
+    position: absolute;
+    top: -15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--primary-red);
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+/* Typo Prix */
+.price {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 20px 0;
+}
+.price span { font-size: 1rem; color: #888; }
+
+.features {
+    list-style: none;
+    padding: 0;
+    margin: 30px 0;
+    text-align: left;
+    flex-grow: 1;
+}
+
+.features li {
+    margin-bottom: 12px;
+    padding-left: 25px;
+    position: relative;
+}
+
+.features li::before {
+    content: "✓";
+    position: absolute;
+    left: 0;
+    color: var(--primary-red);
+    font-weight: bold;
+}
+
+/* Boutons */
+.btn-sub {
+    padding: 15px;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: 0.2s;
+    border: none;
+}
+
+.btn-sub.primary {
+    background: var(--primary-red);
+    color: white;
+}
+
+.btn-sub.secondary {
+    background: #eee;
+    color: var(--dark-bg);
+}
+
+.btn-sub:hover { opacity: 0.9; }
+
+.back-link { color: #888; text-decoration: none; font-size: 14px; }
