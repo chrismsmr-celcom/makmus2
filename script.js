@@ -595,21 +595,35 @@ function renderUI(heroArticle, gridArticles = []) {
     }
 
     // 2. RENDU DE LA GRILLE (12 articles)
-    if (grid) {
-        // On commence à l'index 3 pour éviter les doublons avec les 3 sous-titres du hero
-        const finalGridItems = gridArticles.slice(3, 15); 
+if (grid) {
+    // On prend les articles de l'index 3 à 15 (12 articles au total)
+    const finalGridItems = gridArticles.slice(3, 15); 
 
-        grid.innerHTML = finalGridItems.map(art => `
-            <div class="article-card" onclick="window.location.href='redaction.html?id=${art.id}'">
-                <div class="card-img-wrapper">
-                    <img src="${art.image_url || 'https://via.placeholder.com/400x250'}" onerror="this.src='https://via.placeholder.com/400x250'">
-                </div>
-                <div style="padding:12px;">
-                    <h3 style="font-size:1rem; margin-bottom:8px; line-height:1.3; font-weight:800;">${art.titre}</h3>
-                </div>
-            </div>`).join('');
-    }
+    grid.innerHTML = finalGridItems.map(art => {
+        // Nettoyage rapide de la description pour éviter les bugs d'affichage
+        const cleanDescription = art.description ? art.description.replace(/<[^>]*>?/gm, '') : '';
+        
+        return `
+        <div class="article-card" onclick="window.location.href='redaction.html?id=${art.id}'">
+            <div class="card-img-wrapper">
+                <img class="article-image" 
+                     src="${art.image_url || 'https://via.placeholder.com/400x250'}" 
+                     onerror="this.src='https://via.placeholder.com/400x250'"
+                     alt="${art.titre}">
+            </div>
+            <div class="article-meta-content">
+                <h3 class="article-title">${art.titre}</h3>
+                
+                <p class="article-excerpt">${cleanDescription}</p>
+                
+                <span class="read-time-small">
+                    ${calculerTempsLecture(art.description)}
+                </span>
+            </div>
+        </div>`;
+    }).join('');
 }
+   }
 function setupSliderControls(count) {
     const sidebarList = document.getElementById('sidebar-list');
     if (!sidebarList || count === 0) return;
@@ -744,6 +758,8 @@ window.slideMore = (direction) => {
 /* ==========================================================================
    6. VIDÉOS & PUBS
    ========================================================================== */
+let activeAds = []; 
+let currentAdIndex = 0;
 const ICONS = {
     LIKE: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l8.84-8.84 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>`,
     LIKE_FILLED: `<svg width="22" height="22" viewBox="0 0 24 24" fill="#ff4757"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path></svg>`,
