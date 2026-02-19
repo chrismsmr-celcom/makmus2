@@ -108,8 +108,9 @@ h1, h2, h3, .section-title {
    ========================================================================== */
 /* --- Structure de la Top Bar --- */
 .top-bar { 
+    width: 100%;
     background: #fff; 
-    border-bottom: 1px solid var(--border-color, #eee); 
+    border-bottom: 2px solid #0000; /* La bordure de séparation */ 
     padding: 8px 0; /* Padding vertical uniquement ici */
 }
 
@@ -119,7 +120,8 @@ h1, h2, h3, .section-title {
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    padding: 0 20px; /* Padding horizontal pour protéger les bords */
+    padding: 5px 20px; /* Padding horizontal pour protéger les bords */
+    min-height: 35px
 }
 
 /* --- Ticker Market (Masqué par défaut sur mobile) --- */
@@ -149,97 +151,87 @@ h1, h2, h3, .section-title {
 /* --- Date Live --- */
 #live-date {
     font-family: 'Inter', sans-serif;
-    font-size: 0.85rem;
+    font-size: 8px;
     font-weight: 600;
     color: #333;
     white-space: nowrap;
     flex-shrink: 0; /* Empêche la date de s'écraser */
 }
 
-/* --- Bouton Compte --- */
+/* --- LE RANGEMENT (PARENT) --- */
+/* --- ALIGNEMENT DES BOUTONS DANS LE HEADER --- */
+.header-right {
+    display: flex !important;       /* Force le rangement en ligne */
+    flex-direction: row !important;  /* Aligne de gauche à droite */
+    align-items: center !important;   /* Aligne verticalement au centre */
+    justify-content: flex-end;       /* Pousse le groupe vers la droite */
+    gap: 15px;                       /* Espace précis entre le bouton et l'icône */
+    margin: 0;
+    padding: 0;
+}
+
+/* On s'assure que le bouton d'abonnement ne prend pas de place inutile */
+.btn-subscribe {
+    display: inline-block !important;
+    white-space: nowrap !important;  /* Empêche le texte de s'étaler sur 2 lignes */
+    margin: 0 !important;
+}
+
+/* Style de l'icône compte pour qu'elle soit propre à côté du bouton */
 #openModal {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: none;
-    border: none;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
     cursor: pointer;
-    font-weight: 700;
-    font-size: 0.75rem;
-    flex-shrink: 0;
-}
-
-/* --- Ajustements Responsive --- */
-
-/* Écrans Larges (PC) : On affiche le Ticker */
-@media (min-width: 1024px) {
-    .market-ticker-container {
-        display: block; 
-    }
-}
-
-/* Mobiles (Smartphones) */
-@media (max-width: 768px) {
-    #live-date {
-        font-size: 0.7rem; 
-        letter-spacing: 0.5px;
-    }
-    
-    .account-text {
-        display: none; /* Cache le texte "MON COMPTE" pour ne garder que l'icône sur mobile */
-    }
-
-    #openModal {
-        padding: 5px;
-    }
-}
-/* --- Style général du bouton --- */
-#openModal {
-    display: flex;
+    display: flex !important;        /* Centrage de l'image interne */
     align-items: center;
-    gap: 8px;
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    font-family: 'Inter', sans-serif;
-    font-weight: 700;
-    font-size: 0.8rem;
-    color: #333;
-    padding: 5px;
-    transition: opacity 0.2s;
 }
 
-/* Style de l'icône utilisateur */
 #openModal img {
-    width: 22px;
-    height: 22px;
+    width: 24px;
+    height: 24px;
     display: block;
 }
 
-/* --- Transformation Mobile (max-width: 768px) --- */
-@media (max-width: 768px) {
-    /* On cache uniquement le texte */
-    .account-text {
-        display: none; 
-    }
-
-    /* On s'assure que le bouton reste bien à droite */
-    #openModal {
-        padding: 0;
-    }
+/* Correction pour les parents qui pourraient bloquer l'alignement */
+.status-right {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+/* --- BOUTON S'ABONNER ESTHÉTIQUE --- */
+.btn-subscribe {
+    background-color: #a30000; /* Le rouge présent sur tes captures */
+    color: #ffffff;
+    border: none;
+    padding: 4px 10px;
+    font-family: 'Libre Franklin', sans-serif; /* Police type journal */
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 2px; /* Coins très légèrement arrondis pour le sérieux */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    
 }
 
-/* --- Style PC --- */
-@media (min-width: 769px) {
-    /* Sur PC, on peut ajouter une petite bordure ou un style plus bouton si tu veux */
-    #openModal {
-        border: 1px solid #eee;
-        padding: 5px 12px;
-        border-radius: 2px;
-    }
-    #openModal:hover {
-        background: #f9f9f9;
-    }
+/* Effet au survol : devient noir comme sur les sites de news de luxe */
+.btn-subscribe:hover {
+    background-color: #000000;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Effet au clic */
+.btn-subscribe:active {
+    transform: translateY(0);
+}
+
+/* Conteneur pour s'assurer qu'il ne touche pas l'icône de compte */
+.header-right {
+    margin-right: 5px;
 }
 .modal-overlay {
     z-index: 9999; /* Doit être le plus haut possible */
@@ -405,7 +397,7 @@ h1, h2, h3, .section-title {
 .nav-item {
     display: flex;
     justify-content: space-between;
-    padding: 15px 0;
+    padding: 10px 0;
     border-bottom: 1px solid #f5f5f5;
     text-decoration: none;
     color: #121212;
@@ -497,31 +489,50 @@ h1, h2, h3, .section-title {
 /* ==========================================================================
    4. HEADER, LOGO & NAV
    ========================================================================== */
+/* --- Header Principal --- */
 .main-header { 
-    padding: 20px; 
+    position: relative; /* CRUCIAL pour que le positionnement absolute du logo fonctionne */
+    padding:25px 20px; 
     max-width: 1200px; 
     margin: 0 auto; 
     display: flex; 
-    justify-content: space-between; 
+    justify-content: space-between; /* Place le menu à gauche et les futurs éléments à droite */
     align-items: center;
-    border-bottom: 4px double #000;
+   /* --- LA SOLUTION EST ICI --- */
+    border-top: 1px solid #d1d1d1;    /* Bordure simple en haut */
+    border-bottom: 4px double #000;   /* Bordure double en bas */
+    margin-top: 5px;                  /* Petit espace pour laisser respirer */
 }
 
-.logo-container { flex: 1; display: flex; justify-content: center; }
-.logo-container img { height: 30px; transition: transform 0.3s; }
-
-.menu-toggle { cursor: pointer; display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 11px; text-transform: uppercase; }
-.menu-toggle span:not(.menu-label) { display: block; width: 18px; height: 2px; background: #000; margin: 3px 0; }
-/* --- Style du bouton Sections --- */
-.menu-toggle {
+/* --- Centrage Parfait du Logo --- */
+.logo-container {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%); /* Centre horizontalement ET verticalement */
     display: flex;
     align-items: center;
-    gap: 8px;
+    z-index: 1; /* S'assure que le logo reste visible */
+}
+
+.logo-container img {
+    height: 40px; /* Taille stable */
+    width: auto;
+    display: block;
+}
+
+/* --- Bouton Menu / Sections --- */
+.menu-toggle { 
+    cursor: pointer; 
+    display: flex; 
+    align-items: center; 
+    gap: 8px; 
+    z-index: 10; /* Garde le bouton cliquable au-dessus du logo si besoin */
     transition: opacity 0.2s;
 }
 
 .menu-icon {
-    width: 22px; /* Même taille que l'icône compte pour l'équilibre */
+    width: 22px; 
     height: 22px;
     display: block;
 }
@@ -535,25 +546,41 @@ h1, h2, h3, .section-title {
     color: #121212;
 }
 
-/* --- Ajustement Mobile --- */
+/* --- Navigation Secondaire --- */
+.nav-compact { 
+    border-bottom: 1px solid #000; 
+    padding: 10px 0; 
+}
+
+.nav-compact ul { 
+    list-style: none; 
+    display: flex; 
+    justify-content: center; 
+    gap: 25px; 
+    padding: 0; 
+    margin: 0; 
+}
+
+.nav-compact a { 
+    text-decoration: none; 
+    color: #000; 
+    font-size: 12px; 
+    font-weight: 700; 
+    text-transform: uppercase; 
+}
+
+/* --- Mobile --- */
 @media (max-width: 768px) {
     .menu-label {
-        font-size: 0.65rem; /* On réduit un peu la police sur mobile */
+        font-size: 0.65rem;
     }
     .menu-toggle {
-        gap: 5px; /* On resserre l'icône et le texte */
+        gap: 5px;
+    }
+    .logo-container img {
+        height: 30px; /* Réduction légère sur mobile pour gagner de la place */
     }
 }
-.btn-subscribe { 
-    background: var(--primary-red); color: white; border: none; padding: 10px 15px; 
-    font-weight: 700; cursor: pointer; font-size: 11px; letter-spacing: 0.5px;
-}
-
-.nav-compact { border-bottom: 1px solid #000; padding: 10px 0; }
-.nav-compact ul { list-style: none; display: flex; justify-content: center; gap: 25px; padding: 0; margin: 0; }
-.nav-compact a { text-decoration: none; color: #000; font-size: 12px; font-weight: 700; text-transform: uppercase; }
-.nav-red { color: var(--primary-red) !important; }
-
 /* ==========================================================================
    5. CORPS DU JOURNAL (HERO & GRID)
    ========================================================================== */
@@ -581,7 +608,6 @@ h1, h2, h3, .section-title {
     grid-template-columns: repeat(2, 1fr); 
     gap: 30px;
     padding-top: 20px;
-    border-top: 1px solid #eee;
     width: 100%;
 }
 
@@ -597,7 +623,183 @@ h1, h2, h3, .section-title {
     object-fit: cover;
 }
 .article-card h3 { font-size: 1.2rem; margin: 10px 0; line-height: 1.3; }
+/* --- CONTENEUR DE LA GRILLE D'ARTICLES --- */
+.articles-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* 2 colonnes par défaut */
+    gap: 30px; /* Espace pour faire respirer le design */
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
 
+/* --- STYLE DE L'ARTICLE --- */
+.article-card {
+    display: flex;
+    flex-direction: column;
+}
+
+.article-image {
+    width: 100%;
+    aspect-ratio: 4 / 3; /* Format photo standard journal */
+    object-fit: cover;
+    border-radius: 4px; /* Très léger arrondi pour la modernité */
+    margin-bottom: 15px;
+}
+
+.article-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    line-height: 1.4;
+    font-weight: 700;
+    color: #000;
+    margin: 0;
+    text-decoration: none;
+}
+
+/* --- AJUSTEMENT MOBILE (1 COLONNE) --- */
+@media (max-width: 768px) {
+    .articles-grid {
+        grid-template-columns: 1fr; /* Bascule en une seule colonne */
+        gap: 40px; /* On augmente l'espace vertical entre les articles */
+        padding: 15px;
+    }
+
+    .article-title {
+        font-size: 1.25rem; /* On peut grossir légèrement le titre sur mobile pour la lisibilité */
+    }
+}
+.standard-section-header {
+    border-top: 1px solid #000; /* La ligne fine noire de la capture Lifestyle */
+    margin: 40px 20px 20px;
+    padding-top: 10px;
+}
+
+.section-label {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: lowercase; /* Style "lifestyle et bien-être" */
+    color: #000;
+}
+.section-label::first-letter { text-transform: uppercase; }
+
+/* --- HERO ZONE --- */
+#hero-zone { 
+    margin-bottom: 40px; 
+    padding-bottom: 40px; 
+    border-bottom: 1px solid #eee; 
+}
+.hero-content { 
+    display: grid; 
+    grid-template-columns: 1.2fr 1.8fr; 
+    gap: 30px; 
+    align-items: start; 
+}
+.hero-image img { width: 100%; height: auto; object-fit: cover; }
+.main-article h1 { 
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 5vw, 3.5rem); 
+    line-height: 1.1; 
+}
+
+/* --- LA GRILLE RESPONSIVE (CORRIGÉE) --- */
+#news-grid, .articles-grid {
+    display: grid;
+    /* 1. PAR DÉFAUT : 3 COLONNES (DESKTOP) */
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 40px 30px; 
+    padding-top: 20px;
+    width: 100%;
+}
+
+/* --- CARTES ARTICLES --- */
+.article-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-decoration: none;
+    color: inherit;
+}
+.article-image, .card-img-wrapper img {
+    width: 100%;
+    aspect-ratio: 16 / 9; 
+    object-fit: cover;
+    border-radius: 2px;
+    margin-bottom: 10px;
+}
+.article-meta-content { padding: 5px 0; }
+.article-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem; 
+    line-height: 1.3; 
+    font-weight: 700;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* --- MEDIA QUERIES (LE RÉGLAGE DES COLONNES) --- */
+
+/* 2. TABLETTE : PASSAGE À 2 COLONNES */
+@media (max-width: 1024px) {
+    #news-grid, .articles-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* 3. MOBILE : PASSAGE À 1 COLONNE */
+@media (max-width: 768px) {
+    .hero-content { grid-template-columns: 1fr; }
+
+    #news-grid, .articles-grid {
+        grid-template-columns: 1fr !important; /* Force une seule colonne */
+        gap: 40px;
+    }
+
+    .article-title {
+        font-size: 1.3rem; /* On grossit un peu le titre sur mobile */
+    }
+    
+    .standard-section-header { margin: 30px 0 15px 0; }
+}
+.article-excerpt {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.88rem;
+    line-height: 1.5; /* Contrôle l'espacement vertical */
+    color: #444;
+    margin: 8px 0 12px 0;
+    
+    /* Force l'affichage sur 3 lignes maximum */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; 
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Optionnel : Ajuster la taille du titre pour que le tout reste compact */
+.article-title {
+    font-size: 1.1rem;
+    line-height: 1.25;
+    margin-bottom: 6px;
+}
+.article-excerpt {
+    font-family: 'Libre Franklin', sans-serif;
+    font-size: 0.9rem;
+    line-height: 1.5; /* Définit la hauteur d'une ligne */
+    color: #555;
+    margin: 8px 0 12px 0;
+
+    /* --- LA MAGIE POUR LES 3 LIGNES --- */
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* LIMITE À 3 LIGNES EXACTES */
+    -webkit-box-orient: vertical;  
+    overflow: hidden;
+    text-overflow: ellipsis; /* Ajoute les "..." à la fin */
+    
+    /* Sécurité pour les navigateurs non-webkit */
+    max-height: calc(1.5em * 3); 
+}
 /* ==========================================================================
    6. VIDÉOS VERTICALES (Format Instagram Reels)
    ========================================================================== */
@@ -1778,7 +1980,7 @@ h1, h2, h3, .section-title {
 }
 
 .sub-news-item:hover h4 {
-    color: var(--makmus-red);
+    color: #A9A9A9;
     text-decoration: underline;
 }
 
@@ -1827,7 +2029,7 @@ h1, h2, h3, .section-title {
 }
 
 .sub-news-item:hover h4 {
-    color: var(--makmus-red);
+    color: #A9A9A9;
 }
 
 .sub-news-item h4 {
@@ -1863,14 +2065,18 @@ h1, h2, h3, .section-title {
 }
 
 .sidebar-heading {
+    display: flex;             /* AJOUT : Pour aligner horizontalement si besoin */
+    align-items: center;       /* AJOUT : Aligne verticalement */
+    justify-content: space-between; /* AJOUT : Pousse les éléments aux extrémités */
+    width: 100%;               /* AJOUT : Force toute la largeur de la sidebar */
     font-weight: 900;
     font-size: 0.8rem;
     border-bottom: 2px solid #000;
     padding-bottom: 5px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;       /* AUGMENTÉ : Pour plus d'espace */
     letter-spacing: 1px;
+    text-transform: uppercase; /* AJOUT : Pour le look News Premium */
 }
-
 /* Liste Numérotée (Trending) */
 .ordered-news-list {
     counter-reset: news-counter;
@@ -2047,97 +2253,6 @@ h1, h2, h3, .section-title {
 
 .discreet-link:hover .arrow {
     transform: translateX(3px); /* Petit effet de mouvement au survol */
-}
-/* Container principal style Journal */
-#news-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr) !important; /* Force 2 colonnes égales */
-    gap: 30px;
-    width: 100%;
-}
-/* 1. RÉGLAGE PAR DÉFAUT (Mobile : 1 seule colonne pour la lisibilité) */
-#news-grid {
-    display: grid;
-    grid-template-columns: 1fr; 
-    gap: 20px;
-    width: 100%;
-    padding-top: 20px;
-    border-top: 1px solid #eee;
-}
-
-/* 2. TABLETTE (à partir de 600px / 768px : on passe à 2 colonnes égales) */
-@media (min-width: 600px) {
-    #news-grid {
-        grid-template-columns: repeat(2, 1fr) !important;
-        gap: 30px;
-    }
-}
-
-/* 3. DESKTOP (Optionnel : si tu veux 3 colonnes sur très grand écran) */
-@media (min-width: 1200px) {
-    #news-grid {
-        grid-template-columns: repeat(3, 1fr) !important;
-    }
-}
-
-/* 4. AJUSTEMENT DES CARTES (Pour éviter les déformations) */
-.article-card {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    cursor: pointer;
-}
-
-.article-card img {
-    width: 100%;
-    height: 200px; /* Hauteur fixe pour que toutes les cartes soient alignées */
-    object-fit: cover;
-    border-radius: 4px;
-}
-/* Sur écran très large, tu peux même passer à 3 colonnes pour les 12 articles */
-@media (min-width: 1200px) {
-    #news-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-}
-/* Style de la grande actu (Hero) */
-.main-article {
-    border-bottom: 1px solid #ddd;
-    margin-bottom: 30px;
-    padding-bottom: 20px;
-}
-
-.main-article h1 {
-    font-family: 'Playfair Display', serif; /* Ou une police avec empattement */
-    font-size: 2.5rem;
-    margin: 15px 0;
-    line-height: 1.1;
-}
-
-.hero-image img {
-    width: 100%;
-    height: auto;
-    object-fit: cover;
-}
-
-/* Style des cartes du dessous */
-.article-card {
-    border-top: 1px solid #eee;
-    padding-top: 15px;
-    cursor: pointer;
-}
-
-.article-card img {
-    width: 100%;
-    aspect-ratio: 16/9;
-    object-fit: cover;
-    margin-bottom: 10px;
-}
-
-.article-card h3 {
-    font-size: 1.2rem;
-    line-height: 1.3;
-    margin: 5px 0;
 }
 
 .read-time {
@@ -2445,5 +2560,3 @@ h1, h2, h3, .section-title {
     .main-article h1 { font-size: 1.8rem; text-align: left; }
     .footer-bottom { flex-direction: column; gap: 15px; text-align: center; }
 }
-
-
